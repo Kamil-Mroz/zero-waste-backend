@@ -1,16 +1,21 @@
 package com.kamilpm.zero_waste.service.impl;
 
+import java.util.UUID;
+
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.domain.dto.LoginRequest;
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.request.LoginRequest;
+import com.kamilpm.zero_waste.exception.BadCredentialsExceptionCustom;
+import com.kamilpm.zero_waste.exception.NotFoundException;
 import com.kamilpm.zero_waste.repository.UserRepository;
+import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,20 +35,24 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public UserDetails verify(LoginRequest loginRequest) {
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+  public Authentication verify(LoginRequest loginRequest) {
 
-    return (UserDetails) authentication.getPrincipal();
+    try {
+      Authentication authentication = authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
+      return authentication;
+    } catch (BadCredentialsException e) {
+      throw new BadCredentialsExceptionCustom("Invalid credentials");
+    }
 
   }
 
   @Override
   public User getAuthenticatedUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    String email = authentication.getName();
-    return userRepository.findByEmail(email);
-
+    UUID id = ((MyUserDetails) authentication.getPrincipal()).getId();
+    return userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
   }
 
 }

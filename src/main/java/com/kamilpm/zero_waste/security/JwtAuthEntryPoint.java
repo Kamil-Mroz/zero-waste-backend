@@ -1,19 +1,19 @@
-package com.kamilpm.zero_waste.config;
+package com.kamilpm.zero_waste.security;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kamilpm.zero_waste.domain.response.ErrorResponse;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import tools.jackson.databind.json.JsonMapper;
 
 @Component
 public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
@@ -23,16 +23,17 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
       throws IOException, ServletException {
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    response.setCharacterEncoding("UTF-8");
+    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+    ErrorResponse error = new ErrorResponse(
+        "Token invalid or expired",
+        request.getRequestURI(),
+        401,
+        "unauthorized");
 
-    final Map<String, Object> body = new HashMap<>();
-    body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-    body.put("error", "Unauthorized");
-    body.put("message", authException.getMessage());
-    body.put("path", request.getServletPath());
+    final JsonMapper mapper = JsonMapper.builder().build();
 
-    final ObjectMapper mapper = new ObjectMapper();
-    mapper.writeValue(response.getOutputStream(), body);
+    mapper.writeValue(response.getOutputStream(), error);
   }
 
 }

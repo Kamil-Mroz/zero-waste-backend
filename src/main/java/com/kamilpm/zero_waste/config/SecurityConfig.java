@@ -21,7 +21,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.kamilpm.zero_waste.filter.JwtFilter;
+import com.kamilpm.zero_waste.security.JwtAuthEntryPoint;
+import com.kamilpm.zero_waste.security.JwtFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,18 +33,18 @@ public class SecurityConfig {
 
   private final UserDetailsService userDetailsService;
   private final JwtFilter jwtFilter;
-  // private final JwtAuthEntryPoint authEntryPoint;
+  private final JwtAuthEntryPoint authEntryPoint;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .cors(Customizer.withDefaults())
         .csrf(csrf -> csrf.disable())
-        // .exceptionHandling(exception ->
-        // exception.authenticationEntryPoint(authEntryPoint))
+        .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
         .authorizeHttpRequests(
             (authorize) -> authorize
                 .requestMatchers("/api/v{version}/auth/**").permitAll()
+                .requestMatchers("/api/v{version}/docs/**").permitAll()
                 .anyRequest().authenticated())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

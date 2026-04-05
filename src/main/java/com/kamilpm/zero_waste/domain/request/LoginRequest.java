@@ -1,5 +1,6 @@
-package com.kamilpm.zero_waste.domain.dto;
+package com.kamilpm.zero_waste.domain.request;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,12 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RegisterRequest {
-  private String firstName;
-  private String lastName;
+public class LoginRequest {
+  @NotBlank(message = "Email is required")
   private String email;
+  @NotBlank(message = "Password is required")
   private String password;
-  private String location;
-  private String phoneNumber;
-
 }

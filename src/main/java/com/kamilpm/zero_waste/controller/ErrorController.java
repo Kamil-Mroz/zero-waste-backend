@@ -1,7 +1,12 @@
 package com.kamilpm.zero_waste.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -16,6 +21,20 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 @Slf4j
 public class ErrorController {
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    log.error("Caught method argument not valid exception: Global Error Handler");
+
+    Map<String, String> fieldErrors = new HashMap<>();
+    for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+      fieldErrors.put(error.getField(), error.getDefaultMessage());
+    }
+
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid input value");
+    problem.setProperty("errors", fieldErrors);
+    return problem;
+  }
 
   @ExceptionHandler(BadCredentialsExceptionCustom.class)
   public ProblemDetail handleTokenException(BadCredentialsExceptionCustom ex) {

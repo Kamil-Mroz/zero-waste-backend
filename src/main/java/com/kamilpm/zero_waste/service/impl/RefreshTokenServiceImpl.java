@@ -6,14 +6,16 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.domain.MyUserDetails;
 import com.kamilpm.zero_waste.domain.entity.RefreshToken;
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.exception.NotFoundException;
 import com.kamilpm.zero_waste.exception.TokenException;
 import com.kamilpm.zero_waste.repository.RefreshTokenRepository;
+import com.kamilpm.zero_waste.repository.UserRepository;
+import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.RefreshTokenService;
 
 import jakarta.transaction.Transactional;
@@ -23,15 +25,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RefreshTokenServiceImpl implements RefreshTokenService {
   private final RefreshTokenRepository refreshTokenRepository;
+  private final UserRepository userRepository;
 
   @Value("${refresh-token.expiration}")
   private long refreshTokenExpiration;
 
   @Override
-  public RefreshToken generateRefreshToken(UserDetails userDetails) {
-    RefreshToken token = new RefreshToken();
-    User user = ((MyUserDetails) userDetails).getUser();
+  public RefreshToken generateRefreshToken(Authentication authentication) {
+    MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+    User user = userRepository.findById(userDetails.getId()).orElseThrow(() -> new NotFoundException("User not found"));
 
+    RefreshToken token = new RefreshToken();
     token.setUser(user);
     token.setToken(UUID.randomUUID().toString());
     token.setExpiryDate(Instant.now().plus(refreshTokenExpiration, ChronoUnit.SECONDS));

@@ -7,9 +7,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.domain.MyUserDetails;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.repository.UserRepository;
+import com.kamilpm.zero_waste.security.MyUserDetails;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +23,7 @@ public class MyUserDetailsService implements UserDetailsService {
 
     User user = Optional.ofNullable(userRepository.findByEmail(username))
         .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
-    return new MyUserDetails(user);
+    return MyUserDetails.buildUserDetails(user);
   }
 
 }

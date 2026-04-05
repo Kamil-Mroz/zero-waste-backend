@@ -8,12 +8,11 @@ import java.util.function.Function;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.domain.MyUserDetails;
-import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.exception.TokenException;
+import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.JwtService;
 
 import io.jsonwebtoken.Claims;
@@ -31,19 +30,20 @@ public class JwtServiceImpl implements JwtService {
   @Value("${jwt.expiration}")
   private long jwtExpiration;
 
-  public String generateToken(UserDetails userDetails) {
-    return generateToken(new HashMap<>(), userDetails);
+  public String generateToken(Authentication authentication) {
+    return generateToken(new HashMap<>(), authentication);
   }
 
-  public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+  public String generateToken(Map<String, Object> extraClaims, Authentication authentication) {
 
-    User user = ((MyUserDetails) userDetails).getUser();
+    MyUserDetails userPrincipal = (MyUserDetails) authentication.getPrincipal();
+
     return Jwts.builder()
         .claims()
-        .add("id", user.getId())
-        .add("roles", user.getRoles())
+        .add("id", userPrincipal.getId())
+        .add("roles", userPrincipal.getAuthorities())
         .add(extraClaims)
-        .subject(userDetails.getUsername())
+        .subject(userPrincipal.getUsername())
         .issuedAt(new Date(System.currentTimeMillis()))
         .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
         .and().signWith(getKey()).compact();

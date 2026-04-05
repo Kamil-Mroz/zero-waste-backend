@@ -1,8 +1,7 @@
-package com.kamilpm.zero_waste.filter;
+package com.kamilpm.zero_waste.security;
 
 import java.io.IOException;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,8 +10,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kamilpm.zero_waste.domain.dto.ErrorResponse;
 import com.kamilpm.zero_waste.service.JwtService;
 
 import io.jsonwebtoken.JwtException;
@@ -55,32 +52,35 @@ public class JwtFilter extends OncePerRequestFilter {
       }
     } catch (JwtException e) {
 
-      ErrorResponse error = new ErrorResponse(
-          e.getMessage(),
-          request.getRequestURI(),
-          401,
-          "Unauthorized");
+      // ErrorResponse error = new ErrorResponse(
+      // e.getMessage(),
+      // request.getRequestURI(),
+      // 401,
+      // "Unauthorized");
 
-      response.setStatus(HttpStatus.UNAUTHORIZED.value());
-      response.setContentType("application/json");
-      response.setCharacterEncoding("UTF-8");
+      // response.setStatus(HttpStatus.UNAUTHORIZED.value());
+      // response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+      // response.setCharacterEncoding("UTF-8");
 
-      new ObjectMapper().writeValue(response.getOutputStream(), error);
-      return;
+      // new ObjectMapper().writeValue(response.getOutputStream(), error);
+      // return;
+      SecurityContextHolder.clearContext();
 
     } catch (Exception e) {
 
-      ErrorResponse error = new ErrorResponse(
-          e.getMessage(),
-          request.getRequestURI(),
-          500,
-          "Internal server error");
-      response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-      response.setContentType("application/json");
-      response.setCharacterEncoding("UTF-8");
+      // ErrorResponse error = new ErrorResponse(
+      // e.getMessage(),
+      // request.getRequestURI(),
+      // 500,
+      // "Internal server error");
+      // response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+      // response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+      // response.setCharacterEncoding("UTF-8");
 
-      new ObjectMapper().writeValue(response.getOutputStream(), error);
-      return;
+      // new ObjectMapper().writeValue(response.getOutputStream(), error);
+      // return;
+      SecurityContextHolder.clearContext();
+
     }
 
     filterChain.doFilter(request, response);

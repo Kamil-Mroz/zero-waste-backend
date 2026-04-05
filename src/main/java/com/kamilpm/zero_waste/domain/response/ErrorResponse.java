@@ -1,4 +1,4 @@
-package com.kamilpm.zero_waste.domain.dto;
+package com.kamilpm.zero_waste.domain.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

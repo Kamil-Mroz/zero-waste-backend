@@ -2,15 +2,14 @@ package com.kamilpm.zero_waste.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kamilpm.zero_waste.domain.MyUserDetails;
-import com.kamilpm.zero_waste.domain.dto.AuthResponse;
-import com.kamilpm.zero_waste.domain.dto.LoginRequest;
-import com.kamilpm.zero_waste.domain.dto.RegisterRequest;
 import com.kamilpm.zero_waste.domain.entity.RefreshToken;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.entity.UserRole;
-import com.kamilpm.zero_waste.exception.BadCredentialsExceptionCustom;
+import com.kamilpm.zero_waste.domain.request.LoginRequest;
+import com.kamilpm.zero_waste.domain.request.RegisterRequest;
+import com.kamilpm.zero_waste.domain.response.AuthResponse;
 import com.kamilpm.zero_waste.exception.TokenException;
+import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.JwtService;
 import com.kamilpm.zero_waste.service.RefreshTokenService;
@@ -18,6 +17,7 @@ import com.kamilpm.zero_waste.service.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
@@ -30,12 +30,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
-@RequestMapping(path = "/api/v{version}/auth", version = "v1")
+@RequestMapping(path = "/api/v{version}/auth", version = "1")
+// @RequestMapping(path = "/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -47,7 +49,7 @@ public class AuthController {
   private long refreshTokenExpiration;
 
   @PostMapping(path = "/register")
-  public ResponseEntity<User> register(@RequestBody RegisterRequest registerRequest) {
+  public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest registerRequest) {
 
     User user = new User(null, registerRequest.getFirstName(), registerRequest.getLastName(),
         registerRequest.getEmail(), registerRequest.getPassword(),
@@ -62,16 +64,13 @@ public class AuthController {
   }
 
   @PostMapping(path = "/login")
-  public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-    UserDetails userDetails;
-    try {
-      userDetails = (MyUserDetails) authService.verify(loginRequest);
-    } catch (BadCredentialsException e) {
-      throw new BadCredentialsExceptionCustom("Invalid credentials");
-    }
+  public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest,
+      HttpServletResponse response) {
 
-    String accessToken = jwtService.generateToken(userDetails);
-    String refreshToken = refreshTokenService.generateRefreshToken(userDetails).getToken();
+    Authentication authentication = authService.verify(loginRequest);
+
+    String accessToken = jwtService.generateToken(authentication);
+    String refreshToken = refreshTokenService.generateRefreshToken(authentication).getToken();
 
     Cookie cookie = new Cookie("refreshToken", refreshToken);
     cookie.setHttpOnly(true);
@@ -94,9 +93,12 @@ public class AuthController {
     RefreshToken token = refreshTokenService.verifyToken(refreshToken);
 
     User user = token.getUser();
-    UserDetails userDetails = new MyUserDetails(user);
+    UserDetails userDetails = MyUserDetails.buildUserDetails(user);
 
-    String newAccessToken = jwtService.generateToken(userDetails);
+    Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
+        userDetails.getAuthorities());
+
+    String newAccessToken = jwtService.generateToken(authentication);
 
     return ResponseEntity.ok(new AuthResponse(newAccessToken));
   }
@@ -120,7 +122,7 @@ public class AuthController {
 
     response.addCookie(cookie);
 
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   private Optional<String> extractRefreshToken(HttpServletRequest request) {
