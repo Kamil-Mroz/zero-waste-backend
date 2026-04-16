@@ -1,5 +1,7 @@
 package com.kamilpm.zero_waste.service.impl;
 
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,9 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.request.LoginRequest;
 import com.kamilpm.zero_waste.exception.BadCredentialsExceptionCustom;
-import com.kamilpm.zero_waste.exception.NotFoundException;
+import com.kamilpm.zero_waste.exception.ConflictException;
+import com.kamilpm.zero_waste.exception.UnauthorizedException;
 import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
@@ -29,8 +33,12 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public User register(User user) {
+    if (userRepository.existsByEmail(user.getEmail())) {
+      throw new ConflictException("Email already in use", "email");
+    }
 
     user.setPassword(passwordEncoder.encode(user.getPassword()));
+    user.setRoles(Set.of(UserRole.ADMIN, UserRole.WRITER, UserRole.USER));
     return userRepository.save(user);
   }
 
@@ -49,10 +57,22 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public User getAuthenticatedUser() {
+  public Optional<User> getAuthenticatedUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    if (authentication == null
+        || !authentication.isAuthenticated()
+        || authentication.getPrincipal().equals("anonymousUser")) {
+      return Optional.empty();
+    }
+
     UUID id = ((MyUserDetails) authentication.getPrincipal()).getId();
-    return userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
+    return userRepository.findById(id);
+  }
+
+  @Override
+  public User getRequiredAuthenticatedUser() {
+    return getAuthenticatedUser().orElseThrow(() -> new UnauthorizedException("User is not authenticated"));
   }
 
 }

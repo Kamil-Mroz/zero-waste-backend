@@ -49,9 +49,6 @@ public class User {
   @Column(name = "phone_number", nullable = false)
   private String phoneNumber;
 
-  @Column(name = "location", nullable = false)
-  private String location;
-
   @Column(name = "is_banned")
   private Boolean isBanned;
 

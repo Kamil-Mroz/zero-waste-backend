@@ -27,7 +27,6 @@ public class InternationalPhoneNumberValidationTest {
         .lastName("Doe")
         .phoneNumber("+39 342 341 235")
         .email("john.doe@example.com")
-        .location("Texas")
         .password("SecurePassword123!")
         .build();
     var violations = validator.validate(register);
@@ -42,7 +41,6 @@ public class InternationalPhoneNumberValidationTest {
         .lastName("Doe")
         .phoneNumber("123 123")
         .email("john.doe@example.com")
-        .location("Texas")
         .password("SecurePassword123!")
         .build();
     var violations = validator.validate(register);

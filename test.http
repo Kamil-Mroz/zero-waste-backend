@@ -3,7 +3,8 @@
 @host = {{hostname}}:{{port}}
 @contentType = application/json
 @api = api/v1
-@accessToken =eyJhbGciOiJIUzM4NCJ9.eyJpZCI6IjQ3MGQ2YzRhLWFhMWMtNDJmMS05MjRlLWJhYzBjMjc1ZWRlNCIsInJvbGVzIjpbeyJhdXRob3JpdHkiOiJST0xFX0FETUlOIn0seyJhdXRob3JpdHkiOiJST0xFX1VTRVIifV0sInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzc1MzE2NzQ1LCJleHAiOjE3NzUzMTc2NDV9.ABlGZ4BVg3j_AhXEwR4yUls8RowxA0oHmeSv0TMgHJNz1kYHWeUsLR29lKWe6M9U
+@accessToken =eyJhbGciOiJIUzM4NCJ9.eyJpZCI6ImU1NDVmNzFhLTFkNWQtNDM2Yi05NWM4LTBjMzVjNzMwNjYyMCIsInJvbGVzIjpbeyJhdXRob3JpdHkiOiJST0xFX1VTRVIifV0sInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzc1NDgwMTczLCJleHAiOjE3NzU0ODEwNzN9.oJYK-PgkB-y7IB06veL5LRwlzNDujPNgMFVS_UPMdwb481m3iWH92CHPV1qLzNiC
+
 ### AUTH
 POST http://{{host}}/{{api}}/auth/register
 Content-Type: application/json
@@ -11,7 +12,7 @@ Content-Type: application/json
 {
     "firstName":"John",
     "lastName":"Doe",
-    "location":"Texas",
+    "city":"Texas",
     "phoneNumber":"23912123",
     "email": "john.doe@example.com",
     "password": "SecurePassword123!"
@@ -28,11 +29,15 @@ Content-Type: application/json
 
 ###
 POST http://{{host}}/{{api}}/auth/refresh
-Content-Type: application/json
+
+###
+GET http://{{host}}/{{api}}/auth/me
+Authorization: Bearer {{accessToken}}
 
 ### USERS
 GET http://{{host}}/{{api}}/users
-Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
-###
+
+### items
+GET http://{{host}}/{{api}}/items/skldjsdl

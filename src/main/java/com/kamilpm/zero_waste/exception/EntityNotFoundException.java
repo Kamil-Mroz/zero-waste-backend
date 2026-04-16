@@ -2,8 +2,8 @@ package com.kamilpm.zero_waste.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class NotFoundException extends ApiException {
-  public NotFoundException(String message) {
+public class EntityNotFoundException extends ApiException {
+  public EntityNotFoundException(String message) {
     super(message, HttpStatus.NOT_FOUND);
   }
 

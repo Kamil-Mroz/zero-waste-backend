@@ -2,9 +2,11 @@ package com.kamilpm.zero_waste.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.domain.dto.UserDto;
 import com.kamilpm.zero_waste.domain.entity.RefreshToken;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.entity.UserRole;
+import com.kamilpm.zero_waste.domain.mapper.UserMapper;
 import com.kamilpm.zero_waste.domain.request.LoginRequest;
 import com.kamilpm.zero_waste.domain.request.RegisterRequest;
 import com.kamilpm.zero_waste.domain.response.AuthResponse;
@@ -21,9 +23,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,30 +39,31 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/auth", version = "1")
-// @RequestMapping(path = "/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
   private final AuthService authService;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
+  private final UserMapper userMapper;
 
   @Value("${refresh-token.expiration}")
   private long refreshTokenExpiration;
 
   @PostMapping(path = "/register")
-  public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest registerRequest) {
+  public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequest registerRequest) {
 
-    User user = new User(null, registerRequest.getFirstName(), registerRequest.getLastName(),
-        registerRequest.getEmail(), registerRequest.getPassword(),
-        registerRequest.getPhoneNumber(), registerRequest.getLocation(), false, new HashSet<UserRole>() {
-          {
-            add(UserRole.USER);
-            add(UserRole.ADMIN);
-          }
-        });
+    User user = User.builder()
+        .firstName(registerRequest.getFirstName())
+        .lastName(registerRequest.getLastName())
+        .email(registerRequest.getEmail())
+        .password(registerRequest.getPassword())
+        .phoneNumber(registerRequest.getPhoneNumber())
+        .isBanned(false)
+        .roles(Set.of(UserRole.USER))
+        .build();
     User savedUser = authService.register(user);
-    return new ResponseEntity<User>(savedUser, HttpStatus.CREATED);
+    return new ResponseEntity<>(userMapper.toDto(savedUser), HttpStatus.CREATED);
   }
 
   @PostMapping(path = "/login")
@@ -70,7 +73,9 @@ public class AuthController {
     Authentication authentication = authService.verify(loginRequest);
 
     String accessToken = jwtService.generateToken(authentication);
-    String refreshToken = refreshTokenService.generateRefreshToken(authentication).getToken();
+    RefreshToken refresh = refreshTokenService.generateRefreshToken(authentication);
+
+    String refreshToken = refresh.getToken();
 
     Cookie cookie = new Cookie("refreshToken", refreshToken);
     cookie.setHttpOnly(true);
@@ -80,7 +85,12 @@ public class AuthController {
 
     response.addCookie(cookie);
 
-    AuthResponse authResponse = new AuthResponse(accessToken);
+    UserDto user = userMapper.toDto(refresh.getUser());
+
+    AuthResponse authResponse = AuthResponse.builder()
+        .accessToken(accessToken)
+        .user(user)
+        .build();
     return ResponseEntity.ok(authResponse);
   }
 
@@ -100,7 +110,11 @@ public class AuthController {
 
     String newAccessToken = jwtService.generateToken(authentication);
 
-    return ResponseEntity.ok(new AuthResponse(newAccessToken));
+    AuthResponse authResponse = AuthResponse.builder()
+        .accessToken(newAccessToken)
+        .user(userMapper.toDto(user))
+        .build();
+    return ResponseEntity.ok(authResponse);
   }
 
   @PostMapping("/logout")
@@ -124,6 +138,15 @@ public class AuthController {
 
     return ResponseEntity.noContent().build();
   }
+
+  // @GetMapping("/me")
+  // public ResponseEntity<CurrentUserDto> getCurrentUser() {
+  // User user = authService.getAuthenticatedUser();
+  // CurrentUserDto currentUserDto =
+  // CurrentUserDto.builder().id(user.getId()).email(user.getEmail())
+  // .roles(user.getRoles()).build();
+  // return ResponseEntity.ok(currentUserDto);
+  // }
 
   private Optional<String> extractRefreshToken(HttpServletRequest request) {
 

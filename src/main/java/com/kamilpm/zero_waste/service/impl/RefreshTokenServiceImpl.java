@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.domain.entity.RefreshToken;
 import com.kamilpm.zero_waste.domain.entity.User;
-import com.kamilpm.zero_waste.exception.NotFoundException;
+import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.exception.TokenException;
 import com.kamilpm.zero_waste.repository.RefreshTokenRepository;
 import com.kamilpm.zero_waste.repository.UserRepository;
@@ -33,7 +33,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   @Override
   public RefreshToken generateRefreshToken(Authentication authentication) {
     MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
-    User user = userRepository.findById(userDetails.getId()).orElseThrow(() -> new NotFoundException("User not found"));
+    User user = userRepository.findById(userDetails.getId())
+        .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
     RefreshToken token = new RefreshToken();
     token.setUser(user);

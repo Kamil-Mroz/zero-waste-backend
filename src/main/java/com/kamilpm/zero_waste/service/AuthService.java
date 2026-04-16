@@ -1,5 +1,7 @@
 package com.kamilpm.zero_waste.service;
 
+import java.util.Optional;
+
 import org.springframework.security.core.Authentication;
 
 import com.kamilpm.zero_waste.domain.entity.User;
@@ -10,5 +12,7 @@ public interface AuthService {
 
   Authentication verify(LoginRequest loginRequest);
 
-  User getAuthenticatedUser();
+  Optional<User> getAuthenticatedUser();
+
+  User getRequiredAuthenticatedUser();
 }

@@ -32,11 +32,14 @@ public class Item {
   @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
-  @Column(name = "name", nullable = false)
-  private String name;
+  @Column(name = "title", nullable = false)
+  private String title;
 
   @Column(name = "description", nullable = false)
   private String description;
+
+  @Column(name = "city", nullable = false)
+  private String city;
 
   @Column(name = "condition", nullable = false)
   private ItemCondition condition;
@@ -47,5 +50,9 @@ public class Item {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "category_id")
   private Category category;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "owner_id")
+  private User owner;
 
 }

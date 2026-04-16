@@ -24,8 +24,6 @@ public class RegisterRequest {
   private String email;
   @StrongPassword
   private String password;
-  @NotBlank(message = "Location is required")
-  private String location;
   @InternationalPhoneNumber
   private String phoneNumber;
 

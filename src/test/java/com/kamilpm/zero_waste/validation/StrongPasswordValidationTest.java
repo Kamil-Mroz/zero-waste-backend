@@ -28,7 +28,6 @@ public class StrongPasswordValidationTest {
         .lastName("Doe")
         .phoneNumber("+39 342 341 235")
         .email("john.doe@example.com")
-        .location("Texas")
         .password("SecurePassword123!")
         .build();
     var violations = validator.validate(register);
@@ -43,7 +42,6 @@ public class StrongPasswordValidationTest {
         .lastName("Doe")
         .phoneNumber("+39 342 341 235")
         .email("john.doe@example.com")
-        .location("Texas")
         .password("SecurePassword123")
         .build();
     var violations = validator.validate(register);
