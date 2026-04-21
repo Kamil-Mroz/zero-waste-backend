@@ -59,8 +59,9 @@ public class AuthController {
         .email(registerRequest.getEmail())
         .password(registerRequest.getPassword())
         .phoneNumber(registerRequest.getPhoneNumber())
-        .isBanned(false)
         .roles(Set.of(UserRole.USER))
+        .bannedUntil(null)
+        .banActive(false)
         .build();
     User savedUser = authService.register(user);
     return new ResponseEntity<>(userMapper.toDto(savedUser), HttpStatus.CREATED);

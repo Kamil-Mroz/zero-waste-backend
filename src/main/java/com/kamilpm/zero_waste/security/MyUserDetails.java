@@ -24,7 +24,7 @@ public class MyUserDetails implements UserDetails {
   private String email;
   private String password;
   private Collection<GrantedAuthority> authorities;
-  private boolean isBanned;
+  private boolean isBanActive;
 
   public static MyUserDetails buildUserDetails(User user) {
 
@@ -33,7 +33,7 @@ public class MyUserDetails implements UserDetails {
         .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
         .collect(Collectors.toList());
 
-    return new MyUserDetails(user.getId(), user.getEmail(), user.getPassword(), authorities, user.getIsBanned());
+    return new MyUserDetails(user.getId(), user.getEmail(), user.getPassword(), authorities, user.isBanActive());
   }
 
   @Override
@@ -43,12 +43,12 @@ public class MyUserDetails implements UserDetails {
 
   @Override
   public boolean isAccountNonExpired() {
-    return !isBanned;
+    return true;
   }
 
   @Override
   public boolean isAccountNonLocked() {
-    return !isBanned;
+    return !isBanActive;
   }
 
   @Override
@@ -58,7 +58,8 @@ public class MyUserDetails implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    return !isBanned;
+    return true;
+
   }
 
   @Override

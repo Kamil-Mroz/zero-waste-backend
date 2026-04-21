@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,6 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 @Slf4j
 public class ErrorController {
+
+  @ExceptionHandler(LockedException.class)
+  public ProblemDetail handleLockedException(LockedException ex) {
+
+    log.error("Caught locked exception: Global Error Handler " + ex.getMessage());
+
+    return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+  }
 
   @ExceptionHandler(ForbiddenException.class)
   public ProblemDetail handleForbiddenException(ForbiddenException ex) {

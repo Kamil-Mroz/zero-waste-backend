@@ -20,7 +20,7 @@ public class UserDto {
   private String lastName;
   private String email;
   private String phoneNumber;
-  private String city;
+  private boolean hasActiveBan;
   private Set<UserRole> roles;
 
 }

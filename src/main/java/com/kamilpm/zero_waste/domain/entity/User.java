@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.domain.entity;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -49,8 +50,11 @@ public class User {
   @Column(name = "phone_number", nullable = false)
   private String phoneNumber;
 
-  @Column(name = "is_banned")
-  private Boolean isBanned;
+  @Column(name = "ban_active", nullable = false)
+  private boolean banActive;
+
+  @Column(name = "banned_until")
+  private Instant bannedUntil;
 
   @Column(name = "roles", nullable = false)
   @Enumerated(EnumType.STRING)

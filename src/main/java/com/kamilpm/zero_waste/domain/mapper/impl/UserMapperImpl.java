@@ -17,6 +17,7 @@ public class UserMapperImpl implements UserMapper {
         .lastName(user.getLastName())
         .email(user.getEmail())
         .phoneNumber(user.getPhoneNumber())
+        .hasActiveBan(user.isBanActive())
         .roles(user.getRoles())
         .build();
   }

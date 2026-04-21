@@ -44,10 +44,14 @@ public class SecurityConfig {
             (authorize) -> authorize
                 .requestMatchers("/api/v{version}/auth/**").permitAll()
                 .requestMatchers("/api/v{version}/docs/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v{version}/categories/**").permitAll()
+
+                .requestMatchers(HttpMethod.GET, "/api/v{version}/categories").permitAll()
                 .requestMatchers("/api/v{version}/categories/**").hasRole("ADMIN")
+
                 .requestMatchers("/api/v{version}/items/own").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/items/**").permitAll()
+
+                .requestMatchers("/api/v{version}/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
