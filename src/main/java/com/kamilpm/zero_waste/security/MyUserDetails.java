@@ -21,8 +21,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MyUserDetails implements UserDetails {
   private UUID id;
+  private String firstName;
+  private String lastName;
   private String email;
   private String password;
+  private String phoneNumber;
   private Collection<GrantedAuthority> authorities;
   private boolean isBanActive;
 
@@ -33,7 +36,8 @@ public class MyUserDetails implements UserDetails {
         .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
         .collect(Collectors.toList());
 
-    return new MyUserDetails(user.getId(), user.getEmail(), user.getPassword(), authorities, user.isBanActive());
+    return new MyUserDetails(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword(),
+        user.getPhoneNumber(), authorities, user.isBanActive());
   }
 
   @Override

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import com.kamilpm.zero_waste.domain.dto.ItemDto;
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.mapper.CategoryMapper;
+import com.kamilpm.zero_waste.domain.mapper.ImageMapper;
 import com.kamilpm.zero_waste.domain.mapper.ItemMapper;
 import com.kamilpm.zero_waste.domain.mapper.UserMapper;
 
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 public class ItemMapperImpl implements ItemMapper {
   private final CategoryMapper categoryMapper;
   private final UserMapper userMapper;
+  private final ImageMapper imageMapper;
 
   @Override
   public ItemDto toDto(Item item) {
@@ -26,6 +28,7 @@ public class ItemMapperImpl implements ItemMapper {
         .condition(item.getCondition())
         .city(item.getCity())
         .category(categoryMapper.toDto(item.getCategory()))
+        .images(item.getImages().stream().map(imageMapper::toDto).toList())
         .build();
   }
 
@@ -40,6 +43,7 @@ public class ItemMapperImpl implements ItemMapper {
         .city(item.getCity())
         .category(categoryMapper.toDto(item.getCategory()))
         .owner(userMapper.toDto(item.getOwner()))
+        .images(item.getImages().stream().map(imageMapper::toDto).toList())
         .build();
   }
 }

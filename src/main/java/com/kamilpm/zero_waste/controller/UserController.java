@@ -1,6 +1,7 @@
 package com.kamilpm.zero_waste.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.domain.dto.UserDto;
@@ -10,6 +11,7 @@ import com.kamilpm.zero_waste.domain.request.BanRequest;
 import com.kamilpm.zero_waste.domain.request.CreateUserRequest;
 import com.kamilpm.zero_waste.domain.request.UnbanRequest;
 import com.kamilpm.zero_waste.domain.request.UpdateUserRequest;
+import com.kamilpm.zero_waste.domain.response.PageResponse;
 import com.kamilpm.zero_waste.service.UserService;
 
 import jakarta.validation.Valid;
@@ -18,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,10 +40,14 @@ public class UserController {
   private final UserMapper userMapper;
 
   @GetMapping
-  public ResponseEntity<List<UserDto>> getUsers() {
-    List<User> users = userService.getUsers();
-    List<UserDto> usersDto = users.stream().map(userMapper::toDto).toList();
-    return ResponseEntity.ok(usersDto);
+  public ResponseEntity<PageResponse<UserDto>> getUsers(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    Page<User> users = userService.getUsersWithoutCurrentUser(PageRequest.of(page, size));
+
+    Page<UserDto> userPage = users.map(userMapper::toDto);
+    return ResponseEntity.ok(new PageResponse<>(userPage.getContent(), userPage.getNumber(), userPage.getSize(),
+        userPage.getTotalElements(), userPage.getTotalPages()));
   }
 
   @GetMapping("/{id}")

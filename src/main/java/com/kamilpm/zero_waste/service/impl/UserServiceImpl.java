@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.repository.UserBanRepository;
 import com.kamilpm.zero_waste.repository.UserRepository;
+import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.UserService;
 
@@ -37,9 +40,9 @@ public class UserServiceImpl implements UserService {
   private final UserBanRepository userBanRepository;
 
   @Override
-  public List<User> getUsers() {
-    final User user = authService.getRequiredAuthenticatedUser();
-    return userRepository.findByIdNot(user.getId());
+  public Page<User> getUsersWithoutCurrentUser(Pageable pageable) {
+    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    return userRepository.findAllByIdNot(user.getId(), pageable);
   }
 
   @Override
@@ -71,7 +74,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public User updateUser(final UUID id, final UpdateUserRequest userRequest) {
 
-    final User admin = authService.getRequiredAuthenticatedUser();
+    MyUserDetails admin = authService.getRequiredAuthenticatedUserDetails();
 
     if (Objects.equals(admin.getId(), id)) {
       throw new ForbiddenException("You can not update your account");
@@ -97,7 +100,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public void deleteUser(final List<UUID> ids) {
 
-    final User admin = authService.getRequiredAuthenticatedUser();
+    MyUserDetails admin = authService.getRequiredAuthenticatedUserDetails();
 
     if (ids.stream().anyMatch((id) -> Objects.equals(admin.getId(), id))) {
       throw new ForbiddenException("You can not delete your account");
@@ -109,7 +112,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public void banUsers(final BanRequest banRequest) {
-    final User admin = authService.getRequiredAuthenticatedUser();
+    final User admin = authService.getRequiredAuthenticatedUserEntity();
 
     final List<User> users = userRepository.findAllById(banRequest.getIds());
 
@@ -146,7 +149,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public void unbanUsers(UnbanRequest unbanRequest) {
 
-    final User admin = authService.getRequiredAuthenticatedUser();
+    final User admin = authService.getRequiredAuthenticatedUserEntity();
 
     List<UserBan> userBans = userBanRepository.findBanWithUser(unbanRequest.getIds());
     Instant now = Instant.now();

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.request.LoginRequest;
+import com.kamilpm.zero_waste.domain.request.RegisterRequest;
 import com.kamilpm.zero_waste.exception.BadCredentialsExceptionCustom;
 import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.UnauthorizedException;
@@ -32,13 +33,22 @@ public class AuthServiceImpl implements AuthService {
   private final AuthenticationManager authenticationManager;
 
   @Override
-  public User register(User user) {
-    if (userRepository.existsByEmail(user.getEmail())) {
+  public User register(RegisterRequest registerRequest) {
+
+    if (userRepository.existsByEmail(registerRequest.getEmail())) {
       throw new ConflictException("Email already in use", "email");
     }
+    User user = User.builder()
+        .firstName(registerRequest.getFirstName())
+        .lastName(registerRequest.getLastName())
+        .email(registerRequest.getEmail())
+        .password(passwordEncoder.encode(registerRequest.getPassword()))
+        .phoneNumber(registerRequest.getPhoneNumber())
+        .roles(Set.of(UserRole.USER))
+        .bannedUntil(null)
+        .banActive(false)
+        .build();
 
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
-    user.setRoles(Set.of(UserRole.ADMIN, UserRole.WRITER, UserRole.USER));
     return userRepository.save(user);
   }
 
@@ -57,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public Optional<User> getAuthenticatedUser() {
+  public Optional<MyUserDetails> getAuthenticatedUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     if (authentication == null
@@ -66,13 +76,24 @@ public class AuthServiceImpl implements AuthService {
       return Optional.empty();
     }
 
-    UUID id = ((MyUserDetails) authentication.getPrincipal()).getId();
-    return userRepository.findById(id);
+    return Optional.of((MyUserDetails) authentication.getPrincipal());
   }
 
   @Override
-  public User getRequiredAuthenticatedUser() {
-    return getAuthenticatedUser().orElseThrow(() -> new UnauthorizedException("User is not authenticated"));
+  public MyUserDetails getRequiredAuthenticatedUserDetails() {
+    try {
+      return getAuthenticatedUser().get();
+    } catch (Exception ex) {
+      throw new UnauthorizedException("User is not authenticated");
+    }
+  }
+
+  @Override
+  public User getRequiredAuthenticatedUserEntity() {
+
+    UUID id = getRequiredAuthenticatedUserDetails().getId();
+    return userRepository.findById(id).orElseThrow(() -> new UnauthorizedException("User is not authenticated"));
+
   }
 
 }

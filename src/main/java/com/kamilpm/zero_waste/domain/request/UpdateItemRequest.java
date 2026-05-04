@@ -20,8 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ItemRequest {
-
+public class UpdateItemRequest {
   @NotBlank(message = "Title is required")
   private String title;
   @NotBlank(message = "Description is required")
@@ -34,5 +33,7 @@ public class ItemRequest {
   @Size(max = 5, message = "You can upload a maximum of 5 images")
   @Builder.Default
   private List<MultipartFile> images = new ArrayList<>();
+  @Builder.Default
+  private List<UUID> removedImageIds = new ArrayList<>();
 
 }

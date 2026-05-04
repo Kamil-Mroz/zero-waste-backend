@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kamilpm.zero_waste.domain.dto.UserDto;
 import com.kamilpm.zero_waste.domain.entity.RefreshToken;
 import com.kamilpm.zero_waste.domain.entity.User;
-import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.mapper.UserMapper;
 import com.kamilpm.zero_waste.domain.request.LoginRequest;
 import com.kamilpm.zero_waste.domain.request.RegisterRequest;
@@ -25,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,17 +51,8 @@ public class AuthController {
   @PostMapping(path = "/register")
   public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequest registerRequest) {
 
-    User user = User.builder()
-        .firstName(registerRequest.getFirstName())
-        .lastName(registerRequest.getLastName())
-        .email(registerRequest.getEmail())
-        .password(registerRequest.getPassword())
-        .phoneNumber(registerRequest.getPhoneNumber())
-        .roles(Set.of(UserRole.USER))
-        .bannedUntil(null)
-        .banActive(false)
-        .build();
-    User savedUser = authService.register(user);
+
+    User savedUser = authService.register(registerRequest);
     return new ResponseEntity<>(userMapper.toDto(savedUser), HttpStatus.CREATED);
   }
 

@@ -51,6 +51,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v{version}/items/own").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/items/**").permitAll()
 
+                .requestMatchers(HttpMethod.GET, "/api/v{version}/images/**").permitAll()
+
                 .requestMatchers("/api/v{version}/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

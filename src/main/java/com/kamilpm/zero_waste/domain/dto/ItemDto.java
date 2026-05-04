@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.domain.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.kamilpm.zero_waste.domain.entity.ItemCondition;
@@ -23,4 +24,5 @@ public class ItemDto {
   private ItemState state;
   private CategoryDto category;
   private UserDto owner;
+  private List<ImageDto> images;
 }
