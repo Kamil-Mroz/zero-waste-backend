@@ -26,8 +26,10 @@ public class Seeder implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    seedUsers();
-    seedCategories();
+    // System.out.println("Start seeding...");
+    // seedUsers();
+    // seedCategories();
+    // System.out.println("Seeding completed.");
 
   }
 

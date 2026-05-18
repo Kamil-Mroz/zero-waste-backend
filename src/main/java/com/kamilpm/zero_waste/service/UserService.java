@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.request.BanRequest;
 import com.kamilpm.zero_waste.domain.request.CreateUserRequest;
 import com.kamilpm.zero_waste.domain.request.UnbanRequest;
@@ -14,7 +15,7 @@ import com.kamilpm.zero_waste.domain.request.UpdateUserRequest;
 
 public interface UserService {
 
-  Page<User> getUsersWithoutCurrentUser(Pageable pageable);
+  Page<User> getUsersWithoutCurrentUser(String text, List<UserRole> roles, Pageable pageable);
 
   User getUser(UUID id);
 

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.entity.UserBan;
+import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.request.BanRequest;
 import com.kamilpm.zero_waste.domain.request.CreateUserRequest;
 import com.kamilpm.zero_waste.domain.request.UnbanRequest;
@@ -25,6 +26,7 @@ import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.UserService;
+import com.kamilpm.zero_waste.utils.SqlUtils;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -40,9 +42,13 @@ public class UserServiceImpl implements UserService {
   private final UserBanRepository userBanRepository;
 
   @Override
-  public Page<User> getUsersWithoutCurrentUser(Pageable pageable) {
+  public Page<User> getUsersWithoutCurrentUser(String text, List<UserRole> roles, Pageable pageable) {
+
+    if (roles != null && roles.isEmpty())
+      roles = null;
+    text = SqlUtils.prepareLikePattern(text);
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
-    return userRepository.findAllByIdNot(user.getId(), pageable);
+    return userRepository.findAllByIdNot(user.getId(), text, roles, pageable);
   }
 
   @Override

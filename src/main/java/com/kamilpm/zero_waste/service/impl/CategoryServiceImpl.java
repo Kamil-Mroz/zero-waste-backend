@@ -2,9 +2,11 @@ package com.kamilpm.zero_waste.service.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class CategoryServiceImpl implements CategoryService {
   private final CategoryMapper categoryMapper;
 
   private List<CategoryTreeDto> cachedTree;
+  private Map<UUID, Set<UUID>> categoryDescendantsCache;
 
   @Override
   public List<Category> getAllCategories() {
@@ -159,9 +162,57 @@ public class CategoryServiceImpl implements CategoryService {
 
   }
 
+  public Map<UUID, Set<UUID>> getCategoryDescendantsCache() {
+    if (categoryDescendantsCache == null) {
+      List<Category> categories = categoryRepository.findAll();
+      categoryDescendantsCache = buildDescendantMap(categories);
+    }
+    return categoryDescendantsCache;
+  }
+
+  private Map<UUID, Set<UUID>> buildDescendantMap(List<Category> categories) {
+
+    Map<UUID, List<UUID>> children = new HashMap<>();
+
+    for (Category c : categories) {
+      if (c.getParent() != null) {
+        children
+            .computeIfAbsent(c.getParent().getId(), k -> new ArrayList<>())
+            .add(c.getId());
+      }
+    }
+
+    Map<UUID, Set<UUID>> result = new HashMap<>();
+
+    for (Category c : categories) {
+      Set<UUID> desc = new HashSet<>();
+      collect(c.getId(), children, desc);
+      desc.add(c.getId());
+      result.put(c.getId(), desc);
+    }
+
+    return result;
+  }
+
+  private void collect(UUID id,
+      Map<UUID, List<UUID>> children,
+      Set<UUID> result) {
+
+    List<UUID> kids = children.get(id);
+    if (kids == null)
+      return;
+
+    for (UUID child : kids) {
+      if (result.add(child)) {
+        collect(child, children, result);
+      }
+    }
+  }
+
   @Override
   public void invalidateCache() {
     cachedTree = null;
+    categoryDescendantsCache = null;
   }
 
 }

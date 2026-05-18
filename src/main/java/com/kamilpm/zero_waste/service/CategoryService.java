@@ -1,6 +1,8 @@
 package com.kamilpm.zero_waste.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import com.kamilpm.zero_waste.domain.dto.CategoryTreeDto;
@@ -19,6 +21,8 @@ public interface CategoryService {
   Category updateCategory(UUID categoryId, CategoryRequest categoryRequest);
 
   void deleteCategory(UUID categoryId);
+
+  Map<UUID, Set<UUID>> getCategoryDescendantsCache();
 
   void invalidateCache();
 

@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.domain.entity.Category;
@@ -25,6 +27,7 @@ import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.CategoryService;
 import com.kamilpm.zero_waste.service.ImageService;
 import com.kamilpm.zero_waste.service.ItemService;
+import com.kamilpm.zero_waste.utils.SqlUtils;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -106,12 +109,16 @@ public class ItemServiceImpl implements ItemService {
   }
 
   @Override
-  public List<Item> getItems() {
-    Optional<MyUserDetails> user = authService.getAuthenticatedUser();
-    if (user.isPresent()) {
-      return itemRepository.findByOwner_IdNotAndStateNot(user.get().getId(), ItemState.GIVEN);
+  public Page<Item> getItems(Pageable pageable, String text, UUID category) {
+    text = SqlUtils.prepareLikePattern(text);
+    Set<UUID> categoryIds = null;
+    if (category != null) {
+      categoryIds = categoryService.getCategoryDescendantsCache().get(category);
     }
-    return itemRepository.findByStateNot(ItemState.GIVEN);
+    Optional<MyUserDetails> user = authService.getAuthenticatedUser();
+    UUID excludeOwnerId = user.map(MyUserDetails::getId).orElse(null);
+
+    return itemRepository.searchItems(excludeOwnerId, ItemState.GIVEN, text, categoryIds, pageable);
   }
 
   @Override
@@ -121,11 +128,13 @@ public class ItemServiceImpl implements ItemService {
 
     Optional<MyUserDetails> user = authService.getAuthenticatedUser();
 
-    if (Objects.equals(ItemState.GIVEN, item.getState())) {
+    if (!user.isPresent() && !Objects.equals(ItemState.AVAILABLE, item.getState())) {
 
-      if (!user.isPresent()) {
-        throw new EntityNotFoundException("Item not found");
-      }
+      throw new EntityNotFoundException("Item not available");
+
+      // if (!user.isPresent()) {
+      // throw new EntityNotFoundException("Item not found");
+      // }
 
       // if (!Objects.equals(item.getOwner().getId(), user.get().getId()) ||
       // !Objects.equals(, user.get().getId())) {
@@ -139,9 +148,16 @@ public class ItemServiceImpl implements ItemService {
   }
 
   @Override
-  public List<Item> getOwnItems() {
+  public Page<Item> getOwnItems(Pageable pageable, String text, UUID category, List<ItemState> states) {
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
-    return itemRepository.findByOwner_Id(user.getId());
+    text = SqlUtils.prepareLikePattern(text);
+    if (states == null || states.size() == 0)
+      states = List.of(ItemState.AVAILABLE, ItemState.PENDING);
+    Set<UUID> categoryIds = null;
+    if (category != null) {
+      categoryIds = categoryService.getCategoryDescendantsCache().get(category);
+    }
+    return itemRepository.findOwnItems(user.getId(), text, categoryIds, states, pageable);
   }
 
   @Override

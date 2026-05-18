@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.domain.dto.UserDto;
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.mapper.UserMapper;
 import com.kamilpm.zero_waste.domain.request.BanRequest;
 import com.kamilpm.zero_waste.domain.request.CreateUserRequest;
@@ -42,8 +43,10 @@ public class UserController {
   @GetMapping
   public ResponseEntity<PageResponse<UserDto>> getUsers(
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size) {
-    Page<User> users = userService.getUsersWithoutCurrentUser(PageRequest.of(page, size));
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(required = false) String text,
+      @RequestParam(required = false) List<UserRole> roles) {
+    Page<User> users = userService.getUsersWithoutCurrentUser(text, roles, PageRequest.of(page, size));
 
     Page<UserDto> userPage = users.map(userMapper::toDto);
     return ResponseEntity.ok(new PageResponse<>(userPage.getContent(), userPage.getNumber(), userPage.getSize(),

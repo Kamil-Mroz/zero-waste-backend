@@ -4,19 +4,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.domain.dto.ItemDto;
 import com.kamilpm.zero_waste.domain.entity.Item;
+import com.kamilpm.zero_waste.domain.entity.ItemState;
 import com.kamilpm.zero_waste.domain.mapper.ItemMapper;
 import com.kamilpm.zero_waste.domain.request.ItemRequest;
 import com.kamilpm.zero_waste.domain.request.UpdateItemRequest;
+import com.kamilpm.zero_waste.domain.response.PageResponse;
 import com.kamilpm.zero_waste.service.ItemService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,19 +49,37 @@ public class ItemController {
   }
 
   @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<ItemDto> updateItem(@PathVariable UUID id, @Valid @ModelAttribute UpdateItemRequest itemRequest) {
+  public ResponseEntity<ItemDto> updateItem(@PathVariable UUID id,
+      @Valid @ModelAttribute UpdateItemRequest itemRequest) {
     Item item = itemService.updateItem(id, itemRequest);
 
     return ResponseEntity.ok(itemMapper.toDto(item));
   }
 
   @GetMapping
-  public ResponseEntity<List<ItemDto>> getItems() {
-    List<Item> items = itemService.getItems();
+  public ResponseEntity<PageResponse<ItemDto>> getItems(@RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(required = false) String text,
+      @RequestParam(required = false) UUID category) {
 
-    List<ItemDto> itemsDto = items.stream().map(itemMapper::toDto).toList();
+    Page<Item> items = itemService.getItems(PageRequest.of(page, size), text, category);
 
-    return ResponseEntity.ok(itemsDto);
+    Page<ItemDto> itemsDto = items.map(itemMapper::toDto);
+
+    return ResponseEntity.ok(new PageResponse<>(itemsDto.getContent(), itemsDto.getNumber(), itemsDto.getSize(),
+        itemsDto.getTotalElements(), itemsDto.getTotalPages()));
+  }
+
+  @GetMapping("/own")
+  public ResponseEntity<PageResponse<ItemDto>> getOwnItems(@RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(required = false) String text,
+      @RequestParam(required = false) UUID category,
+      @RequestParam(required = false) List<ItemState> states) {
+    Page<Item> items = itemService.getOwnItems(PageRequest.of(page, size), text, category, states);
+    Page<ItemDto> itemsDto = items.map(itemMapper::toDto);
+    return ResponseEntity.ok(new PageResponse<>(itemsDto.getContent(), itemsDto.getNumber(), itemsDto.getSize(),
+        itemsDto.getTotalElements(), itemsDto.getTotalPages()));
   }
 
   @GetMapping("/{id}")
@@ -64,13 +87,6 @@ public class ItemController {
     Item item = itemService.getItem(id);
 
     return ResponseEntity.ok(itemMapper.toDtoWithOwner(item));
-  }
-
-  @GetMapping("/own")
-  public ResponseEntity<List<ItemDto>> getOwnItems() {
-    List<Item> items = itemService.getOwnItems();
-    List<ItemDto> itemsDto = items.stream().map(itemMapper::toDto).toList();
-    return ResponseEntity.ok(itemsDto);
   }
 
   @DeleteMapping("/{id}")
