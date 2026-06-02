@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -65,5 +67,9 @@ public class User {
   @Column(name = "roles", nullable = false)
   @Enumerated(EnumType.STRING)
   private Set<UserRole> roles;
+
+  @CreationTimestamp
+  @Column(name = "joined_at", nullable = false, updatable = false)
+  private Instant joinedAt;
 
 }

@@ -62,4 +62,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   @Query("SELECT i FROM Item i WHERE i.id = :id")
   Optional<Item> findByIdForUpdate(@Param("id") UUID id);
 
+  @EntityGraph(attributePaths = { "owner", })
+  int countByOwner_Id(UUID userId);
+
 }

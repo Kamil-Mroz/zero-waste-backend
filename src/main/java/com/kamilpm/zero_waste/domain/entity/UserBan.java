@@ -3,6 +3,8 @@ package com.kamilpm.zero_waste.domain.entity;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -44,7 +46,8 @@ public class UserBan {
   @JoinColumn(name = "banned_by", nullable = false)
   private User bannedBy;
 
-  @Column(name = "created_at", nullable = false)
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
   @Column(name = "expires_at")

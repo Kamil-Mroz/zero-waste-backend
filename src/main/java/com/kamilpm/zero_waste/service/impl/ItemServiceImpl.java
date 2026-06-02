@@ -22,11 +22,13 @@ import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.repository.ItemRepository;
+import com.kamilpm.zero_waste.repository.OfferRepository;
 import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.CategoryService;
 import com.kamilpm.zero_waste.service.ImageService;
 import com.kamilpm.zero_waste.service.ItemService;
+import com.kamilpm.zero_waste.service.OfferService;
 import com.kamilpm.zero_waste.utils.SqlUtils;
 
 import jakarta.transaction.Transactional;
@@ -41,6 +43,7 @@ public class ItemServiceImpl implements ItemService {
   private final ItemRepository itemRepository;
   private final AuthService authService;
   private final ImageService imageService;
+  private final OfferRepository offerRepository;
 
   @Override
   public Item createItem(ItemRequest itemRequest) {
@@ -126,25 +129,33 @@ public class ItemServiceImpl implements ItemService {
     Item item = itemRepository.findByIdWithOwnerAndCategoryAndImages(id)
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
+    if (Objects.equals(item.getState(), ItemState.AVAILABLE))
+      return item;
+
     Optional<MyUserDetails> user = authService.getAuthenticatedUser();
 
-    if (!user.isPresent() && !Objects.equals(ItemState.AVAILABLE, item.getState())) {
-
+    if (!user.isPresent())
       throw new EntityNotFoundException("Item not available");
+    UUID userId = user.get().getId();
 
-      // if (!user.isPresent()) {
-      // throw new EntityNotFoundException("Item not found");
-      // }
+    if (Objects.equals(userId, item.getOwner().getId()))
+      return item;
 
-      // if (!Objects.equals(item.getOwner().getId(), user.get().getId()) ||
-      // !Objects.equals(, user.get().getId())) {
+    if (offerRepository.existsByBuyer_IdAndItem_Id(userId, item.getId()))
+      return item;
 
-      // throw new EntityNotFoundException("Item not found");
-      // }
+    throw new EntityNotFoundException("Item not found");
 
-    }
+  }
 
-    return item;
+  @Override
+  public Item findByIdForUpdate(UUID id) {
+    return itemRepository.findByIdForUpdate(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
+  }
+
+  @Override
+  public void saveItem(Item item) {
+    itemRepository.save(item);
   }
 
   @Override
@@ -178,4 +189,8 @@ public class ItemServiceImpl implements ItemService {
 
   }
 
+  @Override
+  public int getUserItemCount(UUID userId) {
+    return itemRepository.countByOwner_Id(userId);
+  }
 }

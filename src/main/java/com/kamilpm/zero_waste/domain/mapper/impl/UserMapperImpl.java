@@ -18,6 +18,8 @@ public class UserMapperImpl implements UserMapper {
         .email(user.getEmail())
         .phoneNumber(user.getPhoneNumber())
         .hasActiveBan(user.isBanActive())
+        .bannedUntil(user.getBannedUntil())
+        .joinedAt(user.getJoinedAt())
         .roles(user.getRoles())
         .build();
   }

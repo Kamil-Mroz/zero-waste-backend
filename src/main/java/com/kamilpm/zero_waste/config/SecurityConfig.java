@@ -44,6 +44,7 @@ public class SecurityConfig {
             (authorize) -> authorize
                 .requestMatchers("/api/v{version}/auth/**").permitAll()
                 .requestMatchers("/api/v{version}/docs/**").permitAll()
+                .requestMatchers("/ws/**").permitAll()
 
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/categories/**").permitAll()
                 .requestMatchers("/api/v{version}/categories/**").hasRole("ADMIN")
@@ -52,6 +53,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/items/**").permitAll()
 
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/images/**").permitAll()
+
+                .requestMatchers(HttpMethod.GET, "/api/v{version}/profiles/**").permitAll()
 
                 .requestMatchers("/api/v{version}/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
@@ -65,7 +68,7 @@ public class SecurityConfig {
   UrlBasedCorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     configuration.setAllowCredentials(true);
     configuration.setAllowedHeaders(Arrays.asList("*"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

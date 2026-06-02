@@ -32,7 +32,7 @@ import lombok.ToString;
 @ToString
 @Builder
 @Table(name = "items")
-public class Item {
+public class Item extends BaseEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "id", nullable = false, updatable = false)

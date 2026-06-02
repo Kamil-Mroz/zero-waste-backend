@@ -21,6 +21,10 @@ public interface ItemService {
   Page<Item> getOwnItems(Pageable pageable, String text, UUID category, List<ItemState> states);
 
   Item getItem(UUID id);
+  Item findByIdForUpdate(UUID id);
+  void saveItem(Item item);
 
+  int getUserItemCount(UUID userId);
   void deleteItem(UUID id);
+
 }

@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.domain.dto;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,6 +22,8 @@ public class UserDto {
   private String email;
   private String phoneNumber;
   private boolean hasActiveBan;
+  private Instant bannedUntil;
+  private Instant joinedAt;
   private Set<UserRole> roles;
 
 }

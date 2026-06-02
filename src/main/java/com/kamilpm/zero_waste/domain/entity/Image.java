@@ -3,6 +3,8 @@ package com.kamilpm.zero_waste.domain.entity;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -46,7 +48,8 @@ public class Image {
   @Column(name = "size", nullable = false)
   private long size;
 
-  @Column(name = "created_at", nullable = false)
+ @Column(name = "created_at", nullable = false, updatable = false)
+  @CreationTimestamp
   private Instant createdAt;
 
   @ManyToOne(fetch = FetchType.LAZY)

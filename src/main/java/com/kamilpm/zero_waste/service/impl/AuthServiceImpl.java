@@ -18,6 +18,7 @@ import com.kamilpm.zero_waste.domain.request.LoginRequest;
 import com.kamilpm.zero_waste.domain.request.RegisterRequest;
 import com.kamilpm.zero_waste.exception.BadCredentialsExceptionCustom;
 import com.kamilpm.zero_waste.exception.ConflictException;
+import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.exception.UnauthorizedException;
 import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.security.MyUserDetails;
@@ -82,7 +83,12 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public MyUserDetails getRequiredAuthenticatedUserDetails() {
     try {
-      return getAuthenticatedUser().get();
+      MyUserDetails userDetails = getAuthenticatedUser().get();
+      if (userDetails.isBanActive())
+        throw new ForbiddenException("You have been banned");
+      return userDetails;
+    } catch (ForbiddenException ex) {
+      throw ex;
     } catch (Exception ex) {
       throw new UnauthorizedException("User is not authenticated");
     }
