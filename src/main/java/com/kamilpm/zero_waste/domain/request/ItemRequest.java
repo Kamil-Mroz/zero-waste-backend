@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kamilpm.zero_waste.domain.entity.ItemCondition;
+import com.kamilpm.zero_waste.domain.entity.ItemState;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +28,7 @@ public class ItemRequest {
   @NotBlank(message = "Description is required")
   private String description;
   private ItemCondition condition;
+  private ItemState state;
   @NotBlank(message = "City is required")
   private String city;
   @NotNull(message = "Category ID is required")

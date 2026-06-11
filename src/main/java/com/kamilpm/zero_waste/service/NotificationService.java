@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.service;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import com.kamilpm.zero_waste.domain.entity.Notification;

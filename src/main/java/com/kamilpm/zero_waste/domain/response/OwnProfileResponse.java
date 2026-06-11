@@ -9,11 +9,7 @@ import com.kamilpm.zero_waste.domain.dto.ProfileReviewSummary;
 import lombok.Builder;
 
 @Builder
-public record PublicUserProfileResponse(
-    UUID id,
-    String firstName,
-    String lastName,
-    Instant joinedAt,
+public record OwnProfileResponse(
     ProfileItemSummary items,
     ProfileReviewSummary reviews) {
 

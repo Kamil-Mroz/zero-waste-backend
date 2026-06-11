@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,12 +17,14 @@ import com.kamilpm.zero_waste.domain.entity.UserRole;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
+  @EntityGraph(attributePaths = { "roles" })
   User findByEmail(String email);
 
   boolean existsByEmail(String email);
 
   boolean existsByEmailAndIdNot(String email, UUID id);
 
+  @EntityGraph(attributePaths = { "roles" })
   @Query("""
       SELECT DISTINCT u
       FROM User u

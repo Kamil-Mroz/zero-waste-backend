@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -63,7 +62,7 @@ public class Item extends BaseEntity {
   @JoinColumn(name = "owner_id")
   private User owner;
 
-  @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "item")
   @Builder.Default
   private List<Image> images = new ArrayList<>();
 

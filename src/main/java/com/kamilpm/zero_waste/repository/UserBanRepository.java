@@ -6,7 +6,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.kamilpm.zero_waste.domain.entity.UserBan;
 
@@ -18,4 +20,8 @@ public interface UserBanRepository extends JpaRepository<UserBan, UUID> {
 
   @Query("Select b, u FROM UserBan b JOIN FETCH b.user u WHERE u.id in ?1 and b.revokedAt is null")
   List<UserBan> findBanWithUser(List<UUID> ids);
+
+  @Modifying
+  @Query("delete from UserBan b where b.user.id in :userIds")
+  void deleteAllByUserIds(@Param(value = "userIds") List<UUID> userId);
 }

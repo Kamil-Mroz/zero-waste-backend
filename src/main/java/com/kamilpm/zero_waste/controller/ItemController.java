@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 
@@ -54,6 +55,20 @@ public class ItemController {
     Item item = itemService.updateItem(id, itemRequest);
 
     return ResponseEntity.ok(itemMapper.toDto(item));
+  }
+
+  @PatchMapping(path = "/{id}/publish")
+  public ResponseEntity<ItemDto> publishItem(@PathVariable UUID id) {
+    Item item = itemService.publishItem(id);
+    return ResponseEntity.ok(itemMapper.toDto(item));
+
+  }
+
+  @PatchMapping(path = "/{id}/hide")
+  public ResponseEntity<ItemDto> hideItem(@PathVariable UUID id) {
+    Item item = itemService.hideItem(id);
+    return ResponseEntity.ok(itemMapper.toDto(item));
+
   }
 
   @GetMapping
@@ -82,17 +97,25 @@ public class ItemController {
         itemsDto.getTotalElements(), itemsDto.getTotalPages()));
   }
 
+  @GetMapping("/user/{id}")
+  public ResponseEntity<List<ItemDto>> getUsersItem(@PathVariable UUID id) {
+    List<ItemDto> itemDtos = itemService.getUserItems(id).stream().map(itemMapper::toDto).toList();
+    return ResponseEntity.ok(itemDtos);
+  }
+
   @GetMapping("/{id}")
   public ResponseEntity<ItemDto> getItem(@PathVariable UUID id) {
     Item item = itemService.getItem(id);
-
     return ResponseEntity.ok(itemMapper.toDtoWithOwner(item));
   }
+
+
+
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteItem(@PathVariable UUID id) {
     itemService.deleteItem(id);
-
     return ResponseEntity.noContent().build();
   }
+
 }

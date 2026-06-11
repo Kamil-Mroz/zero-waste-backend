@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
+import com.kamilpm.zero_waste.domain.interfaces.IItemCount;
 
 import jakarta.persistence.LockModeType;
 
@@ -25,7 +26,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   @Query("""
       SELECT DISTINCT i
       FROM Item i
-      WHERE i.state !=:state
+      WHERE i.state = :state
       AND (:ownerId IS NULL OR i.owner.id != :ownerId)
       AND (:categoryIds IS NULL OR i.category.id IN :categoryIds)
       AND (:text IS NULL
@@ -65,4 +66,19 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   @EntityGraph(attributePaths = { "owner", })
   int countByOwner_Id(UUID userId);
 
+  @EntityGraph(attributePaths = { "owner", })
+  @Query("select i.state as itemState, COUNT(i.state) as totalItem from Item as i where i.owner.id = :userId group by i.state")
+  List<IItemCount> countTotalItemsByOwnerIdAndState(@Param(value = "userId") UUID userId);
+
+  @EntityGraph(attributePaths = { "owner", "category", "images" })
+  List<Item> findTop3ByOwner_IdAndStateOrderByCreatedAtDesc(UUID ownerId, ItemState itemState);
+
+  @EntityGraph(attributePaths = { "owner", "category", "images" })
+  List<Item> findByOwner_IdAndState(UUID id, ItemState state);
+
+  @EntityGraph(attributePaths = { "owner", "images" })
+  List<Item> findByOwner_id(UUID ownerId);
+
+  @EntityGraph(attributePaths = { "owner", "images" })
+  List<Item> findByOwnerIdIn(List<UUID> userIds);
 }

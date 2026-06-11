@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.service.impl;
 
+import com.kamilpm.zero_waste.repository.ImageRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,7 +29,6 @@ import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.CategoryService;
 import com.kamilpm.zero_waste.service.ImageService;
 import com.kamilpm.zero_waste.service.ItemService;
-import com.kamilpm.zero_waste.service.OfferService;
 import com.kamilpm.zero_waste.utils.SqlUtils;
 
 import jakarta.transaction.Transactional;
@@ -39,6 +39,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
+  private final ImageRepository imageRepository;
   private final CategoryService categoryService;
   private final ItemRepository itemRepository;
   private final AuthService authService;
@@ -53,13 +54,17 @@ public class ItemServiceImpl implements ItemService {
       throw new ConflictException("Max image count is 5", "images");
     }
 
+    if (Objects.equals(itemRequest.getState(), ItemState.GIVEN)) {
+      throw new ConflictException("Unable to create a given item");
+    }
+
     Category category = categoryService.getCategoryById(itemRequest.getCategoryId());
 
     Item item = Item.builder()
         .title(itemRequest.getTitle())
         .description(itemRequest.getDescription())
         .condition(itemRequest.getCondition())
-        .state(ItemState.AVAILABLE)
+        .state(itemRequest.getState())
         .city(itemRequest.getCity())
         .category(category)
         .owner(user)
@@ -67,13 +72,16 @@ public class ItemServiceImpl implements ItemService {
 
     Item savedItem = itemRepository.save(item);
     imageService.uploadItemImages(savedItem, itemRequest.getImages());
-
     return savedItem;
-
   }
 
   @Override
   public Item updateItem(UUID id, UpdateItemRequest itemRequest) {
+
+    if (Objects.equals(itemRequest.getState(), ItemState.GIVEN)) {
+      throw new ConflictException("Unable to update to a given item");
+    }
+
     Category category = categoryService.getCategoryById(itemRequest.getCategoryId());
 
     Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
@@ -104,6 +112,7 @@ public class ItemServiceImpl implements ItemService {
     item.setCondition(itemRequest.getCondition());
     item.setCity(itemRequest.getCity());
     item.setCategory(category);
+    item.setState(itemRequest.getState());
 
     imageService.deleteImages(item.getId(), validIdsToRemove);
     imageService.uploadItemImages(item, itemRequest.getImages());
@@ -121,7 +130,7 @@ public class ItemServiceImpl implements ItemService {
     Optional<MyUserDetails> user = authService.getAuthenticatedUser();
     UUID excludeOwnerId = user.map(MyUserDetails::getId).orElse(null);
 
-    return itemRepository.searchItems(excludeOwnerId, ItemState.GIVEN, text, categoryIds, pageable);
+    return itemRepository.searchItems(excludeOwnerId, ItemState.AVAILABLE, text, categoryIds, pageable);
   }
 
   @Override
@@ -132,19 +141,16 @@ public class ItemServiceImpl implements ItemService {
     if (Objects.equals(item.getState(), ItemState.AVAILABLE))
       return item;
 
-    Optional<MyUserDetails> user = authService.getAuthenticatedUser();
+    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    UUID userId = user.getId();
 
-    if (!user.isPresent())
-      throw new EntityNotFoundException("Item not available");
-    UUID userId = user.get().getId();
-
-    if (Objects.equals(userId, item.getOwner().getId()))
+    if (userId.equals(item.getOwner().getId()))
       return item;
 
     if (offerRepository.existsByBuyer_IdAndItem_Id(userId, item.getId()))
       return item;
 
-    throw new EntityNotFoundException("Item not found");
+    throw new EntityNotFoundException("Item not available");
 
   }
 
@@ -183,9 +189,75 @@ public class ItemServiceImpl implements ItemService {
       throw new ForbiddenException("Given item can not be deleted");
     }
 
-    imageService.deleteImagesFromDisk(item.getImages());
+    deleteItemCompletely(item);
 
-    itemRepository.deleteById(id);
+  }
+
+  @Override
+  public Item publishItem(UUID id) {
+    Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
+
+    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+
+    if (!Objects.equals(item.getOwner().getId(), user.getId())) {
+      throw new ForbiddenException("Must be the owner of the item to update it");
+    }
+    if (!Objects.equals(item.getState(), ItemState.PENDING)) {
+      throw new ForbiddenException("Unable to publish a non pending item");
+    }
+
+    item.setState(ItemState.AVAILABLE);
+
+    return itemRepository.save(item);
+  }
+
+  @Override
+  public Item hideItem(UUID id) {
+    Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
+
+    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+
+    if (!Objects.equals(item.getOwner().getId(), user.getId())) {
+      throw new ForbiddenException("Must be the owner of the item to update it");
+    }
+    if (!Objects.equals(item.getState(), ItemState.AVAILABLE)) {
+      throw new ForbiddenException("Unable to hide a non available item");
+    }
+
+    item.setState(ItemState.PENDING);
+
+    return itemRepository.save(item);
+  }
+
+  @Override
+  public void deleteItemCompletely(Item item) {
+    imageService.deleteImagesFromDisk(item.getImages());
+    imageRepository.deleteAllByItemId(item.getId());
+    itemRepository.delete(item);
+  }
+
+  @Override
+  public void deleteItemsByUser(UUID userId) {
+    List<Item> items = itemRepository.findByOwner_id(userId);
+    for (Item item : items) {
+      imageService.deleteImagesFromDisk(item.getImages());
+
+      imageRepository.deleteAllByItemId(item.getId());
+    }
+    itemRepository.deleteAll(items);
+
+  }
+
+  @Override
+  public void deleteItemsByUserIds(List<UUID> userIds) {
+    List<Item> items = itemRepository.findByOwnerIdIn(userIds);
+    for (Item item : items) {
+      imageService.deleteImagesFromDisk(item.getImages());
+
+      imageRepository.deleteAllByItemId(item.getId());
+    }
+
+    itemRepository.deleteAll(items);
 
   }
 
@@ -193,4 +265,11 @@ public class ItemServiceImpl implements ItemService {
   public int getUserItemCount(UUID userId) {
     return itemRepository.countByOwner_Id(userId);
   }
+
+  @Override
+  public List<Item> getUserItems(UUID userId) {
+
+    return itemRepository.findByOwner_IdAndState(userId, ItemState.AVAILABLE);
+  }
+
 }

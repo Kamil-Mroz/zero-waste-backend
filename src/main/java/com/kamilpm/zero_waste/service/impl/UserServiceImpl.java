@@ -21,10 +21,12 @@ import com.kamilpm.zero_waste.domain.request.UpdateUserRequest;
 import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
+import com.kamilpm.zero_waste.repository.RefreshTokenRepository;
 import com.kamilpm.zero_waste.repository.UserBanRepository;
 import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
+import com.kamilpm.zero_waste.service.ItemService;
 import com.kamilpm.zero_waste.service.UserService;
 import com.kamilpm.zero_waste.utils.SqlUtils;
 
@@ -39,7 +41,9 @@ public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
   private final AuthService authService;
   private final PasswordEncoder passwordEncoder;
+  private final ItemService itemService;
   private final UserBanRepository userBanRepository;
+  private final RefreshTokenRepository refreshTokenRepository;
 
   @Override
   public Page<User> getUsersWithoutCurrentUser(String text, List<UserRole> roles, Pageable pageable) {
@@ -112,6 +116,12 @@ public class UserServiceImpl implements UserService {
       throw new ForbiddenException("You can not delete your account");
     }
 
+    refreshTokenRepository.deleteAllByUserIds(ids);
+
+    userBanRepository.deleteAllByUserIds(ids);
+
+    itemService.deleteItemsByUserIds(ids);
+
     userRepository.deleteAllById(ids);
 
   }
@@ -144,6 +154,8 @@ public class UserServiceImpl implements UserService {
               .bannedBy(admin)
               .expiresAt(banRequest.getExpiresAt())
               .build());
+
+      refreshTokenRepository.revokeAllByUserId(user.getId());
 
     }
 

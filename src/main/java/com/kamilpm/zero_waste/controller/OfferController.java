@@ -8,7 +8,6 @@ import com.kamilpm.zero_waste.domain.entity.Offer;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
 import com.kamilpm.zero_waste.domain.mapper.OfferMapper;
 import com.kamilpm.zero_waste.domain.response.PageResponse;
-import com.kamilpm.zero_waste.repository.OfferRepository;
 import com.kamilpm.zero_waste.service.OfferService;
 
 import lombok.RequiredArgsConstructor;

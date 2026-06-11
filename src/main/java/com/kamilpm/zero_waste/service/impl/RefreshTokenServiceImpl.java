@@ -2,7 +2,6 @@ package com.kamilpm.zero_waste.service.impl;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -55,8 +54,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
     if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
       throw new TokenException("Refresh token expired");
-
     }
+
     return refreshToken;
   }
 
@@ -71,10 +70,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
   @Override
   @Transactional
-  public void revokeAllTokens(User user) {
-    List<RefreshToken> tokens = refreshTokenRepository.findAllByUser(user);
-    tokens.forEach(t -> t.setRevoked(true));
-    refreshTokenRepository.saveAll(tokens);
+  public void revokeAllTokens(UUID userId) {
+    refreshTokenRepository.revokeAllByUserId(userId);
   }
 
 }

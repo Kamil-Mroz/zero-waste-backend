@@ -3,7 +3,6 @@ package com.kamilpm.zero_waste.config;
 import com.kamilpm.zero_waste.security.WebSocketAuthInterceptor;
 
 import lombok.RequiredArgsConstructor;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -11,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
 import org.springframework.messaging.converter.JacksonJsonMessageConverter;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

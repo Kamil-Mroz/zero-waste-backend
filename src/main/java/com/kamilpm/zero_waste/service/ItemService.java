@@ -16,15 +16,29 @@ public interface ItemService {
 
   Item updateItem(UUID id, UpdateItemRequest itemRequest);
 
+  Item publishItem(UUID id);
+
+  Item hideItem(UUID id);
+
   Page<Item> getItems(Pageable pageable, String text, UUID category);
 
   Page<Item> getOwnItems(Pageable pageable, String text, UUID category, List<ItemState> states);
 
   Item getItem(UUID id);
+
   Item findByIdForUpdate(UUID id);
+
   void saveItem(Item item);
 
+  void deleteItemCompletely(Item item);
+
   int getUserItemCount(UUID userId);
+
+  List<Item> getUserItems(UUID userId);
+
   void deleteItem(UUID id);
 
+  void deleteItemsByUserIds(List<UUID> userIds);
+
+  void deleteItemsByUser(UUID userId);
 }

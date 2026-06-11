@@ -9,7 +9,9 @@ import com.kamilpm.zero_waste.domain.mapper.UserMapper;
 import com.kamilpm.zero_waste.domain.request.LoginRequest;
 import com.kamilpm.zero_waste.domain.request.RegisterRequest;
 import com.kamilpm.zero_waste.domain.response.AuthResponse;
+import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.exception.TokenException;
+import com.kamilpm.zero_waste.exception.UnauthorizedException;
 import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.JwtService;
@@ -51,7 +53,6 @@ public class AuthController {
   @PostMapping(path = "/register")
   public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequest registerRequest) {
 
-
     User savedUser = authService.register(registerRequest);
     return new ResponseEntity<>(userMapper.toDto(savedUser), HttpStatus.CREATED);
   }
@@ -85,7 +86,7 @@ public class AuthController {
   }
 
   @PostMapping("/refresh")
-  public ResponseEntity<AuthResponse> refresh(HttpServletRequest request) {
+  public ResponseEntity<AuthResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
 
     String refreshToken = extractRefreshToken(request)
         .orElseThrow(() -> new TokenException("Refresh token cookie not found"));
@@ -93,6 +94,12 @@ public class AuthController {
     RefreshToken token = refreshTokenService.verifyToken(refreshToken);
 
     User user = token.getUser();
+    if (user.isBanActive()) {
+      refreshTokenService.revokeAllTokens(user.getId());
+
+      throw new UnauthorizedException("Account suspended");
+
+    }
     UserDetails userDetails = MyUserDetails.buildUserDetails(user);
 
     Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,

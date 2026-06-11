@@ -85,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
     try {
       MyUserDetails userDetails = getAuthenticatedUser().get();
       if (userDetails.isBanActive())
-        throw new ForbiddenException("You have been banned");
+        throw new UnauthorizedException("Account suspended");
       return userDetails;
     } catch (ForbiddenException ex) {
       throw ex;

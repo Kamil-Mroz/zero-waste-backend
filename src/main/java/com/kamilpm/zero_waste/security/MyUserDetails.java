@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.security;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class MyUserDetails implements UserDetails {
   private String password;
   private String phoneNumber;
   private Collection<GrantedAuthority> authorities;
+  private Instant joinedAt;
   private boolean isBanActive;
 
   public static MyUserDetails buildUserDetails(User user) {
@@ -37,7 +39,7 @@ public class MyUserDetails implements UserDetails {
         .collect(Collectors.toList());
 
     return new MyUserDetails(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword(),
-        user.getPhoneNumber(), authorities, user.isBanActive());
+        user.getPhoneNumber(), authorities, user.getJoinedAt(), user.isBanActive());
   }
 
   @Override
