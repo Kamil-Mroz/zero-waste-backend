@@ -15,6 +15,8 @@ public interface ImageService {
 
   void deleteImages(UUID itemId, List<UUID> imageIds);
 
+  void deleteImagesByItemId(UUID itemId);
+
   void deleteImagesFromDisk(List<Image> images);
 
   Optional<Resource> getImageAsResource(String storedName);

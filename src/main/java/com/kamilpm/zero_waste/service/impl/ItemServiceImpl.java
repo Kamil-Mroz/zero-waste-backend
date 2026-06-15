@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.service.impl;
 
-import com.kamilpm.zero_waste.repository.ImageRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,11 +22,11 @@ import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.repository.ItemRepository;
-import com.kamilpm.zero_waste.repository.OfferRepository;
 import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.CategoryService;
 import com.kamilpm.zero_waste.service.ImageService;
+import com.kamilpm.zero_waste.service.ItemOwnershipService;
 import com.kamilpm.zero_waste.service.ItemService;
 import com.kamilpm.zero_waste.utils.SqlUtils;
 
@@ -39,12 +38,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
-  private final ImageRepository imageRepository;
   private final CategoryService categoryService;
   private final ItemRepository itemRepository;
   private final AuthService authService;
   private final ImageService imageService;
-  private final OfferRepository offerRepository;
+  private final ItemOwnershipService itemOwnershipService;
 
   @Override
   public Item createItem(ItemRequest itemRequest) {
@@ -147,7 +145,7 @@ public class ItemServiceImpl implements ItemService {
     if (userId.equals(item.getOwner().getId()))
       return item;
 
-    if (offerRepository.existsByBuyer_IdAndItem_Id(userId, item.getId()))
+    if (itemOwnershipService.isBuyerOfItem(userId, item.getId()))
       return item;
 
     throw new EntityNotFoundException("Item not available");
@@ -232,7 +230,7 @@ public class ItemServiceImpl implements ItemService {
   @Override
   public void deleteItemCompletely(Item item) {
     imageService.deleteImagesFromDisk(item.getImages());
-    imageRepository.deleteAllByItemId(item.getId());
+    imageService.deleteImagesByItemId(item.getId());
     itemRepository.delete(item);
   }
 
@@ -242,7 +240,7 @@ public class ItemServiceImpl implements ItemService {
     for (Item item : items) {
       imageService.deleteImagesFromDisk(item.getImages());
 
-      imageRepository.deleteAllByItemId(item.getId());
+      imageService.deleteImagesByItemId(item.getId());
     }
     itemRepository.deleteAll(items);
 
@@ -254,7 +252,7 @@ public class ItemServiceImpl implements ItemService {
     for (Item item : items) {
       imageService.deleteImagesFromDisk(item.getImages());
 
-      imageRepository.deleteAllByItemId(item.getId());
+      imageService.deleteImagesByItemId(item.getId());
     }
 
     itemRepository.deleteAll(items);

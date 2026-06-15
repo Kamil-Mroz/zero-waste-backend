@@ -7,6 +7,7 @@ import com.kamilpm.zero_waste.domain.response.PublicUserProfileResponse;
 
 public interface ProfileService {
   PublicUserProfileResponse getProfile(UUID userId);
+
   OwnProfileResponse getOwnProfile();
 
 }

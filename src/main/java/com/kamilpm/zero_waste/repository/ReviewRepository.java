@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.kamilpm.zero_waste.domain.entity.Review;
+import com.kamilpm.zero_waste.domain.interfaces.IRatingBreakdownWithStats;
 import com.kamilpm.zero_waste.domain.interfaces.IRatingCountProjection;
 
 @Repository
@@ -49,4 +50,19 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
         ORDER BY r.rating DESC
       """)
   List<IRatingCountProjection> getRatingBreakdown(UUID userId);
+
+  @EntityGraph(attributePaths = { "reviewee" })
+  @Query("""
+        SELECT
+          r.rating as rating,
+          COUNT(r) as count,
+          AVG(r.rating) as avgRating,
+          COUNT(*) as totalCount
+        FROM Review r
+        WHERE r.reviewee.id = :userId
+        GROUP BY r.rating
+        ORDER BY r.rating DESC
+      """)
+  List<IRatingBreakdownWithStats> getRatingBreakdownWithStats(UUID userId);
+
 }

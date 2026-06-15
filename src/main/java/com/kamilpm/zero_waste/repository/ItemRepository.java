@@ -81,4 +81,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
 
   @EntityGraph(attributePaths = { "owner", "images" })
   List<Item> findByOwnerIdIn(List<UUID> userIds);
+
+  @EntityGraph(attributePaths = { "owner" })
+  boolean existsByIdAndOwner_Id(UUID itemId, UUID userId);
 }

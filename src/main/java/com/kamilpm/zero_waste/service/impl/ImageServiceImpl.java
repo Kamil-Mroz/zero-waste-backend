@@ -215,4 +215,9 @@ public class ImageServiceImpl implements ImageService {
     }
   }
 
+  @Override
+  public void deleteImagesByItemId(UUID itemId) {
+    imageRepository.deleteAllByItemId(itemId);
+
+  }
 }

@@ -28,6 +28,7 @@ public class ProfileController {
 
   @GetMapping
   public ResponseEntity<OwnProfileResponse> getOwnProfile() {
+
     return ResponseEntity.ok(profileService.getOwnProfile());
   }
 }
