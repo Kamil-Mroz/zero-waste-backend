@@ -3,8 +3,10 @@ package com.kamilpm.zero_waste.service.impl;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kamilpm.zero_waste.domain.dto.ProfileQueryData;
+import com.kamilpm.zero_waste.domain.dto.UserDto;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.response.OwnProfileResponse;
 import com.kamilpm.zero_waste.domain.response.PublicUserProfileResponse;
@@ -25,9 +27,10 @@ public class ProfileServiceImpl implements ProfileService {
   private final ProfileQueryService profileQueryService;
 
   @Override
+  @Transactional(readOnly = true)
   public PublicUserProfileResponse getProfile(UUID userId) {
 
-    User user = userService.getUser(userId);
+    UserDto user = userService.getUser(userId);
     ProfileQueryData data = profileQueryService.getPublicProfileData(user.getId());
     return PublicUserProfileResponse.builder()
         .id(user.getId())
@@ -40,6 +43,7 @@ public class ProfileServiceImpl implements ProfileService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public OwnProfileResponse getOwnProfile() {
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
 

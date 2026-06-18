@@ -123,4 +123,10 @@ public class NotificationServiceImpl implements NotificationService {
     return notificationRepository.findByIdAndRecipient_Id(notificationId, userId)
         .orElseThrow(() -> new EntityNotFoundException("Notification not found"));
   }
+
+  @Override
+  public void deleteAllByUserIds(List<UUID> ids) {
+    notificationRepository.deleteByRecipient_IdIn(ids);
+
+  }
 }

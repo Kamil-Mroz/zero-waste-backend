@@ -4,9 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.domain.dto.OfferDto;
-import com.kamilpm.zero_waste.domain.entity.Offer;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
-import com.kamilpm.zero_waste.domain.mapper.OfferMapper;
 import com.kamilpm.zero_waste.domain.response.PageResponse;
 import com.kamilpm.zero_waste.service.OfferService;
 
@@ -29,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class OfferController {
 
   private final OfferService offerService;
-  private final OfferMapper offerMapper;
 
   @PostMapping("/{id}")
   public ResponseEntity<Void> makeOffer(@PathVariable UUID id) {
@@ -62,9 +59,9 @@ public class OfferController {
       @RequestParam(defaultValue = "20") int size,
       @RequestParam(required = false) OfferStatus status) {
 
-    Page<Offer> offers = offerService.getMyOffers(PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"), status);
+    Page<OfferDto> offersDto = offerService.getMyOffers(PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"),
+        status);
 
-    Page<OfferDto> offersDto = offers.map(offerMapper::toDto);
     return ResponseEntity.ok(new PageResponse<>(offersDto.getContent(), offersDto.getNumber(), offersDto.getSize(),
         offersDto.getTotalElements(), offersDto.getTotalPages()));
   }
@@ -75,10 +72,10 @@ public class OfferController {
       @RequestParam(defaultValue = "20") int size,
       @RequestParam(required = false) OfferStatus status) {
 
-    Page<Offer> offers = offerService.getReceivedOffers(PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"),
+    Page<OfferDto> offersDto = offerService.getReceivedOffers(
+        PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"),
         status);
 
-    Page<OfferDto> offersDto = offers.map(offerMapper::toDto);
     return ResponseEntity.ok(new PageResponse<>(offersDto.getContent(), offersDto.getNumber(), offersDto.getSize(),
         offersDto.getTotalElements(), offersDto.getTotalPages()));
   }

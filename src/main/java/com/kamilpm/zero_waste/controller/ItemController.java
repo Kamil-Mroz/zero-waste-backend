@@ -39,35 +39,34 @@ import org.springframework.web.bind.annotation.PutMapping;
 public class ItemController {
 
   private final ItemService itemService;
-  private final ItemMapper itemMapper;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ItemDto> createItem(@Valid @ModelAttribute ItemRequest itemRequest) {
 
-    Item item = itemService.createItem(itemRequest);
+    ItemDto item = itemService.createItem(itemRequest);
 
-    return new ResponseEntity<>(itemMapper.toDto(item), HttpStatus.CREATED);
+    return new ResponseEntity<>(item, HttpStatus.CREATED);
   }
 
   @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ItemDto> updateItem(@PathVariable UUID id,
       @Valid @ModelAttribute UpdateItemRequest itemRequest) {
-    Item item = itemService.updateItem(id, itemRequest);
+    ItemDto item = itemService.updateItem(id, itemRequest);
 
-    return ResponseEntity.ok(itemMapper.toDto(item));
+    return ResponseEntity.ok(item);
   }
 
   @PatchMapping(path = "/{id}/publish")
   public ResponseEntity<ItemDto> publishItem(@PathVariable UUID id) {
-    Item item = itemService.publishItem(id);
-    return ResponseEntity.ok(itemMapper.toDto(item));
+    ItemDto item = itemService.publishItem(id);
+    return ResponseEntity.ok(item);
 
   }
 
   @PatchMapping(path = "/{id}/hide")
   public ResponseEntity<ItemDto> hideItem(@PathVariable UUID id) {
-    Item item = itemService.hideItem(id);
-    return ResponseEntity.ok(itemMapper.toDto(item));
+    ItemDto item = itemService.hideItem(id);
+    return ResponseEntity.ok(item);
 
   }
 
@@ -77,12 +76,10 @@ public class ItemController {
       @RequestParam(required = false) String text,
       @RequestParam(required = false) UUID category) {
 
-    Page<Item> items = itemService.getItems(PageRequest.of(page, size), text, category);
+    Page<ItemDto> items = itemService.getItems(PageRequest.of(page, size), text, category);
 
-    Page<ItemDto> itemsDto = items.map(itemMapper::toDto);
-
-    return ResponseEntity.ok(new PageResponse<>(itemsDto.getContent(), itemsDto.getNumber(), itemsDto.getSize(),
-        itemsDto.getTotalElements(), itemsDto.getTotalPages()));
+    return ResponseEntity.ok(new PageResponse<>(items.getContent(), items.getNumber(), items.getSize(),
+        items.getTotalElements(), items.getTotalPages()));
   }
 
   @GetMapping("/own")
@@ -91,26 +88,22 @@ public class ItemController {
       @RequestParam(required = false) String text,
       @RequestParam(required = false) UUID category,
       @RequestParam(required = false) List<ItemState> states) {
-    Page<Item> items = itemService.getOwnItems(PageRequest.of(page, size), text, category, states);
-    Page<ItemDto> itemsDto = items.map(itemMapper::toDto);
+    Page<ItemDto> itemsDto = itemService.getOwnItems(PageRequest.of(page, size), text, category, states);
     return ResponseEntity.ok(new PageResponse<>(itemsDto.getContent(), itemsDto.getNumber(), itemsDto.getSize(),
         itemsDto.getTotalElements(), itemsDto.getTotalPages()));
   }
 
   @GetMapping("/user/{id}")
   public ResponseEntity<List<ItemDto>> getUsersItem(@PathVariable UUID id) {
-    List<ItemDto> itemDtos = itemService.getUserItems(id).stream().map(itemMapper::toDto).toList();
+    List<ItemDto> itemDtos = itemService.getUserItems(id);
     return ResponseEntity.ok(itemDtos);
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<ItemDto> getItem(@PathVariable UUID id) {
-    Item item = itemService.getItem(id);
-    return ResponseEntity.ok(itemMapper.toDtoWithOwner(item));
+    ItemDto item = itemService.getItem(id);
+    return ResponseEntity.ok(item);
   }
-
-
-
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteItem(@PathVariable UUID id) {

@@ -10,12 +10,15 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.kamilpm.zero_waste.domain.dto.ItemDto;
 import com.kamilpm.zero_waste.domain.entity.Category;
 import com.kamilpm.zero_waste.domain.entity.Image;
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.mapper.ItemMapper;
 import com.kamilpm.zero_waste.domain.request.ItemRequest;
 import com.kamilpm.zero_waste.domain.request.UpdateItemRequest;
 import com.kamilpm.zero_waste.exception.ConflictException;
@@ -30,10 +33,8 @@ import com.kamilpm.zero_waste.service.ItemOwnershipService;
 import com.kamilpm.zero_waste.service.ItemService;
 import com.kamilpm.zero_waste.utils.SqlUtils;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-@Transactional
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
@@ -43,9 +44,11 @@ public class ItemServiceImpl implements ItemService {
   private final AuthService authService;
   private final ImageService imageService;
   private final ItemOwnershipService itemOwnershipService;
+  private final ItemMapper itemMapper;
 
   @Override
-  public Item createItem(ItemRequest itemRequest) {
+  @Transactional
+  public ItemDto createItem(ItemRequest itemRequest) {
     User user = authService.getRequiredAuthenticatedUserEntity();
 
     if (itemRequest.getImages().size() > 5) {
@@ -70,11 +73,12 @@ public class ItemServiceImpl implements ItemService {
 
     Item savedItem = itemRepository.save(item);
     imageService.uploadItemImages(savedItem, itemRequest.getImages());
-    return savedItem;
+    return itemMapper.toDto(savedItem);
   }
 
   @Override
-  public Item updateItem(UUID id, UpdateItemRequest itemRequest) {
+  @Transactional
+  public ItemDto updateItem(UUID id, UpdateItemRequest itemRequest) {
 
     if (Objects.equals(itemRequest.getState(), ItemState.GIVEN)) {
       throw new ConflictException("Unable to update to a given item");
@@ -115,11 +119,14 @@ public class ItemServiceImpl implements ItemService {
     imageService.deleteImages(item.getId(), validIdsToRemove);
     imageService.uploadItemImages(item, itemRequest.getImages());
 
-    return itemRepository.save(item);
+    Item updatedItem = itemRepository.save(item);
+    return itemMapper.toDto(updatedItem);
+
   }
 
   @Override
-  public Page<Item> getItems(Pageable pageable, String text, UUID category) {
+  @Transactional(readOnly = true)
+  public Page<ItemDto> getItems(Pageable pageable, String text, UUID category) {
     text = SqlUtils.prepareLikePattern(text);
     Set<UUID> categoryIds = null;
     if (category != null) {
@@ -128,25 +135,27 @@ public class ItemServiceImpl implements ItemService {
     Optional<MyUserDetails> user = authService.getAuthenticatedUser();
     UUID excludeOwnerId = user.map(MyUserDetails::getId).orElse(null);
 
-    return itemRepository.searchItems(excludeOwnerId, ItemState.AVAILABLE, text, categoryIds, pageable);
+    return itemRepository.searchItems(excludeOwnerId, ItemState.AVAILABLE, text, categoryIds, pageable)
+        .map(itemMapper::toDto);
   }
 
   @Override
-  public Item getItem(UUID id) {
+  @Transactional(readOnly = true)
+  public ItemDto getItem(UUID id) {
     Item item = itemRepository.findByIdWithOwnerAndCategoryAndImages(id)
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
     if (Objects.equals(item.getState(), ItemState.AVAILABLE))
-      return item;
+      return itemMapper.toDtoWithOwner(item);
 
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
     UUID userId = user.getId();
 
     if (userId.equals(item.getOwner().getId()))
-      return item;
+      return itemMapper.toDtoWithOwner(item);
 
     if (itemOwnershipService.isBuyerOfItem(userId, item.getId()))
-      return item;
+      return itemMapper.toDtoWithOwner(item);
 
     throw new EntityNotFoundException("Item not available");
 
@@ -163,7 +172,8 @@ public class ItemServiceImpl implements ItemService {
   }
 
   @Override
-  public Page<Item> getOwnItems(Pageable pageable, String text, UUID category, List<ItemState> states) {
+  @Transactional(readOnly = true)
+  public Page<ItemDto> getOwnItems(Pageable pageable, String text, UUID category, List<ItemState> states) {
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
     text = SqlUtils.prepareLikePattern(text);
     if (states == null || states.size() == 0)
@@ -172,10 +182,11 @@ public class ItemServiceImpl implements ItemService {
     if (category != null) {
       categoryIds = categoryService.getCategoryDescendantsCache().get(category);
     }
-    return itemRepository.findOwnItems(user.getId(), text, categoryIds, states, pageable);
+    return itemRepository.findOwnItems(user.getId(), text, categoryIds, states, pageable).map(itemMapper::toDto);
   }
 
   @Override
+  @Transactional
   public void deleteItem(UUID id) {
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
     Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
@@ -192,7 +203,8 @@ public class ItemServiceImpl implements ItemService {
   }
 
   @Override
-  public Item publishItem(UUID id) {
+  @Transactional
+  public ItemDto publishItem(UUID id) {
     Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
@@ -206,11 +218,13 @@ public class ItemServiceImpl implements ItemService {
 
     item.setState(ItemState.AVAILABLE);
 
-    return itemRepository.save(item);
+    Item publishedItem = itemRepository.save(item);
+    return itemMapper.toDto(publishedItem);
   }
 
   @Override
-  public Item hideItem(UUID id) {
+  @Transactional
+  public ItemDto hideItem(UUID id) {
     Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
@@ -224,10 +238,12 @@ public class ItemServiceImpl implements ItemService {
 
     item.setState(ItemState.PENDING);
 
-    return itemRepository.save(item);
+    Item hiddenItem = itemRepository.save(item);
+    return itemMapper.toDto(hiddenItem);
   }
 
   @Override
+  @Transactional
   public void deleteItemCompletely(Item item) {
     imageService.deleteImagesFromDisk(item.getImages());
     imageService.deleteImagesByItemId(item.getId());
@@ -235,6 +251,7 @@ public class ItemServiceImpl implements ItemService {
   }
 
   @Override
+  @Transactional
   public void deleteItemsByUser(UUID userId) {
     List<Item> items = itemRepository.findByOwner_id(userId);
     for (Item item : items) {
@@ -247,6 +264,7 @@ public class ItemServiceImpl implements ItemService {
   }
 
   @Override
+  @Transactional
   public void deleteItemsByUserIds(List<UUID> userIds) {
     List<Item> items = itemRepository.findByOwnerIdIn(userIds);
     for (Item item : items) {
@@ -260,14 +278,16 @@ public class ItemServiceImpl implements ItemService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public int getUserItemCount(UUID userId) {
     return itemRepository.countByOwner_Id(userId);
   }
 
   @Override
-  public List<Item> getUserItems(UUID userId) {
+  @Transactional(readOnly = true)
+  public List<ItemDto> getUserItems(UUID userId) {
 
-    return itemRepository.findByOwner_IdAndState(userId, ItemState.AVAILABLE);
+    return itemRepository.findByOwner_IdAndState(userId, ItemState.AVAILABLE).stream().map(itemMapper::toDto).toList();
   }
 
 }

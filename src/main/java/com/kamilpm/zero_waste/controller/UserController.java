@@ -5,9 +5,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.domain.dto.UserDto;
-import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.entity.UserRole;
-import com.kamilpm.zero_waste.domain.mapper.UserMapper;
 import com.kamilpm.zero_waste.domain.request.BanRequest;
 import com.kamilpm.zero_waste.domain.request.CreateUserRequest;
 import com.kamilpm.zero_waste.domain.request.UnbanRequest;
@@ -38,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class UserController {
 
   private final UserService userService;
-  private final UserMapper userMapper;
 
   @GetMapping
   public ResponseEntity<PageResponse<UserDto>> getUsers(
@@ -46,33 +43,32 @@ public class UserController {
       @RequestParam(defaultValue = "20") int size,
       @RequestParam(required = false) String text,
       @RequestParam(required = false) List<UserRole> roles) {
-    Page<User> users = userService.getUsersWithoutCurrentUser(text, roles, PageRequest.of(page, size));
+    Page<UserDto> users = userService.getUsersWithoutCurrentUser(text, roles, PageRequest.of(page, size));
 
-    Page<UserDto> userPage = users.map(userMapper::toDto);
-    return ResponseEntity.ok(new PageResponse<>(userPage.getContent(), userPage.getNumber(), userPage.getSize(),
-        userPage.getTotalElements(), userPage.getTotalPages()));
+    return ResponseEntity.ok(new PageResponse<>(users.getContent(), users.getNumber(), users.getSize(),
+        users.getTotalElements(), users.getTotalPages()));
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<UserDto> getUser(@PathVariable UUID id) {
-    User user = userService.getUser(id);
-    return ResponseEntity.ok(userMapper.toDto(user));
+    UserDto user = userService.getUser(id);
+    return ResponseEntity.ok(user);
   }
 
   @PostMapping
   public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserRequest createUserRequest) {
 
-    User user = userService.createUser(createUserRequest);
+    UserDto user = userService.createUser(createUserRequest);
 
-    return new ResponseEntity<>(userMapper.toDto(user), HttpStatus.CREATED);
+    return new ResponseEntity<>(user, HttpStatus.CREATED);
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<UserDto> updateUser(@PathVariable UUID id,
       @Valid @RequestBody UpdateUserRequest updateUserRequest) {
-    User user = userService.updateUser(id, updateUserRequest);
+    UserDto user = userService.updateUser(id, updateUserRequest);
 
-    return ResponseEntity.ok(userMapper.toDto(user));
+    return ResponseEntity.ok(user);
   }
 
   @PostMapping("/ban")

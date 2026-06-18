@@ -6,25 +6,26 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.kamilpm.zero_waste.domain.dto.ItemDto;
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
 import com.kamilpm.zero_waste.domain.request.ItemRequest;
 import com.kamilpm.zero_waste.domain.request.UpdateItemRequest;
 
 public interface ItemService {
-  Item createItem(ItemRequest itemRequest);
+  ItemDto createItem(ItemRequest itemRequest);
 
-  Item updateItem(UUID id, UpdateItemRequest itemRequest);
+  ItemDto updateItem(UUID id, UpdateItemRequest itemRequest);
 
-  Item publishItem(UUID id);
+  ItemDto publishItem(UUID id);
 
-  Item hideItem(UUID id);
+  ItemDto hideItem(UUID id);
 
-  Page<Item> getItems(Pageable pageable, String text, UUID category);
+  Page<ItemDto> getItems(Pageable pageable, String text, UUID category);
 
-  Page<Item> getOwnItems(Pageable pageable, String text, UUID category, List<ItemState> states);
+  Page<ItemDto> getOwnItems(Pageable pageable, String text, UUID category, List<ItemState> states);
 
-  Item getItem(UUID id);
+  ItemDto getItem(UUID id);
 
   Item findByIdForUpdate(UUID id);
 
@@ -34,7 +35,7 @@ public interface ItemService {
 
   int getUserItemCount(UUID userId);
 
-  List<Item> getUserItems(UUID userId);
+  List<ItemDto> getUserItems(UUID userId);
 
   void deleteItem(UUID id);
 

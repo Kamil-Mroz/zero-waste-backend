@@ -7,13 +7,17 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.kamilpm.zero_waste.domain.dto.OfferDto;
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
 import com.kamilpm.zero_waste.domain.entity.NotificationType;
 import com.kamilpm.zero_waste.domain.entity.Offer;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.mapper.OfferMapper;
 import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.repository.OfferRepository;
@@ -24,7 +28,7 @@ import com.kamilpm.zero_waste.service.NotificationService;
 import com.kamilpm.zero_waste.service.OfferService;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,10 +38,12 @@ public class OfferServiceImpl implements OfferService {
   private final ItemService itemService;
   private final AuthService authService;
   private final NotificationService notificationService;
+  private final OfferMapper offerMapper;
 
   @Override
   public Offer getOfferById(UUID id) {
-    return offerRepository.findDetailsById(id).orElseThrow(() -> new EntityNotFoundException("Offer not found"));
+    Offer offer = offerRepository.findDetailsById(id).orElseThrow(() -> new EntityNotFoundException("Offer not found"));
+    return offer;
   }
 
   private void ensurePending(Offer offer) {
@@ -45,7 +51,7 @@ public class OfferServiceImpl implements OfferService {
       throw new ConflictException("Offer is no longer pending");
   }
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Override
   public void acceptOffer(UUID id) {
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
@@ -147,25 +153,31 @@ public class OfferServiceImpl implements OfferService {
 
   @Override
   @Transactional
-  public Page<Offer> getMyOffers(Pageable pageable, OfferStatus status) {
+  public Page<OfferDto> getMyOffers(Pageable pageable, OfferStatus status) {
 
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
     if (status != null) {
-      return offerRepository.findByBuyer_IdAndStatus(user.getId(), status, pageable);
+      return offerRepository.findByBuyer_IdAndStatus(user.getId(), status, pageable).map(offerMapper::toDto);
     }
-    return offerRepository.findByBuyer_Id(user.getId(), pageable);
+    return offerRepository.findByBuyer_Id(user.getId(), pageable).map(offerMapper::toDto);
 
   }
 
   @Override
   @Transactional
-  public Page<Offer> getReceivedOffers(Pageable pageable, OfferStatus status) {
+  public Page<OfferDto> getReceivedOffers(Pageable pageable, OfferStatus status) {
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
     if (status != null) {
-      return offerRepository.findByItem_Owner_IdAndStatus(user.getId(), status, pageable);
+      return offerRepository.findByItem_Owner_IdAndStatus(user.getId(), status, pageable).map(offerMapper::toDto);
     }
-    return offerRepository.findByItem_Owner_Id(user.getId(), pageable);
+    return offerRepository.findByItem_Owner_Id(user.getId(), pageable).map(offerMapper::toDto);
 
   }
 
+  @Override
+  public void deleteAllByUserIds(List<UUID> ids) {
+    offerRepository.deleteByBuyer_IdIn(ids);
+    offerRepository.deleteByItem_Owner_IdIn(ids);
+
+  }
 }

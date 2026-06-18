@@ -30,6 +30,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   private long refreshTokenExpiration;
 
   @Override
+  @Transactional
   public RefreshToken generateRefreshToken(Authentication authentication) {
     MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
     User user = userRepository.findById(userDetails.getId())

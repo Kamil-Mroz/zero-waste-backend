@@ -37,4 +37,9 @@ public interface OfferRepository extends JpaRepository<Offer, UUID> {
   @EntityGraph(attributePaths = { "buyer", "item", "item.owner" })
   Page<Offer> findByBuyer_Id(UUID buyerId, Pageable pageable);
 
+  @EntityGraph(attributePaths = { "item", "item.owner" })
+  void deleteByItem_Owner_IdIn(List<UUID> ids);
+
+  @EntityGraph(attributePaths = { "buyer", })
+  void deleteByBuyer_IdIn(List<UUID> ids);
 }

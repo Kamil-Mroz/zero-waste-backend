@@ -10,10 +10,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.kamilpm.zero_waste.domain.dto.UserDto;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.entity.UserBan;
 import com.kamilpm.zero_waste.domain.entity.UserRole;
+import com.kamilpm.zero_waste.domain.mapper.UserMapper;
 import com.kamilpm.zero_waste.domain.request.BanRequest;
 import com.kamilpm.zero_waste.domain.request.CreateUserRequest;
 import com.kamilpm.zero_waste.domain.request.UnbanRequest;
@@ -27,14 +30,15 @@ import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.ItemService;
+import com.kamilpm.zero_waste.service.NotificationService;
+import com.kamilpm.zero_waste.service.OfferService;
+import com.kamilpm.zero_waste.service.ReviewService;
 import com.kamilpm.zero_waste.service.UserService;
 import com.kamilpm.zero_waste.utils.SqlUtils;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
@@ -43,20 +47,26 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final ItemService itemService;
   private final UserBanRepository userBanRepository;
+  private final ReviewService reviewService;
   private final RefreshTokenRepository refreshTokenRepository;
+  private final OfferService offerService;
+  private final UserMapper userMapper;
+  private final NotificationService notificationService;
 
   @Override
-  public Page<User> getUsersWithoutCurrentUser(String text, List<UserRole> roles, Pageable pageable) {
+  @Transactional(readOnly = true)
+  public Page<UserDto> getUsersWithoutCurrentUser(String text, List<UserRole> roles, Pageable pageable) {
 
     if (roles != null && roles.isEmpty())
       roles = null;
     text = SqlUtils.prepareLikePattern(text);
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
-    return userRepository.findAllByIdNot(user.getId(), text, roles, pageable);
+    return userRepository.findAllByIdNot(user.getId(), text, roles, pageable).map(userMapper::toDto);
   }
 
   @Override
-  public User createUser(final CreateUserRequest userRequest) {
+  @Transactional
+  public UserDto createUser(final CreateUserRequest userRequest) {
 
     if (userRepository.existsByEmail(userRequest.getEmail())) {
       throw new ConflictException("Email already in use", "email");
@@ -73,16 +83,24 @@ public class UserServiceImpl implements UserService {
         .bannedUntil(null)
         .build();
 
-    return userRepository.save(user);
+    User savedUser = userRepository.save(user);
+    return userMapper.toDto(savedUser);
   }
 
   @Override
-  public User getUser(final UUID id) {
+  @Transactional(readOnly = true)
+  public UserDto getUser(final UUID id) {
+    User user = findUser(id);
+    return userMapper.toDto(user);
+  }
+
+  private User findUser(UUID id) {
     return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
   }
 
   @Override
-  public User updateUser(final UUID id, final UpdateUserRequest userRequest) {
+  @Transactional
+  public UserDto updateUser(final UUID id, final UpdateUserRequest userRequest) {
 
     MyUserDetails admin = authService.getRequiredAuthenticatedUserDetails();
 
@@ -94,7 +112,7 @@ public class UserServiceImpl implements UserService {
       throw new ConflictException("Email already in use", "email");
     }
 
-    final User user = getUser(id);
+    final User user = findUser(id);
 
     user.setFirstName(userRequest.getFirstName());
     user.setLastName(userRequest.getLastName());
@@ -104,10 +122,12 @@ public class UserServiceImpl implements UserService {
     if (userRequest.getEmail() != null && !userRequest.getPassword().isBlank()) {
       user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
     }
-    return userRepository.save(user);
+    User updatedUser = userRepository.save(user);
+    return userMapper.toDto(updatedUser);
   }
 
   @Override
+  @Transactional
   public void deleteUser(final List<UUID> ids) {
 
     MyUserDetails admin = authService.getRequiredAuthenticatedUserDetails();
@@ -120,13 +140,18 @@ public class UserServiceImpl implements UserService {
 
     userBanRepository.deleteAllByUserIds(ids);
 
+    reviewService.deleteAllByUserIds(ids);
+    offerService.deleteAllByUserIds(ids);
+
     itemService.deleteItemsByUserIds(ids);
+    notificationService.deleteAllByUserIds(ids);
 
     userRepository.deleteAllById(ids);
 
   }
 
   @Override
+  @Transactional
   public void banUsers(final BanRequest banRequest) {
     final User admin = authService.getRequiredAuthenticatedUserEntity();
 
@@ -165,6 +190,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public void unbanUsers(UnbanRequest unbanRequest) {
 
     final User admin = authService.getRequiredAuthenticatedUserEntity();

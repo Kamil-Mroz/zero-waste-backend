@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.kamilpm.zero_waste.domain.entity.Notification;
@@ -25,5 +26,6 @@ public interface NotificationService {
   void markAsRead(UUID notificationsId, UUID userId);
 
   void markAllAsRead(UUID userId);
+  void deleteAllByUserIds(List<UUID> ids);
 
 }

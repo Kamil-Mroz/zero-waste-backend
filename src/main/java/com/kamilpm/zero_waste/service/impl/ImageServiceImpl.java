@@ -20,6 +20,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kamilpm.zero_waste.domain.entity.Image;
@@ -29,7 +30,7 @@ import com.kamilpm.zero_waste.repository.ImageRepository;
 import com.kamilpm.zero_waste.service.ImageService;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -48,6 +49,7 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Optional<Resource> getImageAsResource(String storedName) {
     Path filePath = rootPath.resolve(storedName).normalize().toAbsolutePath();
     Path normalizedRoot = rootPath.normalize().toAbsolutePath();
@@ -71,6 +73,7 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
+  @Transactional
   public void uploadItemImages(Item item, List<MultipartFile> files) {
 
     if (files == null)
@@ -187,6 +190,7 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
+  @Transactional
   public void deleteImages(UUID itemId, List<UUID> imageIds) {
     List<Image> images = imageRepository.findByItem_IdAndIdIn(itemId, imageIds);
 
@@ -216,6 +220,7 @@ public class ImageServiceImpl implements ImageService {
   }
 
   @Override
+  @Transactional
   public void deleteImagesByItemId(UUID itemId) {
     imageRepository.deleteAllByItemId(itemId);
 

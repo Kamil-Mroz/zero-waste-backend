@@ -7,23 +7,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.repository.UserBanRepository;
 import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.security.MyUserDetails;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class MyUserDetailsService implements UserDetailsService {
   private final UserRepository userRepository;
   private final UserBanRepository userBanRepository;
 
   @Override
+@Transactional(readOnly=true)
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
     User user = Optional.ofNullable(userRepository.findByEmail(username))

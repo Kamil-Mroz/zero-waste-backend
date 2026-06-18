@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -17,4 +18,6 @@ public interface ReviewService {
   Page<ReviewResponse> getGivenReviews(Pageable pageable);
 
   Page<ReviewResponse> getUserReviews(UUID userId, Pageable pageable);
+
+  void deleteAllByUserIds(List<UUID> ids);
 }

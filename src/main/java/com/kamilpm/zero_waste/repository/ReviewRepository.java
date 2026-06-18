@@ -65,4 +65,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
       """)
   List<IRatingBreakdownWithStats> getRatingBreakdownWithStats(UUID userId);
 
+  void deleteByReviewer_IdIn(List<UUID> ids);
+
+  void deleteByReviewee_IdIn(List<UUID> ids);
 }

@@ -3,12 +3,14 @@ package com.kamilpm.zero_waste.service.impl;
 import com.kamilpm.zero_waste.repository.ReviewRepository;
 import com.kamilpm.zero_waste.security.MyUserDetails;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kamilpm.zero_waste.domain.entity.ItemState;
 import com.kamilpm.zero_waste.domain.entity.Offer;
@@ -34,6 +36,7 @@ public class ReviewServiceImpl implements ReviewService {
   private final ReviewMapper reviewMapper;
 
   @Override
+  @Transactional
   public Review createReview(ReviewRequest reviewRequest) {
     User user = authService.getRequiredAuthenticatedUserEntity();
 
@@ -64,6 +67,7 @@ public class ReviewServiceImpl implements ReviewService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Page<ReviewResponse> getReceivedReviews(Pageable pageable) {
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
 
@@ -71,6 +75,7 @@ public class ReviewServiceImpl implements ReviewService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Page<ReviewResponse> getGivenReviews(Pageable pageable) {
 
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
@@ -79,8 +84,16 @@ public class ReviewServiceImpl implements ReviewService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Page<ReviewResponse> getUserReviews(UUID userId, Pageable pageable) {
 
     return reviewRepository.findByReviewee_IdOrderByCreatedAtDesc(userId, pageable).map(reviewMapper::toResponse);
+  }
+
+  @Override
+  public void deleteAllByUserIds(List<UUID> ids) {
+    reviewRepository.deleteByReviewer_IdIn(ids);
+    reviewRepository.deleteByReviewee_IdIn(ids);
+
   }
 }
