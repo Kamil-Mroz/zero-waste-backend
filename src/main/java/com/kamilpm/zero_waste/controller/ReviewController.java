@@ -3,7 +3,7 @@ package com.kamilpm.zero_waste.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kamilpm.zero_waste.domain.entity.Review;
+import com.kamilpm.zero_waste.domain.dto.ReviewDto;
 import com.kamilpm.zero_waste.domain.request.ReviewRequest;
 import com.kamilpm.zero_waste.domain.response.PageResponse;
 import com.kamilpm.zero_waste.domain.response.ReviewResponse;
@@ -31,9 +31,9 @@ public class ReviewController {
   private final ReviewService reviewService;
 
   @PostMapping
-  public ResponseEntity<Review> createReview(@Valid @RequestBody ReviewRequest reviewRequest) {
+  public ResponseEntity<ReviewDto> createReview(@Valid @RequestBody ReviewRequest reviewRequest) {
 
-    Review review = reviewService.createReview(reviewRequest);
+    ReviewDto review = reviewService.createReview(reviewRequest);
 
     return ResponseEntity.ok(review);
   }

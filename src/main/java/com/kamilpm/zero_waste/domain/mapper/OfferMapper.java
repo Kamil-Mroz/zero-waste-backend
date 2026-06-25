@@ -9,7 +9,7 @@ import com.kamilpm.zero_waste.domain.entity.Offer;
 @Mapper(componentModel = "spring", uses = { UserMapper.class, ItemMapper.class })
 public interface OfferMapper {
 
-  @Mapping(target="item", source="item", qualifiedByName = "itemWithOwner")
+  @Mapping(target = "item", source = "item", qualifiedByName = "itemWithOwner")
   OfferDto toDto(Offer offer);
 
 }

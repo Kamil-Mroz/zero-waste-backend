@@ -7,9 +7,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.kamilpm.zero_waste.domain.dto.NotificationDto;
 import com.kamilpm.zero_waste.domain.entity.Notification;
 import com.kamilpm.zero_waste.domain.entity.NotificationType;
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.mapper.NotificationMapper;
 import com.kamilpm.zero_waste.domain.request.CursorDirection;
 import com.kamilpm.zero_waste.domain.request.CursorRequest;
 import com.kamilpm.zero_waste.domain.response.CursorResponse;
@@ -26,6 +28,7 @@ public class NotificationServiceImpl implements NotificationService {
 
   private final NotificationRepository notificationRepository;
   private final SimpMessagingTemplate simpMessagingTemplate;
+  private final NotificationMapper notificationMapper;
 
   @Override
   public void sendNotification(User recipient, NotificationType type, String title, String message, UUID referenceId,
@@ -54,7 +57,6 @@ public class NotificationServiceImpl implements NotificationService {
 
     return notificationRepository.countByReadFalseAndRecipientId(userId);
   }
-
   @Override
   public void markAsRead(UUID notificationsId, UUID userId) {
     notificationRepository.markAsRead(notificationsId, userId);
@@ -67,24 +69,25 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  public CursorResponse<Notification> getNotifications(UUID userId, CursorRequest cursor,
+  public CursorResponse<NotificationDto> getNotifications(UUID userId, CursorRequest cursor,
       NotificationType notificationType,
       CursorDirection direction,
       int limit) {
 
-    List<Notification> notifications;
+    List<NotificationDto> notifications;
 
     if (cursor == null) {
-      notifications = notificationRepository.findFirstPage(userId, notificationType, PageRequest.of(0, limit + 1));
+      notifications = notificationRepository.findFirstPage(userId, notificationType, PageRequest.of(0, limit + 1))
+          .stream().map(notificationMapper::toDto).toList();
     } else {
       if (direction == CursorDirection.FORWARD) {
 
         notifications = notificationRepository.findOlder(userId, notificationType, cursor.createdAt(), cursor.id(),
-            PageRequest.of(0, limit + 1));
+            PageRequest.of(0, limit + 1)).stream().map(notificationMapper::toDto).toList();
       } else {
 
         notifications = notificationRepository.findNewer(userId, notificationType, cursor.createdAt(), cursor.id(),
-            PageRequest.of(0, limit + 1));
+            PageRequest.of(0, limit + 1)).stream().map(notificationMapper::toDto).toList();
 
       }
     }
@@ -106,22 +109,24 @@ public class NotificationServiceImpl implements NotificationService {
 
     CursorRequest nextCursor = null;
     if (hasNext && !notifications.isEmpty()) {
-      Notification last = notifications.getLast();
-      nextCursor = new CursorRequest(last.getCreatedAt(), last.getId());
+      NotificationDto last = notifications.getLast();
+      nextCursor = new CursorRequest(last.createdAt(), last.id());
     }
 
     CursorRequest prevCursor = null;
     if (hasPrev && !notifications.isEmpty()) {
-      Notification first = notifications.getFirst();
-      prevCursor = new CursorRequest(first.getCreatedAt(), first.getId());
+      NotificationDto first = notifications.getFirst();
+      prevCursor = new CursorRequest(first.createdAt(), first.id());
     }
     return new CursorResponse<>(notifications, nextCursor, hasNext, prevCursor, hasPrev);
   }
 
   @Override
-  public Notification getNotification(UUID userId, UUID notificationId) {
-    return notificationRepository.findByIdAndRecipient_Id(notificationId, userId)
+  public NotificationDto getNotification(UUID userId, UUID notificationId) {
+
+    Notification notification = notificationRepository.findByIdAndRecipient_Id(notificationId, userId)
         .orElseThrow(() -> new EntityNotFoundException("Notification not found"));
+    return notificationMapper.toDto(notification);
   }
 
   @Override

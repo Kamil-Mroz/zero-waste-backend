@@ -4,8 +4,10 @@ import com.kamilpm.zero_waste.security.WebSocketAuthInterceptor;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
@@ -23,6 +25,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+  @Value("${app.cors.allowed-origins}")
+  private String allowedOrigins;
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
@@ -34,9 +38,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("/ws")
-        .setAllowedOrigins("http://localhost:3000")
-        .withSockJS();
+    List<String> origins = Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList();
+    registry.addEndpoint("/ws").setAllowedOrigins("*");
+
   }
 
   @Override

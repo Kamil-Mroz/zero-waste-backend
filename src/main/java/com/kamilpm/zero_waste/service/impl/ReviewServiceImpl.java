@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kamilpm.zero_waste.domain.dto.ReviewDto;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
 import com.kamilpm.zero_waste.domain.entity.Offer;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
@@ -37,7 +38,7 @@ public class ReviewServiceImpl implements ReviewService {
 
   @Override
   @Transactional
-  public Review createReview(ReviewRequest reviewRequest) {
+  public ReviewDto createReview(ReviewRequest reviewRequest) {
     User user = authService.getRequiredAuthenticatedUserEntity();
 
     Offer offer = offerService.getOfferById(reviewRequest.getOfferId());
@@ -62,7 +63,8 @@ public class ReviewServiceImpl implements ReviewService {
         .reviewer(user)
         .build();
 
-    return reviewRepository.save(newReview);
+    Review savedReview = reviewRepository.save(newReview);
+    return reviewMapper.toDto(savedReview);
 
   }
 

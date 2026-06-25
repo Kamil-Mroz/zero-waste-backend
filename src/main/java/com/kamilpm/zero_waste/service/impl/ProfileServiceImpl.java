@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kamilpm.zero_waste.domain.dto.ProfileQueryData;
 import com.kamilpm.zero_waste.domain.dto.UserDto;
-import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.response.OwnProfileResponse;
 import com.kamilpm.zero_waste.domain.response.PublicUserProfileResponse;
 import com.kamilpm.zero_waste.security.MyUserDetails;

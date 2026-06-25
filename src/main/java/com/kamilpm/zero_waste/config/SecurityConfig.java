@@ -1,7 +1,10 @@
 package com.kamilpm.zero_waste.config;
 
+import java.sql.Array;
 import java.util.Arrays;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -33,6 +36,8 @@ public class SecurityConfig {
   private final UserDetailsService userDetailsService;
   private final JwtFilter jwtFilter;
   private final JwtAuthEntryPoint authEntryPoint;
+  @Value("${app.cors.allowed-origins}")
+  private String allowedOrigins;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -43,7 +48,9 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             (authorize) -> authorize
                 .requestMatchers("/api/v{version}/auth/**").permitAll()
-                .requestMatchers("/api/v{version}/docs/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v{version}/blogs/**").permitAll()
+                .requestMatchers("/api/v{version}/blogs/**").hasAnyRole("ADMIN", "WRITER")
+                .requestMatchers("/api/docs/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
 
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/categories/**").permitAll()
@@ -65,9 +72,11 @@ public class SecurityConfig {
   }
 
   @Bean
+
   UrlBasedCorsConfigurationSource corsConfigurationSource() {
+    List<String> origins = Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList();
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+    configuration.setAllowedOrigins(origins);
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     configuration.setAllowCredentials(true);
     configuration.setAllowedHeaders(Arrays.asList("*"));

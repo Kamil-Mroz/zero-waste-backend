@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.service;
 import java.util.List;
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.domain.dto.NotificationDto;
 import com.kamilpm.zero_waste.domain.entity.Notification;
 import com.kamilpm.zero_waste.domain.entity.NotificationType;
 import com.kamilpm.zero_waste.domain.entity.User;
@@ -17,15 +18,16 @@ public interface NotificationService {
 
   long getUnreadCount(UUID userId);
 
-  CursorResponse<Notification> getNotifications(UUID userId, CursorRequest cursor, NotificationType notificationType,
+  CursorResponse<NotificationDto> getNotifications(UUID userId, CursorRequest cursor, NotificationType notificationType,
 
       CursorDirection direction, int limit);
 
-  Notification getNotification(UUID userId, UUID notificationId);
+  NotificationDto getNotification(UUID userId, UUID notificationId);
 
   void markAsRead(UUID notificationsId, UUID userId);
 
   void markAllAsRead(UUID userId);
+
   void deleteAllByUserIds(List<UUID> ids);
 
 }

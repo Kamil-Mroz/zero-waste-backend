@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.domain.dto.NotificationDto;
 import com.kamilpm.zero_waste.domain.entity.Notification;
 import com.kamilpm.zero_waste.domain.entity.NotificationType;
 import com.kamilpm.zero_waste.domain.request.CursorDirection;
@@ -42,13 +43,13 @@ public class NotificationController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Notification> getNotification(@PathVariable UUID id) {
+  public ResponseEntity<NotificationDto> getNotification(@PathVariable UUID id) {
     MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
     return ResponseEntity.ok(notificationService.getNotification(user.getId(), id));
   }
 
   @GetMapping()
-  public ResponseEntity<CursorResponse<Notification>> getNotifications(
+  public ResponseEntity<CursorResponse<NotificationDto>> getNotifications(
       @RequestParam(required = false) Instant createdAt,
       @RequestParam(required = false) UUID id,
       @RequestParam(required = false) CursorDirection direction,
@@ -59,7 +60,9 @@ public class NotificationController {
 
     UUID userId = authService.getRequiredAuthenticatedUserDetails().getId();
 
-    CursorResponse<Notification> notifications = notificationService.getNotifications(userId, cursor, notificationType,
+    CursorResponse<NotificationDto> notifications = notificationService.getNotifications(userId, cursor,
+        notificationType,
+
         direction,
         limit);
     return ResponseEntity.ok(notifications);
