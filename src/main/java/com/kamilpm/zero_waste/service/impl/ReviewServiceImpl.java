@@ -1,7 +1,6 @@
 package com.kamilpm.zero_waste.service.impl;
 
 import com.kamilpm.zero_waste.repository.ReviewRepository;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,7 +38,7 @@ public class ReviewServiceImpl implements ReviewService {
   @Override
   @Transactional
   public ReviewDto createReview(ReviewRequest reviewRequest) {
-    User user = authService.getRequiredAuthenticatedUserEntity();
+    User user = authService.getRequiredAuthenticatedUser();
 
     Offer offer = offerService.getOfferById(reviewRequest.getOfferId());
 
@@ -71,7 +70,7 @@ public class ReviewServiceImpl implements ReviewService {
   @Override
   @Transactional(readOnly = true)
   public Page<ReviewResponse> getReceivedReviews(Pageable pageable) {
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
 
     return reviewRepository.findByReviewee_IdOrderByCreatedAtDesc(user.getId(), pageable).map(reviewMapper::toResponse);
   }
@@ -80,7 +79,7 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional(readOnly = true)
   public Page<ReviewResponse> getGivenReviews(Pageable pageable) {
 
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
 
     return reviewRepository.findByReviewer_Id(user.getId(), pageable).map(reviewMapper::toResponse);
   }

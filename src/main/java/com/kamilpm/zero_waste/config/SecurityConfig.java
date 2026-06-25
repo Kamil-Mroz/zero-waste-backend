@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.config;
 
-import java.sql.Array;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,9 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,8 +21,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.kamilpm.zero_waste.repository.UserBanRepository;
+import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.security.JwtAuthEntryPoint;
 import com.kamilpm.zero_waste.security.JwtFilter;
+import com.kamilpm.zero_waste.service.impl.MyUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,8 +34,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final UserDetailsService userDetailsService;
   private final JwtFilter jwtFilter;
+  private final UserDetailsService userDetailsService;
   private final JwtAuthEntryPoint authEntryPoint;
   @Value("${app.cors.allowed-origins}")
   private String allowedOrigins;
@@ -86,16 +87,14 @@ public class SecurityConfig {
   }
 
   @Bean
-  public AuthenticationProvider authenticationProvider() {
-    DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-    provider.setPasswordEncoder(passwordEncoder());
-    return provider;
-  }
-
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+  public AuthenticationManager authenticationManager(
+      PasswordEncoder passwordEncoder)
       throws Exception {
-    return authenticationConfiguration.getAuthenticationManager();
+
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+    provider.setPasswordEncoder(passwordEncoder);
+
+    return new ProviderManager(provider);
 
   }
 

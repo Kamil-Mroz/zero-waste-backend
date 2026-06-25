@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.exception.TokenException;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.JwtService;
 
 import io.jsonwebtoken.Claims;
@@ -36,7 +36,7 @@ public class JwtServiceImpl implements JwtService {
 
   public String generateToken(Map<String, Object> extraClaims, Authentication authentication) {
 
-    MyUserDetails userPrincipal = (MyUserDetails) authentication.getPrincipal();
+    User userPrincipal = (User) authentication.getPrincipal();
 
     return Jwts.builder()
         .claims()

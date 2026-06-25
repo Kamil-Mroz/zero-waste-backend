@@ -10,11 +10,8 @@ import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.domain.entity.RefreshToken;
 import com.kamilpm.zero_waste.domain.entity.User;
-import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.exception.TokenException;
 import com.kamilpm.zero_waste.repository.RefreshTokenRepository;
-import com.kamilpm.zero_waste.repository.UserRepository;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.RefreshTokenService;
 
 import jakarta.transaction.Transactional;
@@ -24,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RefreshTokenServiceImpl implements RefreshTokenService {
   private final RefreshTokenRepository refreshTokenRepository;
-  private final UserRepository userRepository;
 
   @Value("${refresh-token.expiration}")
   private long refreshTokenExpiration;
@@ -32,9 +28,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   @Override
   @Transactional
   public RefreshToken generateRefreshToken(Authentication authentication) {
-    MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
-    User user = userRepository.findById(userDetails.getId())
-        .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    User user = (User) authentication.getPrincipal();
 
     RefreshToken token = new RefreshToken();
     token.setUser(user);

@@ -21,7 +21,6 @@ import com.kamilpm.zero_waste.domain.mapper.OfferMapper;
 import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.repository.OfferRepository;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.ItemService;
 import com.kamilpm.zero_waste.service.NotificationService;
@@ -54,7 +53,7 @@ public class OfferServiceImpl implements OfferService {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Override
   public void acceptOffer(UUID id) {
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
     Offer offer = getOfferById(id);
     ensurePending(offer);
     Item item = itemService.findByIdForUpdate(offer.getItem().getId());
@@ -85,7 +84,7 @@ public class OfferServiceImpl implements OfferService {
   @Transactional
   @Override
   public void rejectOffer(UUID id) {
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
 
     Offer offer = getOfferById(id);
     if (!Objects.equals(offer.getItem().getOwner().getId(), user.getId()))
@@ -102,7 +101,7 @@ public class OfferServiceImpl implements OfferService {
   @Transactional
   @Override
   public void makeOffer(UUID id) {
-    User user = authService.getRequiredAuthenticatedUserEntity();
+    User user = authService.getRequiredAuthenticatedUser();
 
     Item item = itemService.findByIdForUpdate(id);
     if (Objects.equals(user.getId(), item.getOwner().getId()))
@@ -131,7 +130,7 @@ public class OfferServiceImpl implements OfferService {
   @Transactional
   @Override
   public void cancelOffer(UUID id) {
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
 
     Offer offer = getOfferById(id);
 
@@ -155,7 +154,7 @@ public class OfferServiceImpl implements OfferService {
   @Transactional
   public Page<OfferDto> getMyOffers(Pageable pageable, OfferStatus status) {
 
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
     if (status != null) {
       return offerRepository.findByBuyer_IdAndStatus(user.getId(), status, pageable).map(offerMapper::toDto);
     }
@@ -166,7 +165,7 @@ public class OfferServiceImpl implements OfferService {
   @Override
   @Transactional
   public Page<OfferDto> getReceivedOffers(Pageable pageable, OfferStatus status) {
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
     if (status != null) {
       return offerRepository.findByItem_Owner_IdAndStatus(user.getId(), status, pageable).map(offerMapper::toDto);
     }

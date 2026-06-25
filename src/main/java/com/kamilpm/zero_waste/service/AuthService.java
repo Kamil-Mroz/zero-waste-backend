@@ -7,16 +7,14 @@ import org.springframework.security.core.Authentication;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.request.LoginRequest;
 import com.kamilpm.zero_waste.domain.request.RegisterRequest;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 
 public interface AuthService {
   User register(RegisterRequest registerRequest);
 
   Authentication verify(LoginRequest loginRequest);
 
-  Optional<MyUserDetails> getAuthenticatedUser();
+  Optional<User> getAuthenticatedUser();
 
-  MyUserDetails getRequiredAuthenticatedUserDetails();
+  User getRequiredAuthenticatedUser();
 
-  User getRequiredAuthenticatedUserEntity();
 }

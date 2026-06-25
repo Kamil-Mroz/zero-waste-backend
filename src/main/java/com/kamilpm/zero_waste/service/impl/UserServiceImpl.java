@@ -27,7 +27,6 @@ import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.repository.RefreshTokenRepository;
 import com.kamilpm.zero_waste.repository.UserBanRepository;
 import com.kamilpm.zero_waste.repository.UserRepository;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.ItemService;
 import com.kamilpm.zero_waste.service.NotificationService;
@@ -60,7 +59,7 @@ public class UserServiceImpl implements UserService {
     if (roles != null && roles.isEmpty())
       roles = null;
     text = SqlUtils.prepareLikePattern(text);
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
     return userRepository.findAllByIdNot(user.getId(), text, roles, pageable).map(userMapper::toDto);
   }
 
@@ -102,7 +101,7 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public UserDto updateUser(final UUID id, final UpdateUserRequest userRequest) {
 
-    MyUserDetails admin = authService.getRequiredAuthenticatedUserDetails();
+    User admin = authService.getRequiredAuthenticatedUser();
 
     if (Objects.equals(admin.getId(), id)) {
       throw new ForbiddenException("You can not update your account");
@@ -130,7 +129,7 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public void deleteUser(final List<UUID> ids) {
 
-    MyUserDetails admin = authService.getRequiredAuthenticatedUserDetails();
+    User admin = authService.getRequiredAuthenticatedUser();
 
     if (ids.stream().anyMatch((id) -> Objects.equals(admin.getId(), id))) {
       throw new ForbiddenException("You can not delete your account");
@@ -153,7 +152,7 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public void banUsers(final BanRequest banRequest) {
-    final User admin = authService.getRequiredAuthenticatedUserEntity();
+    final User admin = authService.getRequiredAuthenticatedUser();
 
     final List<User> users = userRepository.findAllById(banRequest.getIds());
 
@@ -193,7 +192,7 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public void unbanUsers(UnbanRequest unbanRequest) {
 
-    final User admin = authService.getRequiredAuthenticatedUserEntity();
+    final User admin = authService.getRequiredAuthenticatedUser();
 
     List<UserBan> userBans = userBanRepository.findBanWithUser(unbanRequest.getIds());
     Instant now = Instant.now();

@@ -4,12 +4,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.domain.dto.NotificationDto;
-import com.kamilpm.zero_waste.domain.entity.Notification;
 import com.kamilpm.zero_waste.domain.entity.NotificationType;
+import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.request.CursorDirection;
 import com.kamilpm.zero_waste.domain.request.CursorRequest;
 import com.kamilpm.zero_waste.domain.response.CursorResponse;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.NotificationService;
 
@@ -35,7 +34,7 @@ public class NotificationController {
   @GetMapping("/unread-count")
   public ResponseEntity<?> getUnreadCount() {
 
-    MyUserDetails myUserDetails = authService.getRequiredAuthenticatedUserDetails();
+    User myUserDetails = authService.getRequiredAuthenticatedUser();
 
     long unreadCount = notificationService.getUnreadCount(myUserDetails.getId());
 
@@ -44,7 +43,7 @@ public class NotificationController {
 
   @GetMapping("/{id}")
   public ResponseEntity<NotificationDto> getNotification(@PathVariable UUID id) {
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
     return ResponseEntity.ok(notificationService.getNotification(user.getId(), id));
   }
 
@@ -58,7 +57,7 @@ public class NotificationController {
 
     CursorRequest cursor = createdAt != null && id != null ? new CursorRequest(createdAt, id) : null;
 
-    UUID userId = authService.getRequiredAuthenticatedUserDetails().getId();
+    UUID userId = authService.getRequiredAuthenticatedUser().getId();
 
     CursorResponse<NotificationDto> notifications = notificationService.getNotifications(userId, cursor,
         notificationType,
@@ -71,7 +70,7 @@ public class NotificationController {
   @PatchMapping("/{id}/read")
   public ResponseEntity<Void> markAsRead(@PathVariable UUID id) {
 
-    MyUserDetails myUserDetails = authService.getRequiredAuthenticatedUserDetails();
+    User myUserDetails = authService.getRequiredAuthenticatedUser();
     notificationService.markAsRead(id, myUserDetails.getId());
 
     return ResponseEntity.ok().build();
@@ -80,7 +79,7 @@ public class NotificationController {
   @PatchMapping("/read-all")
   public ResponseEntity<Void> markAllAsRead() {
 
-    MyUserDetails myUserDetails = authService.getRequiredAuthenticatedUserDetails();
+    User myUserDetails = authService.getRequiredAuthenticatedUser();
     notificationService.markAllAsRead(myUserDetails.getId());
 
     return ResponseEntity.ok().build();

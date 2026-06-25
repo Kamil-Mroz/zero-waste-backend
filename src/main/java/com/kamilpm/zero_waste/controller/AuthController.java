@@ -9,10 +9,8 @@ import com.kamilpm.zero_waste.domain.mapper.UserMapper;
 import com.kamilpm.zero_waste.domain.request.LoginRequest;
 import com.kamilpm.zero_waste.domain.request.RegisterRequest;
 import com.kamilpm.zero_waste.domain.response.AuthResponse;
-import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.exception.TokenException;
 import com.kamilpm.zero_waste.exception.UnauthorizedException;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.JwtService;
 import com.kamilpm.zero_waste.service.RefreshTokenService;
@@ -34,7 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
@@ -100,10 +97,9 @@ public class AuthController {
       throw new UnauthorizedException("Account suspended");
 
     }
-    UserDetails userDetails = MyUserDetails.buildUserDetails(user);
 
-    Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-        userDetails.getAuthorities());
+    Authentication authentication = new UsernamePasswordAuthenticationToken(user, null,
+        user.getAuthorities());
 
     String newAccessToken = jwtService.generateToken(authentication);
 

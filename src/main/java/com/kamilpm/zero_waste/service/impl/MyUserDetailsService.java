@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.repository.UserBanRepository;
 import com.kamilpm.zero_waste.repository.UserRepository;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +22,7 @@ public class MyUserDetailsService implements UserDetailsService {
   private final UserBanRepository userBanRepository;
 
   @Override
-@Transactional(readOnly=true)
+  @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
     User user = Optional.ofNullable(userRepository.findByEmail(username))
@@ -31,7 +30,7 @@ public class MyUserDetailsService implements UserDetailsService {
 
     clearExpiredBan(user);
 
-    return MyUserDetails.buildUserDetails(user);
+    return user;
   }
 
   private void clearExpiredBan(User user) {

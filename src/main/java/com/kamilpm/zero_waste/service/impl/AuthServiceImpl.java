@@ -21,7 +21,6 @@ import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.exception.UnauthorizedException;
 import com.kamilpm.zero_waste.repository.UserRepository;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -68,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public Optional<MyUserDetails> getAuthenticatedUser() {
+  public Optional<User> getAuthenticatedUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     if (authentication == null
@@ -77,29 +76,21 @@ public class AuthServiceImpl implements AuthService {
       return Optional.empty();
     }
 
-    return Optional.of((MyUserDetails) authentication.getPrincipal());
+    return Optional.of((User) authentication.getPrincipal());
   }
 
   @Override
-  public MyUserDetails getRequiredAuthenticatedUserDetails() {
+  public User getRequiredAuthenticatedUser() {
     try {
-      MyUserDetails userDetails = getAuthenticatedUser().get();
-      if (userDetails.isBanActive())
+      User user = getAuthenticatedUser().get();
+      if (user.isBanActive())
         throw new UnauthorizedException("Account suspended");
-      return userDetails;
+      return user;
     } catch (ForbiddenException ex) {
       throw ex;
     } catch (Exception ex) {
       throw new UnauthorizedException("User is not authenticated");
     }
-  }
-
-  @Override
-  public User getRequiredAuthenticatedUserEntity() {
-
-    UUID id = getRequiredAuthenticatedUserDetails().getId();
-    return userRepository.findById(id).orElseThrow(() -> new UnauthorizedException("User is not authenticated"));
-
   }
 
 }

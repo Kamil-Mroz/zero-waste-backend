@@ -10,7 +10,6 @@ import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.mapper.BlogMapper;
 import com.kamilpm.zero_waste.domain.request.BlogRequest;
 import com.kamilpm.zero_waste.repository.BlogRepository;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.BlogService;
 
@@ -26,7 +25,7 @@ public class BlogServiceImpl implements BlogService {
 
   @Override
   public BlogDto createBlog(BlogRequest blog) {
-    User user = authService.getRequiredAuthenticatedUserEntity();
+    User user = authService.getRequiredAuthenticatedUser();
     Blog newBlog = Blog.builder()
         .author(user)
         .content(blog.getContent())
@@ -46,7 +45,7 @@ public class BlogServiceImpl implements BlogService {
   @Override
   public List<BlogDto> getOwnBlogs() {
 
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
     return blogRepository.findByAuthor_Id(user.getId()).stream().map(blogMapper::toDto).toList();
   }
 }

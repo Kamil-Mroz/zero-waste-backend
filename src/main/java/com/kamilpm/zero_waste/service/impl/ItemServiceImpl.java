@@ -25,7 +25,6 @@ import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.repository.ItemRepository;
-import com.kamilpm.zero_waste.security.MyUserDetails;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.CategoryService;
 import com.kamilpm.zero_waste.service.ImageService;
@@ -49,7 +48,7 @@ public class ItemServiceImpl implements ItemService {
   @Override
   @Transactional
   public ItemDto createItem(ItemRequest itemRequest) {
-    User user = authService.getRequiredAuthenticatedUserEntity();
+    User user = authService.getRequiredAuthenticatedUser();
 
     if (itemRequest.getImages().size() > 5) {
       throw new ConflictException("Max image count is 5", "images");
@@ -88,7 +87,7 @@ public class ItemServiceImpl implements ItemService {
 
     Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
 
     if (!Objects.equals(item.getOwner().getId(), user.getId())) {
       throw new ForbiddenException("Must be the owner of the item to update it");
@@ -132,8 +131,8 @@ public class ItemServiceImpl implements ItemService {
     if (category != null) {
       categoryIds = categoryService.getCategoryDescendantsCache().get(category);
     }
-    Optional<MyUserDetails> user = authService.getAuthenticatedUser();
-    UUID excludeOwnerId = user.map(MyUserDetails::getId).orElse(null);
+    Optional<User> user = authService.getAuthenticatedUser();
+    UUID excludeOwnerId = user.map(User::getId).orElse(null);
 
     return itemRepository.searchItems(excludeOwnerId, ItemState.AVAILABLE, text, categoryIds, pageable)
         .map(itemMapper::toDto);
@@ -148,7 +147,7 @@ public class ItemServiceImpl implements ItemService {
     if (Objects.equals(item.getState(), ItemState.AVAILABLE))
       return itemMapper.toDtoWithOwner(item);
 
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
     UUID userId = user.getId();
 
     if (userId.equals(item.getOwner().getId()))
@@ -174,7 +173,7 @@ public class ItemServiceImpl implements ItemService {
   @Override
   @Transactional(readOnly = true)
   public Page<ItemDto> getOwnItems(Pageable pageable, String text, UUID category, List<ItemState> states) {
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
     text = SqlUtils.prepareLikePattern(text);
     if (states == null || states.size() == 0)
       states = List.of(ItemState.AVAILABLE, ItemState.PENDING);
@@ -188,7 +187,7 @@ public class ItemServiceImpl implements ItemService {
   @Override
   @Transactional
   public void deleteItem(UUID id) {
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
     Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
     if (!Objects.equals(user.getId(), item.getOwner().getId())) {
@@ -207,7 +206,7 @@ public class ItemServiceImpl implements ItemService {
   public ItemDto publishItem(UUID id) {
     Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
 
     if (!Objects.equals(item.getOwner().getId(), user.getId())) {
       throw new ForbiddenException("Must be the owner of the item to update it");
@@ -227,7 +226,7 @@ public class ItemServiceImpl implements ItemService {
   public ItemDto hideItem(UUID id) {
     Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
-    MyUserDetails user = authService.getRequiredAuthenticatedUserDetails();
+    User user = authService.getRequiredAuthenticatedUser();
 
     if (!Objects.equals(item.getOwner().getId(), user.getId())) {
       throw new ForbiddenException("Must be the owner of the item to update it");
