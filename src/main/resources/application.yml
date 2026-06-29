@@ -21,9 +21,18 @@ spring:
       supported: '1,2'
       use:
         path-segment: '1'
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8888/realms/zero-waste
+
+
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  security:
+    password: ${DEV_PASSWORD:SecurePassword123!}
 jwt:
   secret: '${JWT_SECRET:your-256-bit-secret-key-here-make-it-at-least-32-bytes-long}'
   expiration: '${JWT_EXPIRATION:900000}'

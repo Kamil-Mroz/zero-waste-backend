@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.kamilpm.zero_waste.exception.TokenException;
 import com.kamilpm.zero_waste.service.JwtService;
+import com.kamilpm.zero_waste.service.impl.MyUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
   private final JwtService jwtService;
-  private final UserDetailsService userDetailsService;
+  private final MyUserDetailsService myUserDetailsService;
 
   @Override
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -41,7 +42,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
       String email = jwtService.getEmailFromToken(token);
 
-      UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+      UserDetails userDetails = myUserDetailsService.loadUserByUsername(email);
       UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
           userDetails.getAuthorities());
       accessor.setUser(authentication);

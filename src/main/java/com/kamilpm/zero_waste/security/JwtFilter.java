@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.kamilpm.zero_waste.service.JwtService;
+import com.kamilpm.zero_waste.service.impl.MyUserDetailsService;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -24,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class JwtFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
-  private final UserDetailsService userDetailsService;
+  private final MyUserDetailsService myUserDetailsService;
 
   @Override
   protected void doFilterInternal(
@@ -40,45 +41,22 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String email = jwtService.getEmailFromToken(token);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails,
-            null, userDetails.getAuthorities());
+          UserDetails userDetails = myUserDetailsService.loadUserByUsername(email);
 
-        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+          UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails,
+              null, userDetails.getAuthorities());
 
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+          authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+          SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        }
 
       }
-    } catch (JwtException e) {
-
-      // ErrorResponse error = new ErrorResponse(
-      // e.getMessage(),
-      // request.getRequestURI(),
-      // 401,
-      // "Unauthorized");
-
-      // response.setStatus(HttpStatus.UNAUTHORIZED.value());
-      // response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-      // response.setCharacterEncoding("UTF-8");
-
-      // new ObjectMapper().writeValue(response.getOutputStream(), error);
-      // return;
-      SecurityContextHolder.clearContext();
 
     } catch (Exception e) {
 
-      // ErrorResponse error = new ErrorResponse(
-      // e.getMessage(),
-      // request.getRequestURI(),
-      // 500,
-      // "Internal server error");
-      // response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-      // response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-      // response.setCharacterEncoding("UTF-8");
-
-      // new ObjectMapper().writeValue(response.getOutputStream(), error);
-      // return;
       SecurityContextHolder.clearContext();
 
     }

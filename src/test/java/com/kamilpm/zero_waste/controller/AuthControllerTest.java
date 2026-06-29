@@ -83,7 +83,7 @@ public class AuthControllerTest {
 
   @Test
   void testRegisterShouldPass() {
-    String email = "john.doe@example.com";
+    String email = "john.doe789@example.com";
 
     RegisterRequest registerRequest = defaultRegisterRequest(email);
 
@@ -142,7 +142,7 @@ public class AuthControllerTest {
 
   @Test
   void testLoginShouldPass() {
-    String email = "john.doe2@example.com";
+    String email = "john.doe298698@example.com";
 
     register(email);
 

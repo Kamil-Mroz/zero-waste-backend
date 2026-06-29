@@ -1,6 +1,7 @@
 package com.kamilpm.zero_waste.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -18,7 +19,7 @@ import com.kamilpm.zero_waste.domain.entity.UserRole;
 public interface UserRepository extends JpaRepository<User, UUID> {
 
   @EntityGraph(attributePaths = { "roles" })
-  User findByEmail(String email);
+  Optional<User> findByEmail(String email);
 
   boolean existsByEmail(String email);
 

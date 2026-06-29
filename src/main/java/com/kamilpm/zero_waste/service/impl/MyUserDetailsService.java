@@ -25,12 +25,16 @@ public class MyUserDetailsService implements UserDetailsService {
   @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-    User user = Optional.ofNullable(userRepository.findByEmail(username))
-        .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
+    Optional<User> user = userRepository.findByEmail(username);
+    if (user.isPresent()) {
 
-    clearExpiredBan(user);
+      User currentUser = user.get();
+      clearExpiredBan(currentUser);
 
-    return user;
+      return currentUser;
+    }
+    throw new UsernameNotFoundException("User not found with email: " + username);
+
   }
 
   private void clearExpiredBan(User user) {

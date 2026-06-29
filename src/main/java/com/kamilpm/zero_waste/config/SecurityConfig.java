@@ -21,11 +21,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.kamilpm.zero_waste.repository.UserBanRepository;
-import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.security.JwtAuthEntryPoint;
 import com.kamilpm.zero_waste.security.JwtFilter;
-import com.kamilpm.zero_waste.service.impl.MyUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
 

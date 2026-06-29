@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Configuration;
@@ -24,12 +25,24 @@ public class Seeder implements ApplicationRunner {
   private final CategoryRepository categoryRepository;
   private final PasswordEncoder passwordEncoder;
 
+  @Value("${app.security.password}")
+  private String securityPassword;
+
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    // System.out.println("Start seeding...");
-    // seedUsers();
-    // seedCategories();
-    // System.out.println("Seeding completed.");
+    if (!userRepository.existsByEmail("john.doe@example.com")) {
+      System.out.println("Start seeding users...");
+
+      seedUsers();
+      System.out.println("Seeding users completed.");
+    }
+    if (!categoryRepository.existsByName("Books")) {
+
+      System.out.println("Start seeding categories...");
+
+      seedCategories();
+      System.out.println("Seeding categories completed.");
+    }
 
   }
 
@@ -41,7 +54,7 @@ public class Seeder implements ApplicationRunner {
             .firstName("John")
             .lastName("Doe")
             .email("john.doe@example.com")
-            .password(passwordEncoder.encode("SecurePassword123!"))
+            .password(passwordEncoder.encode(securityPassword))
             .phoneNumber("23912123")
             .roles(Set.of(UserRole.ADMIN))
             .banActive(false)
@@ -52,7 +65,7 @@ public class Seeder implements ApplicationRunner {
             .firstName("John1")
             .lastName("Doe1")
             .email("john.doe1@example.com")
-            .password(passwordEncoder.encode("SecurePassword123!"))
+            .password(passwordEncoder.encode(securityPassword))
             .phoneNumber("23912123")
             .roles(Set.of(UserRole.USER))
             .banActive(false)
@@ -76,7 +89,7 @@ public class Seeder implements ApplicationRunner {
               .firstName("User" + i)
               .lastName("Nick" + i)
               .email("user" + i + "@example.com")
-              .password(passwordEncoder.encode("SecurePassword123!"))
+              .password(passwordEncoder.encode(securityPassword))
               .phoneNumber("23912123")
               .roles(Set.of(UserRole.USER))
               .banActive(false)
