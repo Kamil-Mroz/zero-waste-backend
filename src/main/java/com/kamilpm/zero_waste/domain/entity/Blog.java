@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -38,6 +39,7 @@ public class Blog extends BaseEntity {
   @Column(name = "description", nullable = false)
   private String description;
 
+  @Lob
   @Column(name = "content", nullable = false)
   private String content;
 

@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -29,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
   private final JwtFilter jwtFilter;
@@ -46,6 +48,8 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             (authorize) -> authorize
                 .requestMatchers("/api/v{version}/auth/**").permitAll()
+
+                .requestMatchers(HttpMethod.GET, "/api/v{version}/blogs/own").hasAnyRole("ADMIN", "WRITER")
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/blogs/**").permitAll()
                 .requestMatchers("/api/v{version}/blogs/**").hasAnyRole("ADMIN", "WRITER")
                 .requestMatchers("/api/docs/**").permitAll()

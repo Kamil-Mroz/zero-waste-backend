@@ -21,12 +21,6 @@ spring:
       supported: '1,2'
       use:
         path-segment: '1'
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8888/realms/zero-waste
-
 
 app:
   cors:
