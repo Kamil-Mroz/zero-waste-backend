@@ -25,12 +25,12 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
   @Transactional
   @Modifying
   @Query("update Notification n set n.read = true where n.read = false and n.id = :notificationId and n.recipient.id = :recipientId")
-  void markAsRead(@Param(value = "notificationId") UUID notificationId, @Param(value = "recipientId") UUID recipientId);
+  void markAsRead(@Param( "notificationId") UUID notificationId, @Param( "recipientId") UUID recipientId);
 
   @Transactional
   @Modifying
   @Query("update Notification n set n.read = true where n.read = false and n.recipient.id = :recipientId")
-  void markAllAsRead(@Param(value = "recipientId") UUID recipientId);
+  void markAllAsRead(@Param("recipientId") UUID recipientId);
 
   @Query("""
           select n

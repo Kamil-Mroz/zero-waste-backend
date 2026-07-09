@@ -89,6 +89,7 @@ public class ErrorController {
   @ExceptionHandler(Exception.class)
   public ProblemDetail handleException(Exception ex) {
     log.error("Caught unexpected exception: Global Error Handler " + ex.getClass().getName());
+    log.error(ex.getMessage());
 
     return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
 

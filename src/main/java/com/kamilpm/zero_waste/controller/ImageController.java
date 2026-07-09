@@ -27,7 +27,7 @@ public class ImageController {
   private final ImageRepository imageRepository;
 
   @GetMapping("/{id}")
-  public ResponseEntity<Resource> getResource(@PathVariable UUID id) {
+  public ResponseEntity<Resource> getResource(@PathVariable("id") UUID id) {
     Image image = imageRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Image not found"));
 

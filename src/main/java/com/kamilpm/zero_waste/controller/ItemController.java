@@ -49,7 +49,7 @@ public class ItemController {
   }
 
   @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<ItemDto> updateItem(@PathVariable UUID id,
+  public ResponseEntity<ItemDto> updateItem(@PathVariable("id") UUID id,
       @Valid @ModelAttribute UpdateItemRequest itemRequest) {
     ItemDto item = itemService.updateItem(id, itemRequest);
 
@@ -57,24 +57,24 @@ public class ItemController {
   }
 
   @PatchMapping(path = "/{id}/publish")
-  public ResponseEntity<ItemDto> publishItem(@PathVariable UUID id) {
+  public ResponseEntity<ItemDto> publishItem(@PathVariable("id") UUID id) {
     ItemDto item = itemService.publishItem(id);
     return ResponseEntity.ok(item);
 
   }
 
   @PatchMapping(path = "/{id}/hide")
-  public ResponseEntity<ItemDto> hideItem(@PathVariable UUID id) {
+  public ResponseEntity<ItemDto> hideItem(@PathVariable("id") UUID id) {
     ItemDto item = itemService.hideItem(id);
     return ResponseEntity.ok(item);
 
   }
 
   @GetMapping
-  public ResponseEntity<PageResponse<ItemDto>> getItems(@RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size,
-      @RequestParam(required = false) String text,
-      @RequestParam(required = false) UUID category) {
+  public ResponseEntity<PageResponse<ItemDto>> getItems(@RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size,
+      @RequestParam(value = "text", required = false) String text,
+      @RequestParam(value = "category", required = false) UUID category) {
 
     Page<ItemDto> items = itemService.getItems(PageRequest.of(page, size), text, category);
 
@@ -83,30 +83,30 @@ public class ItemController {
   }
 
   @GetMapping("/own")
-  public ResponseEntity<PageResponse<ItemDto>> getOwnItems(@RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size,
-      @RequestParam(required = false) String text,
-      @RequestParam(required = false) UUID category,
-      @RequestParam(required = false) List<ItemState> states) {
+  public ResponseEntity<PageResponse<ItemDto>> getOwnItems(@RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size,
+      @RequestParam(value = "text", required = false) String text,
+      @RequestParam(value = "category", required = false) UUID category,
+      @RequestParam(value = "states", required = false) List<ItemState> states) {
     Page<ItemDto> itemsDto = itemService.getOwnItems(PageRequest.of(page, size), text, category, states);
     return ResponseEntity.ok(new PageResponse<>(itemsDto.getContent(), itemsDto.getNumber(), itemsDto.getSize(),
         itemsDto.getTotalElements(), itemsDto.getTotalPages()));
   }
 
   @GetMapping("/user/{id}")
-  public ResponseEntity<List<ItemDto>> getUsersItem(@PathVariable UUID id) {
+  public ResponseEntity<List<ItemDto>> getUsersItem(@PathVariable("id") UUID id) {
     List<ItemDto> itemDtos = itemService.getUserItems(id);
     return ResponseEntity.ok(itemDtos);
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<ItemDto> getItem(@PathVariable UUID id) {
+  public ResponseEntity<ItemDto> getItem(@PathVariable("id") UUID id) {
     ItemDto item = itemService.getItem(id);
     return ResponseEntity.ok(item);
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteItem(@PathVariable UUID id) {
+  public ResponseEntity<Void> deleteItem(@PathVariable("id") UUID id) {
     itemService.deleteItem(id);
     return ResponseEntity.noContent().build();
   }

@@ -27,5 +27,5 @@ public interface ImageRepository extends JpaRepository<Image, UUID> {
   @Modifying
   @EntityGraph(attributePaths = { "item" })
   @Query("DELETE FROM Image i WHERE  i.item.id = :itemId")
-  void deleteAllByItemId(@Param(value = "itemId") UUID itemId);
+  void deleteAllByItemId(@Param("itemId") UUID itemId);
 }

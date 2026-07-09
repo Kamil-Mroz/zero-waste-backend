@@ -36,7 +36,7 @@ public class BlogController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<BlogDto> createBlog(@PathVariable UUID id, @RequestBody BlogRequest blog) {
+  public ResponseEntity<BlogDto> createBlog(@PathVariable(name = "id") UUID id, @RequestBody BlogRequest blog) {
     BlogDto updatedBlog = blogService.updateBlog(id, blog);
     return new ResponseEntity<BlogDto>(updatedBlog, HttpStatus.CREATED);
   }
@@ -48,7 +48,7 @@ public class BlogController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<BlogDto> getBlog(@PathVariable UUID id) {
+  public ResponseEntity<BlogDto> getBlog(@PathVariable(name = "id") UUID id) {
     BlogDto blog = blogService.getBlog(id);
     return ResponseEntity.ok(blog);
   }
@@ -61,7 +61,7 @@ public class BlogController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteBlog(@PathVariable UUID id) {
+  public ResponseEntity<Void> deleteBlog(@PathVariable(name = "id") UUID id) {
     blogService.deleteBlog(id);
     return ResponseEntity.noContent().build();
 

@@ -72,7 +72,8 @@ public class CategoryServiceImpl implements CategoryService {
   @Override
   public Category getCategoryById(UUID categoryId) {
 
-    return categoryRepository.findById(categoryId).orElseThrow(() -> new EntityNotFoundException("Category not found"));
+    return categoryRepository.findById(categoryId)
+        .orElseThrow(() -> new EntityNotFoundException("Category not found by id " + categoryId));
   }
 
   @Transactional
@@ -80,7 +81,7 @@ public class CategoryServiceImpl implements CategoryService {
   public Category createCategory(CategoryRequest categoryRequest) {
     Category parent = null;
     if (categoryRepository.existsByName(categoryRequest.getName())) {
-      throw new ConflictException("Category already exists", "name");
+      throw new ConflictException("Category already exists with name " + categoryRequest.getName(), "name");
     }
 
     if (categoryRequest.getCategoryId() != null) {
@@ -102,23 +103,27 @@ public class CategoryServiceImpl implements CategoryService {
     Category parent = null;
 
     if (categoryRepository.existsByNameAndIdNot(categoryRequest.getName(), categoryId)) {
-      throw new ConflictException("Category already exists", "name");
+      throw new ConflictException("Category already exists with name " + categoryRequest.getName(), "name");
     }
 
     Category category = categoryRepository.findById(categoryId)
-        .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        .orElseThrow(() -> new EntityNotFoundException("Category not found by id" + categoryId));
 
-    boolean isSameName = Objects.equals(category.getName(), categoryRequest.getName());
-    UUID currentParentId = category.getParent() != null ? category.getParent().getId() : null;
-    boolean isSameParent = Objects.equals(currentParentId, categoryRequest.getCategoryId());
+    // boolean isSameName = Objects.equals(category.getName(),
+    // categoryRequest.getName());
+    // UUID currentParentId = category.getParent() != null ?
+    // category.getParent().getId() : null;
+    // boolean isSameParent = Objects.equals(currentParentId,
+    // categoryRequest.getCategoryId());
 
-    if (isSameName && isSameParent) {
-      return category;
-    }
+    // if (isSameName && isSameParent) {
+    // return category;
+    // }
 
     if (categoryRequest.getCategoryId() != null) {
       parent = categoryRepository.findById(categoryRequest.getCategoryId())
-          .orElseThrow(() -> new EntityNotFoundException("Parent category not found"));
+          .orElseThrow(() -> new EntityNotFoundException(
+              "Parent category not found with id " + categoryRequest.getCategoryId()));
       validateNoCycle(category, parent);
     }
 
@@ -131,8 +136,8 @@ public class CategoryServiceImpl implements CategoryService {
     return updatedCategory;
   }
 
-  private void validateNoCycle(Category category, Category newParen) {
-    Category current = newParen;
+  private void validateNoCycle(Category category, Category newParent) {
+    Category current = newParent;
     while (current != null) {
       if (Objects.equals(current.getId(), category.getId())) {
         throw new IllegalStateException("Cannot set a child as parent (cycle detected)");
@@ -152,9 +157,9 @@ public class CategoryServiceImpl implements CategoryService {
     if (categoryRepository.existsByParentId(categoryId)) {
       throw new ConflictException("Category can not be deleted cause of children categories");
     }
+
     if (itemRepository.existsByCategory_Id(categoryId)) {
       throw new ConflictException("Category can not be deleted cause of existing items in category");
-
     }
 
     categoryRepository.deleteById(categoryId);
@@ -162,7 +167,13 @@ public class CategoryServiceImpl implements CategoryService {
 
   }
 
-  public Map<UUID, Set<UUID>> getCategoryDescendantsCache() {
+  @Override
+  public Set<UUID> getCategoryDescendantsById(UUID categoryId) {
+
+    return getCategoryDescendantsCache().get(categoryId);
+  }
+
+  private Map<UUID, Set<UUID>> getCategoryDescendantsCache() {
     if (categoryDescendantsCache == null) {
       List<Category> categories = categoryRepository.findAll();
       categoryDescendantsCache = buildDescendantMap(categories);
@@ -209,8 +220,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
   }
 
-  @Override
-  public void invalidateCache() {
+  private void invalidateCache() {
     cachedTree = null;
     categoryDescendantsCache = null;
   }

@@ -69,17 +69,7 @@ public class AuthControllerTest {
         .getValue();
   }
 
-  // private String loginAndGetAccessToken(String email) {
-  // return client.post()
-  // .uri("/login")
-  // .body(LoginRequest.builder()
-  // .email(email)
-  // .password(PASSWORD)
-  // .build())
-  // .exchange()
-  // .expectStatus().isOk().expectBody(AuthResponse.class)
-  // .returnResult().getResponseBody().getAccessToken();
-  // }
+
 
   @Test
   void testRegisterShouldPass() {
@@ -227,25 +217,5 @@ public class AuthControllerTest {
     assertEquals("Refresh token cookie not found", details);
   }
 
-  // @Test
-  // void testGetCurrentUserShouldPass() {
 
-  // String email = "john.doe5@example.com";
-  // register(email);
-  // String accessToken = loginAndGetAccessToken(email);
-  // CurrentUserDto user = client.get().uri("/me").header("Authorization", "Bearer
-  // " + accessToken).exchange()
-  // .expectStatus()
-  // .isOk().expectBody(CurrentUserDto.class).returnResult().getResponseBody();
-  // assertEquals(email, user.getEmail());
-  // }
-
-  // @Test
-  // void testGetCurrentUserShouldFail() {
-
-  // ErrorResponse error = client.get().uri("/me").header("Authorization", "Bearer
-  // Invalid").exchange().expectStatus()
-  // .isUnauthorized().expectBody(ErrorResponse.class).returnResult().getResponseBody();
-  // assertEquals("Token invalid or expired", error.getDetail());
-  // }
 }

@@ -129,7 +129,7 @@ public class ItemServiceImpl implements ItemService {
     text = SqlUtils.prepareLikePattern(text);
     Set<UUID> categoryIds = null;
     if (category != null) {
-      categoryIds = categoryService.getCategoryDescendantsCache().get(category);
+      categoryIds = categoryService.getCategoryDescendantsById(category);
     }
     Optional<User> user = authService.getAuthenticatedUser();
     UUID excludeOwnerId = user.map(User::getId).orElse(null);
@@ -179,7 +179,7 @@ public class ItemServiceImpl implements ItemService {
       states = List.of(ItemState.AVAILABLE, ItemState.PENDING);
     Set<UUID> categoryIds = null;
     if (category != null) {
-      categoryIds = categoryService.getCategoryDescendantsCache().get(category);
+      categoryIds = categoryService.getCategoryDescendantsById(category);
     }
     return itemRepository.findOwnItems(user.getId(), text, categoryIds, states, pageable).map(itemMapper::toDto);
   }

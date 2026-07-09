@@ -1,6 +1,7 @@
 package com.kamilpm.zero_waste.validation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ public class InternationalPhoneNumberValidationTest {
         .build();
     var violations = validator.validate(register);
 
-    assertEquals(true, violations.isEmpty());
+    assertTrue( violations.isEmpty());
   }
 
   @Test

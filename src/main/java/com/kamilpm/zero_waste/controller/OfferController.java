@@ -29,35 +29,35 @@ public class OfferController {
   private final OfferService offerService;
 
   @PostMapping("/{id}")
-  public ResponseEntity<Void> makeOffer(@PathVariable UUID id) {
+  public ResponseEntity<Void> makeOffer(@PathVariable("id") UUID id) {
     offerService.makeOffer(id);
 
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/{id}/accept")
-  public ResponseEntity<Void> acceptOffer(@PathVariable UUID id) {
+  public ResponseEntity<Void> acceptOffer(@PathVariable("id") UUID id) {
     offerService.acceptOffer(id);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/{id}/reject")
-  public ResponseEntity<Void> rejectOffer(@PathVariable UUID id) {
+  public ResponseEntity<Void> rejectOffer(@PathVariable("id") UUID id) {
     offerService.rejectOffer(id);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/{id}/cancel")
-  public ResponseEntity<Void> cancelOffer(@PathVariable UUID id) {
+  public ResponseEntity<Void> cancelOffer(@PathVariable("id") UUID id) {
     offerService.cancelOffer(id);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/own")
   public ResponseEntity<PageResponse<OfferDto>> getOwnOffers(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size,
-      @RequestParam(required = false) OfferStatus status) {
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size,
+      @RequestParam(value = "status", required = false) OfferStatus status) {
 
     Page<OfferDto> offersDto = offerService.getMyOffers(PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"),
         status);
@@ -68,9 +68,9 @@ public class OfferController {
 
   @GetMapping("/received")
   public ResponseEntity<PageResponse<OfferDto>> getReceivedOffers(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size,
-      @RequestParam(required = false) OfferStatus status) {
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size,
+      @RequestParam(value = "status", required = false) OfferStatus status) {
 
     Page<OfferDto> offersDto = offerService.getReceivedOffers(
         PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"),

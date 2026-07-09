@@ -40,8 +40,8 @@ public class ReviewController {
 
   @GetMapping("/received")
   public ResponseEntity<PageResponse<ReviewResponse>> getReceivedReviews(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size) {
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size) {
     Page<ReviewResponse> reviews = reviewService.getReceivedReviews(PageRequest.of(page, size));
     return ResponseEntity.ok(PageResponse.<ReviewResponse>builder()
         .content(reviews.getContent())
@@ -54,8 +54,8 @@ public class ReviewController {
 
   @GetMapping("/given")
   public ResponseEntity<PageResponse<ReviewResponse>> getGivenReview(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size) {
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size) {
     Page<ReviewResponse> reviews = reviewService.getGivenReviews(PageRequest.of(page, size));
     return ResponseEntity.ok(PageResponse.<ReviewResponse>builder()
         .content(reviews.getContent())
@@ -68,9 +68,9 @@ public class ReviewController {
 
   @GetMapping("/user/{id}")
   public ResponseEntity<PageResponse<ReviewResponse>> getUserReviews(
-      @PathVariable(value = "id") UUID userId,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size) {
+      @PathVariable("id") UUID userId,
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size) {
     Page<ReviewResponse> reviews = reviewService.getUserReviews(userId, PageRequest.of(page, size));
     return ResponseEntity.ok(PageResponse.<ReviewResponse>builder()
         .content(reviews.getContent())

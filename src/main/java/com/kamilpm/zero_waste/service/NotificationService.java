@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import com.kamilpm.zero_waste.domain.dto.NotificationDto;
-import com.kamilpm.zero_waste.domain.entity.Notification;
 import com.kamilpm.zero_waste.domain.entity.NotificationType;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.request.CursorDirection;

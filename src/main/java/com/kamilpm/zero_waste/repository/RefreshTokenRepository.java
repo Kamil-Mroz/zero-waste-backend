@@ -30,10 +30,10 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
         and rt.revoked = false
 
         """)
-  void revokeAllByUserId(@Param(value = "id") UUID id);
+  void revokeAllByUserId(@Param("id") UUID id);
 
   @Modifying
   @EntityGraph(attributePaths = { "user" })
   @Query("delete from RefreshToken r where r.user.id in :userIds")
-  void deleteAllByUserIds(@Param(value = "userIds") List<UUID> userId);
+  void deleteAllByUserIds(@Param("userIds") List<UUID> userId);
 }

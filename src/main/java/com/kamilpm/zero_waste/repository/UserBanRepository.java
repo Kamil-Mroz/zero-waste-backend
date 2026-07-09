@@ -23,5 +23,5 @@ public interface UserBanRepository extends JpaRepository<UserBan, UUID> {
 
   @Modifying
   @Query("delete from UserBan b where b.user.id in :userIds")
-  void deleteAllByUserIds(@Param(value = "userIds") List<UUID> userId);
+  void deleteAllByUserIds(@Param("userIds") List<UUID> userId);
 }

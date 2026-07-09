@@ -38,7 +38,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    List<String> origins = Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList();
+    // List<String> origins =
+    // Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList();
     registry.addEndpoint("/ws").setAllowedOrigins("*");
 
   }

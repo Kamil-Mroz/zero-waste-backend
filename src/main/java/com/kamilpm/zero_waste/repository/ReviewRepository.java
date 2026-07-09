@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.kamilpm.zero_waste.domain.entity.Review;
@@ -35,7 +36,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
         FROM Review r
         WHERE r.reviewee.id = :userId
       """)
-  Double getAverageRating(UUID userId);
+  Double getAverageRating(@Param("userId") UUID userId);
 
   long countByReviewee_Id(UUID userId);
 
@@ -49,7 +50,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
         GROUP BY r.rating
         ORDER BY r.rating DESC
       """)
-  List<IRatingCountProjection> getRatingBreakdown(UUID userId);
+  List<IRatingCountProjection> getRatingBreakdown(@Param("userId") UUID userId);
 
   @EntityGraph(attributePaths = { "reviewee" })
   @Query("""
@@ -63,7 +64,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
         GROUP BY r.rating
         ORDER BY r.rating DESC
       """)
-  List<IRatingBreakdownWithStats> getRatingBreakdownWithStats(UUID userId);
+  List<IRatingBreakdownWithStats> getRatingBreakdownWithStats(@Param("userId") UUID userId);
 
   void deleteByReviewer_IdIn(List<UUID> ids);
 

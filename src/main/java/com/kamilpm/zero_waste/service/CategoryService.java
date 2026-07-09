@@ -16,14 +16,13 @@ public interface CategoryService {
 
   Category getCategoryById(UUID categoryId);
 
+  Set<UUID> getCategoryDescendantsById(UUID categoryId);
+
   Category createCategory(CategoryRequest categoryRequest);
 
   Category updateCategory(UUID categoryId, CategoryRequest categoryRequest);
 
   void deleteCategory(UUID categoryId);
 
-  Map<UUID, Set<UUID>> getCategoryDescendantsCache();
-
-  void invalidateCache();
 
 }

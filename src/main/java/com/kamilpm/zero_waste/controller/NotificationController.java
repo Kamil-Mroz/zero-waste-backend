@@ -42,18 +42,18 @@ public class NotificationController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<NotificationDto> getNotification(@PathVariable UUID id) {
+  public ResponseEntity<NotificationDto> getNotification(@PathVariable("id") UUID id) {
     User user = authService.getRequiredAuthenticatedUser();
     return ResponseEntity.ok(notificationService.getNotification(user.getId(), id));
   }
 
-  @GetMapping()
+  @GetMapping
   public ResponseEntity<CursorResponse<NotificationDto>> getNotifications(
-      @RequestParam(required = false) Instant createdAt,
-      @RequestParam(required = false) UUID id,
-      @RequestParam(required = false) CursorDirection direction,
-      @RequestParam(required = false) NotificationType notificationType,
-      @RequestParam(defaultValue = "20") int limit) {
+      @RequestParam(value = "createdAt", required = false) Instant createdAt,
+      @RequestParam(value = "id", required = false) UUID id,
+      @RequestParam(value = "direction", required = false) CursorDirection direction,
+      @RequestParam(value = "notificationType", required = false) NotificationType notificationType,
+      @RequestParam(value = "limit", defaultValue = "20") int limit) {
 
     CursorRequest cursor = createdAt != null && id != null ? new CursorRequest(createdAt, id) : null;
 
@@ -68,7 +68,7 @@ public class NotificationController {
   }
 
   @PatchMapping("/{id}/read")
-  public ResponseEntity<Void> markAsRead(@PathVariable UUID id) {
+  public ResponseEntity<Void> markAsRead(@PathVariable("id") UUID id) {
 
     User myUserDetails = authService.getRequiredAuthenticatedUser();
     notificationService.markAsRead(id, myUserDetails.getId());

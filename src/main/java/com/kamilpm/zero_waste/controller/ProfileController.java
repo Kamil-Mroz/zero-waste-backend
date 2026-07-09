@@ -22,7 +22,7 @@ public class ProfileController {
   private final ProfileService profileService;
 
   @GetMapping("/{id}")
-  public ResponseEntity<PublicUserProfileResponse> getProfile(@PathVariable UUID id) {
+  public ResponseEntity<PublicUserProfileResponse> getProfile(@PathVariable("id")  UUID id) {
     return ResponseEntity.ok(profileService.getProfile(id));
   }
 

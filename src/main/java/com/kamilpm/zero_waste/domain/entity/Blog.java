@@ -26,7 +26,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @Builder
-@Table(name = "articles")
+@Table(name = "blogs")
 public class Blog extends BaseEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)

@@ -39,10 +39,10 @@ public class UserController {
 
   @GetMapping
   public ResponseEntity<PageResponse<UserDto>> getUsers(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size,
-      @RequestParam(required = false) String text,
-      @RequestParam(required = false) List<UserRole> roles) {
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size,
+      @RequestParam(value = "text", required = false) String text,
+      @RequestParam(value = "roles", required = false) List<UserRole> roles) {
     Page<UserDto> users = userService.getUsersWithoutCurrentUser(text, roles, PageRequest.of(page, size));
 
     return ResponseEntity.ok(new PageResponse<>(users.getContent(), users.getNumber(), users.getSize(),

@@ -68,7 +68,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
 
   @EntityGraph(attributePaths = { "owner", })
   @Query("select i.state as itemState, COUNT(i.state) as totalItem from Item as i where i.owner.id = :userId group by i.state")
-  List<IItemCount> countTotalItemsByOwnerIdAndState(@Param(value = "userId") UUID userId);
+  List<IItemCount> countTotalItemsByOwnerIdAndState(@Param("userId") UUID userId);
 
   @EntityGraph(attributePaths = { "owner", "category", "images" })
   List<Item> findTop3ByOwner_IdAndStateOrderByCreatedAtDesc(UUID ownerId, ItemState itemState);
