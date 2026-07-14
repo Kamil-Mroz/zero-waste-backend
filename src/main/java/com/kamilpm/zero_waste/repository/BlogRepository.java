@@ -22,6 +22,6 @@ public interface BlogRepository extends JpaRepository<Blog, UUID> {
   @EntityGraph(attributePaths = { "author", "author.roles" })
   List<Blog> findByAuthor_Id(UUID id);
 
-  @EntityGraph(attributePaths = { "author", })
+  @EntityGraph(attributePaths = { "author", "author.roles" })
   Optional<Blog> findByIdAndAuthor_Id(UUID blogId, UUID authorId);
 }

@@ -289,4 +289,8 @@ public class ItemServiceImpl implements ItemService {
     return itemRepository.findByOwner_IdAndState(userId, ItemState.AVAILABLE).stream().map(itemMapper::toDto).toList();
   }
 
+  @Override
+  public boolean existsByCategory_Id(UUID categoryId) {
+    return itemRepository.existsByCategory_Id(categoryId);
+  }
 }

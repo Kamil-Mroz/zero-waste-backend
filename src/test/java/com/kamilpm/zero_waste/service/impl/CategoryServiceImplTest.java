@@ -30,7 +30,7 @@ import com.kamilpm.zero_waste.domain.request.CategoryRequest;
 import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.repository.CategoryRepository;
-import com.kamilpm.zero_waste.repository.ItemRepository;
+import com.kamilpm.zero_waste.service.ItemCategoryQuery;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CategoryServiceImpl Unit Tests")
@@ -40,7 +40,7 @@ public class CategoryServiceImplTest {
   private CategoryRepository categoryRepository;
 
   @Mock
-  private ItemRepository itemRepository;
+  private ItemCategoryQuery itemService;
 
   @Mock
   private CategoryMapper categoryMapper;
@@ -593,7 +593,7 @@ public class CategoryServiceImplTest {
       verify(CategoryServiceImplTest.this.categoryRepository, times(0))
           .existsByParentId(categoryId);
 
-      verify(CategoryServiceImplTest.this.itemRepository, times(0))
+      verify(CategoryServiceImplTest.this.itemService, times(0))
           .existsByCategory_Id(categoryId);
 
       verify(CategoryServiceImplTest.this.categoryRepository, times(0))
@@ -623,7 +623,7 @@ public class CategoryServiceImplTest {
       verify(CategoryServiceImplTest.this.categoryRepository)
           .existsByParentId(categoryId);
 
-      verify(CategoryServiceImplTest.this.itemRepository, times(0))
+      verify(CategoryServiceImplTest.this.itemService, times(0))
           .existsByCategory_Id(categoryId);
 
       verify(CategoryServiceImplTest.this.categoryRepository, times(0))
@@ -641,7 +641,7 @@ public class CategoryServiceImplTest {
       when(CategoryServiceImplTest.this.categoryRepository.existsByParentId(categoryId))
           .thenReturn(false);
 
-      when(CategoryServiceImplTest.this.itemRepository.existsByCategory_Id(categoryId))
+      when(CategoryServiceImplTest.this.itemService.existsByCategory_Id(categoryId))
           .thenReturn(true);
 
       final ConflictException exception = assertThrows(ConflictException.class,
@@ -656,7 +656,7 @@ public class CategoryServiceImplTest {
       verify(CategoryServiceImplTest.this.categoryRepository)
           .existsByParentId(categoryId);
 
-      verify(CategoryServiceImplTest.this.itemRepository)
+      verify(CategoryServiceImplTest.this.itemService)
           .existsByCategory_Id(categoryId);
 
       verify(CategoryServiceImplTest.this.categoryRepository, times(0))
@@ -674,7 +674,7 @@ public class CategoryServiceImplTest {
       when(CategoryServiceImplTest.this.categoryRepository.existsByParentId(categoryId))
           .thenReturn(false);
 
-      when(CategoryServiceImplTest.this.itemRepository.existsByCategory_Id(categoryId))
+      when(CategoryServiceImplTest.this.itemService.existsByCategory_Id(categoryId))
           .thenReturn(false);
 
       CategoryServiceImplTest.this.categoryService.deleteCategory(categoryId);
@@ -685,7 +685,7 @@ public class CategoryServiceImplTest {
       verify(CategoryServiceImplTest.this.categoryRepository)
           .existsByParentId(categoryId);
 
-      verify(CategoryServiceImplTest.this.itemRepository)
+      verify(CategoryServiceImplTest.this.itemService)
           .existsByCategory_Id(categoryId);
 
       verify(CategoryServiceImplTest.this.categoryRepository)
@@ -712,7 +712,7 @@ public class CategoryServiceImplTest {
       verify(CategoryServiceImplTest.this.categoryRepository, times(0))
           .existsByParentId(categoryId);
 
-      verify(CategoryServiceImplTest.this.itemRepository, times(0))
+      verify(CategoryServiceImplTest.this.itemService, times(0))
           .existsByCategory_Id(categoryId);
 
       verify(CategoryServiceImplTest.this.categoryRepository, times(0))

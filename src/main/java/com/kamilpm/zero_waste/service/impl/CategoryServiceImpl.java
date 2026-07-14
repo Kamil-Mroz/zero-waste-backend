@@ -18,8 +18,8 @@ import com.kamilpm.zero_waste.domain.request.CategoryRequest;
 import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.repository.CategoryRepository;
-import com.kamilpm.zero_waste.repository.ItemRepository;
 import com.kamilpm.zero_waste.service.CategoryService;
+import com.kamilpm.zero_waste.service.ItemCategoryQuery;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
   private final CategoryRepository categoryRepository;
-  private final ItemRepository itemRepository;
+  private final ItemCategoryQuery itemService;
   private final CategoryMapper categoryMapper;
 
   private List<CategoryTreeDto> cachedTree;
@@ -158,7 +158,7 @@ public class CategoryServiceImpl implements CategoryService {
       throw new ConflictException("Category can not be deleted cause of children categories");
     }
 
-    if (itemRepository.existsByCategory_Id(categoryId)) {
+    if (itemService.existsByCategory_Id(categoryId)) {
       throw new ConflictException("Category can not be deleted cause of existing items in category");
     }
 

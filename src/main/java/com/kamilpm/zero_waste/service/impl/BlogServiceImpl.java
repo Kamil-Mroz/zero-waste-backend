@@ -15,6 +15,7 @@ import com.kamilpm.zero_waste.repository.BlogRepository;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.BlogService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -40,6 +41,7 @@ public class BlogServiceImpl implements BlogService {
   }
 
   @Override
+  @Transactional
   public BlogDto updateBlog(UUID blogId, BlogRequest blog) {
     User user = authService.getRequiredAuthenticatedUser();
     Blog existingBlog = blogRepository.findByIdAndAuthor_Id(blogId, user.getId())
