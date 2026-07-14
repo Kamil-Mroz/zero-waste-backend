@@ -37,4 +37,6 @@ public class ItemRequest {
   @Builder.Default
   private List<MultipartFile> images = new ArrayList<>();
 
+  private Integer thumbnailIndex;
+
 }

@@ -74,10 +74,10 @@ public class ImageServiceImpl implements ImageService {
 
   @Override
   @Transactional
-  public void uploadItemImages(Item item, List<MultipartFile> files) {
+  public List<Image> uploadItemImages(Item item, List<MultipartFile> files) {
 
     if (files == null)
-      return;
+      return List.of();
     List<Image> images = new ArrayList<>();
 
     try {
@@ -112,7 +112,7 @@ public class ImageServiceImpl implements ImageService {
 
     }
 
-    imageRepository.saveAll(images);
+    return imageRepository.saveAll(images);
   }
 
   private void validateImage(byte[] bytes, MultipartFile file) {

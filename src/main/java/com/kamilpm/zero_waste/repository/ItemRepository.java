@@ -22,7 +22,7 @@ import jakarta.persistence.LockModeType;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, UUID> {
-  @EntityGraph(attributePaths = { "owner", "category", "images" })
+  @EntityGraph(attributePaths = { "owner", "category", "images", "thumbnail" })
   @Query("""
       SELECT DISTINCT i
       FROM Item i
@@ -37,7 +37,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   Page<Item> searchItems(@Param("ownerId") UUID ownerId, @Param("state") ItemState state, @Param("text") String text,
       @Param("categoryIds") Set<UUID> categoryIds, Pageable pageable);
 
-  @EntityGraph(attributePaths = { "owner", "category", "images" })
+  @EntityGraph(attributePaths = { "owner", "category", "images", "thumbnail" })
   @Query("""
         SELECT DISTINCT i
         FROM Item i
@@ -54,34 +54,37 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
 
   boolean existsByCategory_Id(UUID id);
 
-  @EntityGraph(attributePaths = { "owner", "category", "images" })
+  @EntityGraph(attributePaths = { "owner", "owner.roles", "category", "images", "thumbnail" })
   @Query("SELECT DISTINCT i FROM Item i WHERE i.id = ?1")
   Optional<Item> findByIdWithOwnerAndCategoryAndImages(UUID id);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
-  @EntityGraph(attributePaths = { "owner", })
+  @EntityGraph(attributePaths = { "owner", "owner.roles", "thumbnail" })
   @Query("SELECT i FROM Item i WHERE i.id = :id")
   Optional<Item> findByIdForUpdate(@Param("id") UUID id);
 
-  @EntityGraph(attributePaths = { "owner", })
+  @EntityGraph(attributePaths = { "owner" })
   int countByOwner_Id(UUID userId);
 
   @EntityGraph(attributePaths = { "owner", })
   @Query("select i.state as itemState, COUNT(i.state) as totalItem from Item as i where i.owner.id = :userId group by i.state")
   List<IItemCount> countTotalItemsByOwnerIdAndState(@Param("userId") UUID userId);
 
-  @EntityGraph(attributePaths = { "owner", "category", "images" })
+  @EntityGraph(attributePaths = { "owner", "owner.roles", "category", "images", "thumbnail" })
   List<Item> findTop3ByOwner_IdAndStateOrderByCreatedAtDesc(UUID ownerId, ItemState itemState);
 
-  @EntityGraph(attributePaths = { "owner", "category", "images" })
+  @EntityGraph(attributePaths = { "owner", "owner.roles", "category", "images", "thumbnail" })
   List<Item> findByOwner_IdAndState(UUID id, ItemState state);
 
-  @EntityGraph(attributePaths = { "owner", "images" })
+  @EntityGraph(attributePaths = { "owner", "images", "thumbnail" })
   List<Item> findByOwner_id(UUID ownerId);
 
-  @EntityGraph(attributePaths = { "owner", "images" })
+  @EntityGraph(attributePaths = { "owner", "images", "owner.roles", "thumbnail" })
   List<Item> findByOwnerIdIn(List<UUID> userIds);
 
-  @EntityGraph(attributePaths = { "owner" })
+  @EntityGraph(attributePaths = { "owner", })
   boolean existsByIdAndOwner_Id(UUID itemId, UUID userId);
+
+  @EntityGraph(attributePaths = { "owner", "owner.roles", "thumbnail" })
+  Optional<Item> findById(UUID id);
 }

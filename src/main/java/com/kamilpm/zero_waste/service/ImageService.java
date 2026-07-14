@@ -11,7 +11,7 @@ import com.kamilpm.zero_waste.domain.entity.Image;
 import com.kamilpm.zero_waste.domain.entity.Item;
 
 public interface ImageService {
-  void uploadItemImages(Item item, List<MultipartFile> files);
+  List<Image> uploadItemImages(Item item, List<MultipartFile> files);
 
   void deleteImages(UUID itemId, List<UUID> imageIds);
 

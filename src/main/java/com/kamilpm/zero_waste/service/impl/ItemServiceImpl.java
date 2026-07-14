@@ -71,7 +71,19 @@ public class ItemServiceImpl implements ItemService {
         .build();
 
     Item savedItem = itemRepository.save(item);
-    imageService.uploadItemImages(savedItem, itemRequest.getImages());
+    List<Image> uploadedImages = imageService.uploadItemImages(savedItem, itemRequest.getImages());
+    if (!uploadedImages.isEmpty()) {
+      Integer thumbnailIndex = itemRequest.getThumbnailIndex();
+      Image thumbnail;
+
+      if (thumbnailIndex != null && thumbnailIndex < uploadedImages.size()) {
+        thumbnail = uploadedImages.get(thumbnailIndex);
+      } else {
+        thumbnail = uploadedImages.get(0);
+      }
+      savedItem.setThumbnail(thumbnail);
+      itemRepository.save(savedItem);
+    }
     return itemMapper.toDto(savedItem);
   }
 
@@ -115,11 +127,46 @@ public class ItemServiceImpl implements ItemService {
     item.setCategory(category);
     item.setState(itemRequest.getState());
 
+    if (item.getThumbnail() != null && validIdsToRemove.contains(item.getThumbnail().getId())) {
+      item.setThumbnail(null);
+      itemRepository.saveAndFlush(item);
+    }
+
     imageService.deleteImages(item.getId(), validIdsToRemove);
-    imageService.uploadItemImages(item, itemRequest.getImages());
+    List<Image> uploadedImages = imageService.uploadItemImages(item, itemRequest.getImages());
+
+    updateThumbnail(item, itemRequest, uploadedImages, validIdsToRemove);
 
     Item updatedItem = itemRepository.save(item);
     return itemMapper.toDto(updatedItem);
+
+  }
+
+  private void updateThumbnail(Item item, UpdateItemRequest request, List<Image> uploadedImages,
+      List<UUID> removedImageIds) {
+
+    if (request.getThumbnailExistingImageId() != null) {
+      Image thumbnail = item.getImages().stream()
+          .filter(img -> img.getId().equals(request.getThumbnailExistingImageId())).findFirst()
+          .orElseThrow(() -> new ForbiddenException("Thumbnail image does not belong to item"));
+      item.setThumbnail(thumbnail);
+      return;
+    }
+    if (request.getThumbnailIndex() != null) {
+      if (request.getThumbnailIndex() >= uploadedImages.size()) {
+        throw new ConflictException("Invalid thumbnailIndex");
+      }
+      item.setThumbnail(uploadedImages.get(request.getThumbnailIndex()));
+      return;
+    }
+
+    if (item.getThumbnail() != null && !removedImageIds.contains(item.getThumbnail().getId())) {
+      return;
+    }
+    Image fallback = item.getImages().stream().filter(img -> !removedImageIds.contains(img.getId())).findFirst()
+        .orElse(null);
+
+    item.setThumbnail(fallback);
 
   }
 
@@ -244,8 +291,10 @@ public class ItemServiceImpl implements ItemService {
   @Override
   @Transactional
   public void deleteItemCompletely(Item item) {
+    item.setThumbnail(null);
+    itemRepository.saveAndFlush(item);
     imageService.deleteImagesFromDisk(item.getImages());
-    imageService.deleteImagesByItemId(item.getId());
+    // imageService.deleteImagesByItemId(item.getId());
     itemRepository.delete(item);
   }
 
@@ -267,11 +316,13 @@ public class ItemServiceImpl implements ItemService {
   public void deleteItemsByUserIds(List<UUID> userIds) {
     List<Item> items = itemRepository.findByOwnerIdIn(userIds);
     for (Item item : items) {
+      item.setThumbnail(null);
       imageService.deleteImagesFromDisk(item.getImages());
 
       imageService.deleteImagesByItemId(item.getId());
     }
 
+    itemRepository.saveAll(items);
     itemRepository.deleteAll(items);
 
   }

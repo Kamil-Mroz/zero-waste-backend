@@ -38,4 +38,6 @@ public class UpdateItemRequest {
   @Builder.Default
   private List<UUID> removedImageIds = new ArrayList<>();
 
+  private Integer thumbnailIndex;
+  private UUID thumbnailExistingImageId;
 }

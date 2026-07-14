@@ -25,4 +25,5 @@ public class ItemDto {
   private CategoryDto category;
   private UserDto owner;
   private List<ImageDto> images;
+  private ImageDto thumbnail;
 }

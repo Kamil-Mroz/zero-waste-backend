@@ -3,9 +3,7 @@ package com.kamilpm.zero_waste.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.domain.dto.ItemDto;
-import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
-import com.kamilpm.zero_waste.domain.mapper.ItemMapper;
 import com.kamilpm.zero_waste.domain.request.ItemRequest;
 import com.kamilpm.zero_waste.domain.request.UpdateItemRequest;
 import com.kamilpm.zero_waste.domain.response.PageResponse;
