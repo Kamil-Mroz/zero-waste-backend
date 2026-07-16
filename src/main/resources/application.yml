@@ -23,6 +23,7 @@ spring:
         path-segment: '1'
 
 app:
+  prod: false
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
   security:

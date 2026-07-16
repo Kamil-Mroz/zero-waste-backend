@@ -19,45 +19,45 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-@Configuration
-@EnableWebSocketMessageBroker
-@RequiredArgsConstructor
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+// @Configuration
+// @EnableWebSocketMessageBroker
+// @RequiredArgsConstructor
+// public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-  private final WebSocketAuthInterceptor webSocketAuthInterceptor;
-  @Value("${app.cors.allowed-origins}")
-  private String allowedOrigins;
+//   private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+//   @Value("${app.cors.allowed-origins}")
+//   private String allowedOrigins;
 
-  @Override
-  public void configureMessageBroker(MessageBrokerRegistry config) {
-    config.enableSimpleBroker("/topic", "/queue");
-    config.setApplicationDestinationPrefixes("/app");
+//   @Override
+//   public void configureMessageBroker(MessageBrokerRegistry config) {
+//     config.enableSimpleBroker("/topic", "/queue");
+//     config.setApplicationDestinationPrefixes("/app");
 
-    config.setUserDestinationPrefix("/user");
-  }
+//     config.setUserDestinationPrefix("/user");
+//   }
 
-  @Override
-  public void registerStompEndpoints(StompEndpointRegistry registry) {
-    // List<String> origins =
-    // Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList();
-    registry.addEndpoint("/ws").setAllowedOrigins("*");
+//   @Override
+//   public void registerStompEndpoints(StompEndpointRegistry registry) {
+//     // List<String> origins =
+//     // Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList();
+//     registry.addEndpoint("/ws").setAllowedOrigins("*");
 
-  }
+//   }
 
-  @Override
-  public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
-    DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
-    resolver.setDefaultMimeType(MediaType.APPLICATION_JSON);
-    JacksonJsonMessageConverter converter = new JacksonJsonMessageConverter();
-    converter.setContentTypeResolver(resolver);
-    messageConverters.add(converter);
-    return false;
-  }
+//   @Override
+//   public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
+//     DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
+//     resolver.setDefaultMimeType(MediaType.APPLICATION_JSON);
+//     JacksonJsonMessageConverter converter = new JacksonJsonMessageConverter();
+//     converter.setContentTypeResolver(resolver);
+//     messageConverters.add(converter);
+//     return false;
+//   }
 
-  @Override
-  public void configureClientInboundChannel(ChannelRegistration registration) {
-    registration.interceptors(
-        webSocketAuthInterceptor);
-  }
+//   @Override
+//   public void configureClientInboundChannel(ChannelRegistration registration) {
+//     registration.interceptors(
+//         webSocketAuthInterceptor);
+//   }
 
-}
+// }

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+// import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.domain.dto.NotificationDto;
@@ -15,7 +15,7 @@ import com.kamilpm.zero_waste.domain.mapper.NotificationMapper;
 import com.kamilpm.zero_waste.domain.request.CursorDirection;
 import com.kamilpm.zero_waste.domain.request.CursorRequest;
 import com.kamilpm.zero_waste.domain.response.CursorResponse;
-import com.kamilpm.zero_waste.domain.response.NotificationResponse;
+// import com.kamilpm.zero_waste.domain.response.NotificationResponse;
 import com.kamilpm.zero_waste.repository.NotificationRepository;
 import com.kamilpm.zero_waste.service.NotificationService;
 
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class NotificationServiceImpl implements NotificationService {
 
   private final NotificationRepository notificationRepository;
-  private final SimpMessagingTemplate simpMessagingTemplate;
+  // private final SimpMessagingTemplate simpMessagingTemplate;
   private final NotificationMapper notificationMapper;
 
   @Override
@@ -45,18 +45,22 @@ public class NotificationServiceImpl implements NotificationService {
 
     Notification savedNotification = notificationRepository.save(notification);
 
-    NotificationResponse payload = new NotificationResponse(savedNotification.getId(), savedNotification.getType(),
-        savedNotification.getTitle(), savedNotification.getMessage(), savedNotification.isRead(),
-        savedNotification.getReferenceId(), savedNotification.getReferenceType(), savedNotification.getCreatedAt());
+    // NotificationResponse payload = new
+    // NotificationResponse(savedNotification.getId(), savedNotification.getType(),
+    // savedNotification.getTitle(), savedNotification.getMessage(),
+    // savedNotification.isRead(),
+    // savedNotification.getReferenceId(), savedNotification.getReferenceType(),
+    // savedNotification.getCreatedAt());
 
-    simpMessagingTemplate.convertAndSendToUser(recipient.getEmail(), "/queue/notifications", payload);
+    // simpMessagingTemplate.convertAndSendToUser(recipient.getEmail(),
+    // "/queue/notifications", payload);
   }
 
   @Override
   public long getUnreadCount(UUID userId) {
-
     return notificationRepository.countByReadFalseAndRecipientId(userId);
   }
+
   @Override
   public void markAsRead(UUID notificationsId, UUID userId) {
     notificationRepository.markAsRead(notificationsId, userId);

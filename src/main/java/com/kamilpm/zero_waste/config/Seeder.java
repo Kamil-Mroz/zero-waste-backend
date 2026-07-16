@@ -28,20 +28,26 @@ public class Seeder implements ApplicationRunner {
   @Value("${app.security.password}")
   private String securityPassword;
 
+  @Value("${app.prod}")
+  private boolean isProd;
+
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    if (!userRepository.existsByEmail("john.doe@example.com")) {
-      System.out.println("Start seeding users...");
+    if (!isProd) {
+      if (!userRepository.existsByEmail("john.doe@example.com")) {
+        System.out.println("Start seeding users...");
 
-      seedUsers();
-      System.out.println("Seeding users completed.");
-    }
-    if (!categoryRepository.existsByName("Books")) {
+        seedUsers();
+        System.out.println("Seeding users completed.");
+      }
+      if (!categoryRepository.existsByName("Books")) {
 
-      System.out.println("Start seeding categories...");
+        System.out.println("Start seeding categories...");
 
-      seedCategories();
-      System.out.println("Seeding categories completed.");
+        seedCategories();
+        System.out.println("Seeding categories completed.");
+      }
+
     }
 
   }

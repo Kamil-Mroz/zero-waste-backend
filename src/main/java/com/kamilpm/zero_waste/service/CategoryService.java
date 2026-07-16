@@ -1,7 +1,6 @@
 package com.kamilpm.zero_waste.service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,6 +22,5 @@ public interface CategoryService {
   Category updateCategory(UUID categoryId, CategoryRequest categoryRequest);
 
   void deleteCategory(UUID categoryId);
-
 
 }

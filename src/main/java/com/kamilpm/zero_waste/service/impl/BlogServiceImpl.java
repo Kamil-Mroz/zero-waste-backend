@@ -79,4 +79,10 @@ public class BlogServiceImpl implements BlogService {
     blogRepository.deleteById(blogId);
 
   }
+
+  @Override
+  public void deleteAllByUserIds(List<UUID> ids) {
+    blogRepository.deleteByAuthor_IdIn(ids);
+
+  }
 }

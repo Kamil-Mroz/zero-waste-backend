@@ -79,6 +79,8 @@ public class User implements UserDetails {
   @Column(name = "joined_at", nullable = false, updatable = false)
   private Instant joinedAt;
 
+
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     List<GrantedAuthority> authorities = roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))

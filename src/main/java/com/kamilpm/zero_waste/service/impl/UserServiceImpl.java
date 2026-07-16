@@ -28,6 +28,7 @@ import com.kamilpm.zero_waste.repository.RefreshTokenRepository;
 import com.kamilpm.zero_waste.repository.UserBanRepository;
 import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.service.AuthService;
+import com.kamilpm.zero_waste.service.BlogService;
 import com.kamilpm.zero_waste.service.ItemService;
 import com.kamilpm.zero_waste.service.NotificationService;
 import com.kamilpm.zero_waste.service.OfferService;
@@ -41,6 +42,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+  private final BlogService blogService;
   private final UserRepository userRepository;
   private final AuthService authService;
   private final PasswordEncoder passwordEncoder;
@@ -144,6 +146,8 @@ public class UserServiceImpl implements UserService {
 
     itemService.deleteItemsByUserIds(ids);
     notificationService.deleteAllByUserIds(ids);
+
+    blogService.deleteAllByUserIds(ids);
 
     userRepository.deleteAllById(ids);
 

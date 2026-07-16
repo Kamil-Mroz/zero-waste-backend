@@ -18,4 +18,6 @@ public interface BlogService {
   void deleteBlog(UUID blogId);
 
   List<BlogDto> getOwnBlogs();
+
+  void deleteAllByUserIds(List<UUID> userIds);
 }
