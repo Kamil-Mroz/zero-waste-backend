@@ -40,9 +40,7 @@ Environment variables (defaults in parentheses):
 
 | Variable | Default | Description |
 |---|---|---|
-| `DB_HOST` | `localhost` | PostgreSQL host |
-| `DB_PORT` | `5543` | PostgreSQL port |
-| `DB_NAME` | `zero-waste-db` | Database name |
+| `DB_URL` | `jdbc:url` | Database url |
 | `DB_USER` | `zero-waste-user` | Database user |
 | `DB_PASSWORD` | `zero-waste-password` | Database password |
 | `JWT_SECRET` | *(dev value)* | JWT signing secret (min 32 bytes) |
