@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kamilpm.zero_waste.domain.dto.ReviewDto;
+import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
 import com.kamilpm.zero_waste.domain.entity.Offer;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
@@ -97,4 +98,5 @@ public class ReviewServiceImpl implements ReviewService {
     reviewRepository.deleteByReviewee_IdIn(ids);
 
   }
+
 }

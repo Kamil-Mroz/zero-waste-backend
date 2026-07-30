@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.kamilpm.zero_waste.domain.dto.ReviewDto;
+import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.request.ReviewRequest;
 import com.kamilpm.zero_waste.domain.response.ReviewResponse;
 
@@ -20,4 +21,5 @@ public interface ReviewService {
   Page<ReviewResponse> getUserReviews(UUID userId, Pageable pageable);
 
   void deleteAllByUserIds(List<UUID> ids);
+
 }

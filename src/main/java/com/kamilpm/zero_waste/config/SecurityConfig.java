@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/blogs/own").hasAnyRole("ADMIN", "WRITER")
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/blogs/**").permitAll()
                 .requestMatchers("/api/v{version}/blogs/**").hasAnyRole("ADMIN", "WRITER")
-                .requestMatchers("/api/docs/**").permitAll()
+                .requestMatchers("/api/v{version}/docs/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
 
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/categories/**").permitAll()

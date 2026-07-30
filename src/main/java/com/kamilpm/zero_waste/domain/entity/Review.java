@@ -39,7 +39,7 @@ public class Review extends BaseEntity {
   @Column(name = "rating", nullable = false)
   private int rating;
 
-  @OneToOne(cascade = CascadeType.ALL)
+  @OneToOne
   @JoinColumn(name = "offer_id", referencedColumnName = "id")
   private Offer offer;
 

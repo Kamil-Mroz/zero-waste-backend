@@ -26,4 +26,5 @@ public interface OfferService {
   Page<OfferDto> getReceivedOffers(Pageable pageable, OfferStatus status);
 
   void deleteAllByUserIds(List<UUID> ids);
+
 }

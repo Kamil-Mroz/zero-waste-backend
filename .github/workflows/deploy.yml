@@ -1,0 +1,50 @@
+name: Backend to vps
+
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+
+      uses: actions/checkout@v7
+    - name: Setup Java
+
+      uses: actions/setup-java@v6
+      with:
+        distribution: 'corretto'
+        java-version: '25'
+    - name: Build Jar
+      run: ./mvnw clean package -DskipTests
+
+    - name: Login to Github Container Registry
+      run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login ghcr.io -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Build docker image
+      run: docker build . -t ghcr.io/${{secrets.DOCKER_USERNAME }}/zero-waste-backend:latest
+
+    - name: Push Image
+      run: docker push ghcr.io/${{secrets.DOCKER_USERNAME }}/zero-waste-backend:latest
+
+    - name: Tailscale
+      uses: tailscale/github-action@v4
+      with:
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+        audience: ${{ secrets.TS_AUDIENCE }}
+        tags: tag:ci
+
+    - name: Deploy
+      run: |
+        ssh ${{secrets.VPS_USER}}@${{secrets.VPS_HOST}} << 'EOF'
+          cd ${{secrets.PROJECT_DIR}}
+          docker compose pull
+          docker compose up -d
+        EOF
+
+
+

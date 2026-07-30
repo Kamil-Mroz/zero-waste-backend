@@ -179,4 +179,5 @@ public class OfferServiceImpl implements OfferService {
     offerRepository.deleteByItem_Owner_IdIn(ids);
 
   }
+
 }

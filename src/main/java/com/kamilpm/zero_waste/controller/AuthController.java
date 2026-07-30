@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 @RequestMapping(path = "/api/v{version}/auth", version = "1")
 @RequiredArgsConstructor
 public class AuthController {
+  @Value("${app.prod}")
+  private boolean isProd;
 
   private final AuthService authService;
   private final JwtService jwtService;
@@ -67,8 +69,11 @@ public class AuthController {
 
     Cookie cookie = new Cookie("refreshToken", refreshToken);
     cookie.setHttpOnly(true);
-    cookie.setSecure(false);
+    cookie.setSecure(isProd);
     cookie.setPath("/");
+    if (isProd) {
+      cookie.setAttribute("SameSite", "Strict");
+    }
     cookie.setMaxAge((int) refreshTokenExpiration);
 
     response.addCookie(cookie);
@@ -123,9 +128,13 @@ public class AuthController {
 
     Cookie cookie = new Cookie("refreshToken", null);
     cookie.setHttpOnly(true);
-    cookie.setSecure(false);
+
+    cookie.setSecure(isProd);
     cookie.setPath("/");
     cookie.setMaxAge(0);
+    if (isProd) {
+      cookie.setAttribute("SameSite", "Strict");
+    }
 
     response.addCookie(cookie);
 

@@ -42,4 +42,7 @@ public interface OfferRepository extends JpaRepository<Offer, UUID> {
 
   @EntityGraph(attributePaths = { "buyer", })
   void deleteByBuyer_IdIn(List<UUID> ids);
+
+  @EntityGraph(attributePaths = { "item", })
+  void deleteAllByItem_Id(UUID id);
 }

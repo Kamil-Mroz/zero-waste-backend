@@ -30,6 +30,7 @@ import com.kamilpm.zero_waste.service.CategoryService;
 import com.kamilpm.zero_waste.service.ImageService;
 import com.kamilpm.zero_waste.service.ItemOwnershipService;
 import com.kamilpm.zero_waste.service.ItemService;
+import com.kamilpm.zero_waste.service.OfferItemQuery;
 import com.kamilpm.zero_waste.utils.SqlUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,7 @@ public class ItemServiceImpl implements ItemService {
   private final ImageService imageService;
   private final ItemOwnershipService itemOwnershipService;
   private final ItemMapper itemMapper;
+  private final OfferItemQuery offerService;
 
   @Override
   @Transactional
@@ -292,9 +294,9 @@ public class ItemServiceImpl implements ItemService {
   @Transactional
   public void deleteItemCompletely(Item item) {
     item.setThumbnail(null);
+    offerService.deleteAllByItem(item);
     itemRepository.saveAndFlush(item);
     imageService.deleteImagesFromDisk(item.getImages());
-    // imageService.deleteImagesByItemId(item.getId());
     itemRepository.delete(item);
   }
 
