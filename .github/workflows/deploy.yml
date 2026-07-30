@@ -20,7 +20,9 @@ jobs:
         java-version: '25'
 
     - name: Build Jar
-      run: ./mvnw clean package -DskipTests
+      run: |
+        chmod +x mvnw
+        ./mvnw clean package -DskipTests
 
     - name: Login to Github Container Registry
       run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login ghcr.io -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
