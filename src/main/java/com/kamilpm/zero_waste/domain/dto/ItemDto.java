@@ -23,7 +23,7 @@ public class ItemDto {
   private ItemCondition condition;
   private ItemState state;
   private CategoryDto category;
-  private UserDto owner;
+  private UserSummaryDto owner;
   private List<ImageDto> images;
   private ImageDto thumbnail;
 }

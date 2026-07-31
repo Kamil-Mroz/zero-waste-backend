@@ -17,7 +17,7 @@ public class BlogDto {
   private String title;
   private String description;
   private String content;
-  private UserDto author;
+  private UserSummaryDto author;
   private Instant createdAt;
   private Instant updatedAt;
 }

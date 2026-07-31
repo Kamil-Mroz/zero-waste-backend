@@ -7,7 +7,7 @@ import org.mapstruct.Named;
 import com.kamilpm.zero_waste.domain.dto.ItemDto;
 import com.kamilpm.zero_waste.domain.entity.Item;
 
-@Mapper(componentModel = "spring", uses = { UserMapper.class, CategoryMapper.class, ImageMapper.class })
+@Mapper(componentModel = "spring", uses = { UserSummaryMapper.class, CategoryMapper.class, ImageMapper.class })
 public interface ItemMapper {
 
   @Mapping(target = "owner", expression = "java(null)")

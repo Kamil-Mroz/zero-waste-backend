@@ -50,10 +50,9 @@ public class AuthController {
   private long refreshTokenExpiration;
 
   @PostMapping(path = "/register")
-  public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequest registerRequest) {
-
-    User savedUser = authService.register(registerRequest);
-    return new ResponseEntity<>(userMapper.toDto(savedUser), HttpStatus.CREATED);
+  public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    authService.register(registerRequest);
+    return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
   @PostMapping(path = "/login")

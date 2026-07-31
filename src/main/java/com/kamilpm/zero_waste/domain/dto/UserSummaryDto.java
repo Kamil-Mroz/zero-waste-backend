@@ -2,9 +2,6 @@ package com.kamilpm.zero_waste.domain.dto;
 
 import java.util.UUID;
 
-
-import com.kamilpm.zero_waste.domain.entity.OfferStatus;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,9 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OfferDto {
+public class UserSummaryDto {
   private UUID id;
-  private ItemDto item;
-  private UserSummaryDto buyer;
-  private OfferStatus status;
+  private String firstName;
+  private String lastName;
+  private String email;
 }

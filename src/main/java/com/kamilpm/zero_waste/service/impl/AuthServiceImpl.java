@@ -2,7 +2,6 @@ package com.kamilpm.zero_waste.service.impl;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,7 +32,7 @@ public class AuthServiceImpl implements AuthService {
   private final AuthenticationManager authenticationManager;
 
   @Override
-  public User register(RegisterRequest registerRequest) {
+  public void register(RegisterRequest registerRequest) {
 
     if (userRepository.existsByEmail(registerRequest.getEmail())) {
       throw new ConflictException("Email already in use", "email");
@@ -49,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
         .banActive(false)
         .build();
 
-    return userRepository.save(user);
+    userRepository.save(user);
   }
 
   @Override
