@@ -42,7 +42,6 @@ public class AuthServiceImpl implements AuthService {
         .lastName(registerRequest.getLastName())
         .email(registerRequest.getEmail())
         .password(passwordEncoder.encode(registerRequest.getPassword()))
-        .phoneNumber(registerRequest.getPhoneNumber())
         .roles(Set.of(UserRole.USER))
         .bannedUntil(null)
         .banActive(false)

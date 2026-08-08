@@ -64,7 +64,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/images/**").permitAll()
 
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/profiles/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
 
+                .requestMatchers(HttpMethod.DELETE, "/api/v{version}/users/account").authenticated()
                 .requestMatchers("/api/v{version}/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -77,7 +77,6 @@ public class UserServiceImpl implements UserService {
         .firstName(userRequest.getFirstName())
         .lastName(userRequest.getLastName())
         .email(userRequest.getEmail())
-        .phoneNumber(userRequest.getPhoneNumber())
         .password(passwordEncoder.encode(userRequest.getPassword()))
         .roles(userRequest.getRoles())
         .banActive(false)
@@ -118,7 +117,6 @@ public class UserServiceImpl implements UserService {
     user.setFirstName(userRequest.getFirstName());
     user.setLastName(userRequest.getLastName());
     user.setEmail(userRequest.getEmail());
-    user.setPhoneNumber(userRequest.getPhoneNumber());
     user.setRoles(userRequest.getRoles());
     if (userRequest.getEmail() != null && !userRequest.getPassword().isBlank()) {
       user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
@@ -136,20 +134,7 @@ public class UserServiceImpl implements UserService {
     if (ids.stream().anyMatch((id) -> Objects.equals(admin.getId(), id))) {
       throw new ForbiddenException("You can not delete your account");
     }
-
-    refreshTokenRepository.deleteAllByUserIds(ids);
-
-    userBanRepository.deleteAllByUserIds(ids);
-
-    reviewService.deleteAllByUserIds(ids);
-    offerService.deleteAllByUserIds(ids);
-
-    itemService.deleteItemsByUserIds(ids);
-    notificationService.deleteAllByUserIds(ids);
-
-    blogService.deleteAllByUserIds(ids);
-
-    userRepository.deleteAllById(ids);
+    deleteUsersByIds(ids);
 
   }
 
@@ -220,4 +205,33 @@ public class UserServiceImpl implements UserService {
     userRepository.saveAll(users);
     userBanRepository.saveAll(userBans);
   }
+
+  @Override
+  @Transactional
+  public void deleteOwnAccount() {
+
+    User user = authService.getRequiredAuthenticatedUser();
+    deleteUsersByIds(List.of(user.getId()));
+
+  }
+
+  private void deleteUsersByIds(List<UUID> ids) {
+
+    refreshTokenRepository.deleteAllByUserIds(ids);
+
+    userBanRepository.deleteAllByUserIds(ids);
+
+    reviewService.deleteAllByUserIds(ids);
+
+    offerService.deleteAllByUserIds(ids);
+
+    itemService.deleteItemsByUserIds(ids);
+
+    notificationService.deleteAllByUserIds(ids);
+
+    blogService.deleteAllByUserIds(ids);
+
+    userRepository.deleteAllById(ids);
+  }
+
 }

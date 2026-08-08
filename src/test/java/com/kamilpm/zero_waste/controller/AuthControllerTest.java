@@ -40,7 +40,6 @@ public class AuthControllerTest {
     return RegisterRequest.builder()
         .firstName("John")
         .lastName("Doe")
-        .phoneNumber("+39 342 341 235")
         .email(email)
         .password(PASSWORD)
         .build();

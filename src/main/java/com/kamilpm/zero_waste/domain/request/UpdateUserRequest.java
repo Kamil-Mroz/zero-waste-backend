@@ -2,7 +2,6 @@ package com.kamilpm.zero_waste.domain.request;
 
 import java.util.Set;
 
-import com.kamilpm.zero_waste.annotation.InternationalPhoneNumber;
 import com.kamilpm.zero_waste.annotation.NullablePassword;
 import com.kamilpm.zero_waste.domain.entity.UserRole;
 
@@ -27,7 +26,5 @@ public class UpdateUserRequest {
   private String email;
   @NullablePassword
   private String password;
-  @InternationalPhoneNumber
-  private String phoneNumber;
   private Set<UserRole> roles;
 }

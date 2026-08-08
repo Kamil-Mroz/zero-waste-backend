@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.domain.request;
 
-import com.kamilpm.zero_waste.annotation.InternationalPhoneNumber;
 import com.kamilpm.zero_waste.annotation.StrongPassword;
 
 import jakarta.validation.constraints.Email;
@@ -24,7 +23,6 @@ public class RegisterRequest {
   private String email;
   @StrongPassword
   private String password;
-  @InternationalPhoneNumber
-  private String phoneNumber;
+
 
 }

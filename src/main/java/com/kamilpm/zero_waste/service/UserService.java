@@ -28,4 +28,5 @@ public interface UserService {
   void banUsers(BanRequest banRequest);
 
   void unbanUsers(UnbanRequest unbanRequest);
+  void deleteOwnAccount();
 }

@@ -13,7 +13,6 @@ Content-Type: application/json
     "firstName":"John",
     "lastName":"Doe",
     "city":"Texas",
-    "phoneNumber":"23912123",
     "email": "john.doe@example.com",
     "password": "SecurePassword123!"
 }

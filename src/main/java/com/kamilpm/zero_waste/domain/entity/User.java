@@ -60,9 +60,6 @@ public class User implements UserDetails {
   @Column(name = "password", nullable = false)
   private String password;
 
-  @Column(name = "phone_number", nullable = false)
-  private String phoneNumber;
-
   @Column(name = "ban_active", nullable = false)
   private boolean banActive;
 

@@ -92,4 +92,10 @@ public class UserController {
     return ResponseEntity.noContent().build();
   }
 
+  @DeleteMapping("/account")
+  public ResponseEntity<Void> deleteOwnAccount() {
+    userService.deleteOwnAccount();
+    return ResponseEntity.noContent().build();
+  }
+
 }
