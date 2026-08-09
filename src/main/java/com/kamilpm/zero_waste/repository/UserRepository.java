@@ -33,8 +33,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
       WHERE u.id !=:id
       AND (:roles IS NULL OR r In :roles)
       AND (:text IS NULL
-        OR LOWER(u.firstName) LIKE :text ESCAPE '\\'
-        OR LOWER(u.lastName) LIKE :text ESCAPE '\\'
+        OR LOWER(u.nickname) LIKE :text ESCAPE '\\'
         OR LOWER(u.email) LIKE :text ESCAPE '\\'
       )
         """)

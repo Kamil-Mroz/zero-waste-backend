@@ -24,8 +24,7 @@ public class StrongPasswordValidationTest {
   @Test
   void validStrongPasswordShouldPass() {
     var register = RegisterRequest.builder()
-        .firstName("John")
-        .lastName("Doe")
+        .nickname("John")
         .email("john.doe@example.com")
         .password("SecurePassword123!")
         .build();
@@ -37,8 +36,7 @@ public class StrongPasswordValidationTest {
   @Test
   void validStrongPasswordShouldFail() {
     var register = RegisterRequest.builder()
-        .firstName("John")
-        .lastName("Doe")
+        .nickname("John")
         .email("john.doe@example.com")
         .password("SecurePassword123")
         .build();

@@ -17,8 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserDto {
   private UUID id;
-  private String firstName;
-  private String lastName;
+  private String nickname;
   private String email;
   private boolean hasActiveBan;
   private Instant bannedUntil;

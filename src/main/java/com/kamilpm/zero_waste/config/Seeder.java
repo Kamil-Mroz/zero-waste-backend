@@ -57,8 +57,7 @@ public class Seeder implements ApplicationRunner {
 
     users.add(
         User.builder()
-            .firstName("John")
-            .lastName("Doe")
+            .nickname("JohnDoe")
             .email("john.doe@example.com")
             .password(passwordEncoder.encode(securityPassword))
             .roles(Set.of(UserRole.ADMIN))
@@ -67,8 +66,7 @@ public class Seeder implements ApplicationRunner {
             .build());
     users.add(
         User.builder()
-            .firstName("John1")
-            .lastName("Doe1")
+            .nickname("JohnDoe1")
             .email("john.doe1@example.com")
             .password(passwordEncoder.encode(securityPassword))
             .roles(Set.of(UserRole.USER))
@@ -77,8 +75,7 @@ public class Seeder implements ApplicationRunner {
             .build());
     users.add(
         User.builder()
-            .firstName("John2")
-            .lastName("Doe2")
+            .nickname("JohnDoe2")
             .email("john.doe2@example.com")
             .password(passwordEncoder.encode("SecurePassword123!"))
             .roles(Set.of(UserRole.WRITER))
@@ -89,8 +86,7 @@ public class Seeder implements ApplicationRunner {
     for (int i = 1; i <= 50; i++) {
       users.add(
           User.builder()
-              .firstName("User" + i)
-              .lastName("Nick" + i)
+              .nickname("User" + i)
               .email("user" + i + "@example.com")
               .password(passwordEncoder.encode(securityPassword))
               .roles(Set.of(UserRole.USER))

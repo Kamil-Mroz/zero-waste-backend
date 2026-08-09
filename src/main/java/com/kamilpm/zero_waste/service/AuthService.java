@@ -9,7 +9,7 @@ import com.kamilpm.zero_waste.domain.request.LoginRequest;
 import com.kamilpm.zero_waste.domain.request.RegisterRequest;
 
 public interface AuthService {
-  void register(RegisterRequest registerRequest);
+  User register(RegisterRequest registerRequest);
 
   Authentication verify(LoginRequest loginRequest);
 

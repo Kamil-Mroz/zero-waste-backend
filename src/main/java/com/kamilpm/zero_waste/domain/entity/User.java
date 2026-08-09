@@ -42,16 +42,12 @@ import lombok.ToString;
 @Builder
 @Table(name = "users")
 public class User implements UserDetails {
-
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "first_name", nullable = false)
-  private String firstName;
-
-  @Column(name = "last_name", nullable = false)
-  private String lastName;
+  @Column(name = "nickname", nullable = false)
+  private String nickname;
 
   @Column(name = "email", nullable = false, unique = true)
   @Email
@@ -75,8 +71,6 @@ public class User implements UserDetails {
   @CreationTimestamp
   @Column(name = "joined_at", nullable = false, updatable = false)
   private Instant joinedAt;
-
-
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

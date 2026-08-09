@@ -74,8 +74,7 @@ public class UserServiceImpl implements UserService {
     }
 
     final User user = User.builder()
-        .firstName(userRequest.getFirstName())
-        .lastName(userRequest.getLastName())
+        .nickname(userRequest.getNickname())
         .email(userRequest.getEmail())
         .password(passwordEncoder.encode(userRequest.getPassword()))
         .roles(userRequest.getRoles())
@@ -114,8 +113,7 @@ public class UserServiceImpl implements UserService {
 
     final User user = findUser(id);
 
-    user.setFirstName(userRequest.getFirstName());
-    user.setLastName(userRequest.getLastName());
+    user.setNickname(userRequest.getNickname());
     user.setEmail(userRequest.getEmail());
     user.setRoles(userRequest.getRoles());
     if (userRequest.getEmail() != null && !userRequest.getPassword().isBlank()) {

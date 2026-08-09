@@ -8,8 +8,7 @@ import com.kamilpm.zero_waste.domain.entity.UserRole;
 
 public record ProfileResponse(
     UUID id,
-    String firstName,
-    String lastName,
+    String nickname,
     String email,
     String phoneNumber,
     boolean hasActiveBan,

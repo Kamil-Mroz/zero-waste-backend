@@ -33,8 +33,7 @@ public class ProfileServiceImpl implements ProfileService {
     ProfileQueryData data = profileQueryService.getPublicProfileData(user.getId());
     return PublicUserProfileResponse.builder()
         .id(user.getId())
-        .firstName(user.getFirstName())
-        .lastName(user.getLastName())
+        .nickname(user.getNickname())
         .joinedAt(user.getJoinedAt())
         .items(data.items())
         .reviews(data.reviews())

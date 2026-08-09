@@ -11,8 +11,7 @@ import lombok.Builder;
 @Builder
 public record PublicUserProfileResponse(
     UUID id,
-    String firstName,
-    String lastName,
+    String nickname,
     Instant joinedAt,
     ProfileItemSummary items,
     ProfileReviewSummary reviews) {

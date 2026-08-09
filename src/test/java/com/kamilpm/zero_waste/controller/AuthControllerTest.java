@@ -38,8 +38,7 @@ public class AuthControllerTest {
 
   private RegisterRequest defaultRegisterRequest(String email) {
     return RegisterRequest.builder()
-        .firstName("John")
-        .lastName("Doe")
+        .nickname("John")
         .email(email)
         .password(PASSWORD)
         .build();
@@ -68,13 +67,12 @@ public class AuthControllerTest {
         .getValue();
   }
 
-
-
   @Test
   void testRegisterShouldPass() {
     String email = "john.doe789@example.com";
 
     RegisterRequest registerRequest = defaultRegisterRequest(email);
+    System.out.println(registerRequest);
 
     UserDto user = client.post()
         .uri("/register")
@@ -87,7 +85,7 @@ public class AuthControllerTest {
         .getResponseBody();
 
     assertEquals(email, user.getEmail());
-    assertEquals(registerRequest.getFirstName(), user.getFirstName());
+    assertEquals(registerRequest.getNickname(), user.getNickname());
   }
 
   @Test
@@ -215,6 +213,5 @@ public class AuthControllerTest {
     assertFalse(details.isBlank());
     assertEquals("Refresh token cookie not found", details);
   }
-
 
 }

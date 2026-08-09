@@ -23,9 +23,9 @@ public class MyUserDetailsService implements UserDetailsService {
 
   @Override
   @Transactional(readOnly = true)
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+  public UserDetails loadUserByUsername(String nickname) throws UsernameNotFoundException {
 
-    Optional<User> user = userRepository.findByEmail(username);
+    Optional<User> user = userRepository.findByEmail(nickname);
     if (user.isPresent()) {
 
       User currentUser = user.get();
@@ -33,7 +33,7 @@ public class MyUserDetailsService implements UserDetailsService {
 
       return currentUser;
     }
-    throw new UsernameNotFoundException("User not found with email: " + username);
+    throw new UsernameNotFoundException("User not found with email: " + nickname);
 
   }
 

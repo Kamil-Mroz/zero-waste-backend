@@ -122,7 +122,7 @@ public class OfferServiceImpl implements OfferService {
         item.getOwner(),
         NotificationType.OFFER_RECEIVED,
         "New interest request",
-        user.getFirstName() + " " + user.getLastName() + " is interested in your item.",
+        user.getNickname() + " is interested in you item",
         offer.getId(),
         "OFFER");
   }

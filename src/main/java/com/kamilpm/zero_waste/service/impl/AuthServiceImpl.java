@@ -32,14 +32,13 @@ public class AuthServiceImpl implements AuthService {
   private final AuthenticationManager authenticationManager;
 
   @Override
-  public void register(RegisterRequest registerRequest) {
+  public User register(RegisterRequest registerRequest) {
 
     if (userRepository.existsByEmail(registerRequest.getEmail())) {
       throw new ConflictException("Email already in use", "email");
     }
     User user = User.builder()
-        .firstName(registerRequest.getFirstName())
-        .lastName(registerRequest.getLastName())
+        .nickname(registerRequest.getNickname())
         .email(registerRequest.getEmail())
         .password(passwordEncoder.encode(registerRequest.getPassword()))
         .roles(Set.of(UserRole.USER))
@@ -47,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
         .banActive(false)
         .build();
 
-    userRepository.save(user);
+    return userRepository.save(user);
   }
 
   @Override

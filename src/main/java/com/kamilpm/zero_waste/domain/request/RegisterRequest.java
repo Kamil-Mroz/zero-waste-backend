@@ -14,15 +14,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class RegisterRequest {
-  @NotBlank(message = "First name is required")
-  private String firstName;
-  @NotBlank(message = "Last name is required")
-  private String lastName;
+  @NotBlank(message = "Nickname is required")
+  private String nickname;
   @NotBlank(message = "Email is required")
   @Email(message = "Must be a valid email")
   private String email;
   @StrongPassword
   private String password;
-
 
 }
