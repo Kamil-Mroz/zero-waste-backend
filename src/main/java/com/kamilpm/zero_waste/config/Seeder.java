@@ -42,16 +42,16 @@ public class Seeder implements ApplicationRunner {
         seedUsers();
         System.out.println("Seeding users completed.");
       }
-      if (!categoryRepository.existsByName("Books")) {
-
-        System.out.println("Start seeding categories...");
-
-        seedCategories();
-        System.out.println("Seeding categories completed.");
-      }
 
     }
 
+    if (!categoryRepository.existsByName("Books")) {
+
+      System.out.println("Start seeding categories...");
+
+      seedCategories();
+      System.out.println("Seeding categories completed.");
+    }
   }
 
   private void seedUsers() {
