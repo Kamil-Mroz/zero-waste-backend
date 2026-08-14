@@ -2,13 +2,13 @@ package com.kamilpm.zero_waste.service;
 
 import java.util.Map;
 
-import org.springframework.security.core.Authentication;
+import com.kamilpm.zero_waste.domain.entity.User;
 
 public interface JwtService {
 
-  String generateToken(Authentication authentication);
+  String generateToken(User user);
 
-  String generateToken(Map<String, Object> extraClaims, Authentication authentication);
+  String generateToken(Map<String, Object> extraClaims, User user);
 
   String getEmailFromToken(String token);
 

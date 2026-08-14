@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.service.impl;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -13,8 +14,10 @@ import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.entity.UserRole;
+import com.kamilpm.zero_waste.domain.request.CreatePasswordRequest;
 import com.kamilpm.zero_waste.domain.request.LoginRequest;
 import com.kamilpm.zero_waste.domain.request.RegisterRequest;
+import com.kamilpm.zero_waste.domain.request.UpdatePasswordRequest;
 import com.kamilpm.zero_waste.exception.BadCredentialsExceptionCustom;
 import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
@@ -88,6 +91,41 @@ public class AuthServiceImpl implements AuthService {
     } catch (Exception ex) {
       throw new UnauthorizedException("User is not authenticated");
     }
+  }
+
+  @Override
+  public void handlePasswordCreation(CreatePasswordRequest passwords) {
+    User user = getRequiredAuthenticatedUser();
+    if (user.getPassword() != null) {
+      throw new ConflictException("Password already set");
+    }
+    if (!Objects.equals(passwords.newPassword(), passwords.confirmPassword())) {
+      throw new ConflictException("Passwords do not match");
+    }
+    user.setPassword(passwordEncoder.encode(passwords.newPassword()));
+    userRepository.save(user);
+
+  }
+
+  @Override
+  public void handlePasswordUpdate(UpdatePasswordRequest passwords) {
+    User user = getRequiredAuthenticatedUser();
+    if (user.getPassword() == null) {
+      throw new ConflictException("To update a password you must set one first");
+    }
+    if (!passwordEncoder.matches(passwords.currentPassword(), user.getPassword())) {
+      throw new ForbiddenException("Password invalid");
+    }
+
+    if (passwordEncoder.matches(passwords.newPassword(), user.getPassword())) {
+      throw new ConflictException("New password must be different from the current password");
+    }
+    if (!Objects.equals(passwords.newPassword(), passwords.confirmPassword())) {
+      throw new ConflictException("Passwords do not match");
+    }
+    user.setPassword(passwordEncoder.encode(passwords.newPassword()));
+    userRepository.save(user);
+
   }
 
 }

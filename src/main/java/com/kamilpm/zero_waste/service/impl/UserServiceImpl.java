@@ -31,6 +31,7 @@ import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.BlogService;
 import com.kamilpm.zero_waste.service.ItemService;
 import com.kamilpm.zero_waste.service.NotificationService;
+import com.kamilpm.zero_waste.service.OAuthService;
 import com.kamilpm.zero_waste.service.OfferService;
 import com.kamilpm.zero_waste.service.ReviewService;
 import com.kamilpm.zero_waste.service.UserService;
@@ -44,6 +45,7 @@ public class UserServiceImpl implements UserService {
 
   private final BlogService blogService;
   private final UserRepository userRepository;
+  private final OAuthService oAuthService;
   private final AuthService authService;
   private final PasswordEncoder passwordEncoder;
   private final ItemService itemService;
@@ -219,6 +221,8 @@ public class UserServiceImpl implements UserService {
 
     userBanRepository.deleteAllByUserIds(ids);
 
+
+    oAuthService.deleteAllByUserIds(ids);
     reviewService.deleteAllByUserIds(ids);
 
     offerService.deleteAllByUserIds(ids);

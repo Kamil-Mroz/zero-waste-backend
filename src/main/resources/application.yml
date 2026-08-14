@@ -15,13 +15,30 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     open-in-view: false
+  data:
+    redis:
+      host: ${HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 3s
+      connect-timeout: 3s
+      lettuce:
+        shutdown-timeout: 200ms
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+          max-wait: 3s
+  cache:
+    type: redis
+    redis:
+      time-to-live: 30m
+      cache-null-values: false
   mvc:
     apiversion:
       default: '1'
       supported: '1,2'
       use:
         path-segment: '1'
-
 management:
   endpoint:
     health:
@@ -32,12 +49,31 @@ management:
         include: "*"
 
 app:
-
   prod: ${PROD:false}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
   security:
-    password: ${DEV_PASSWORD:SecurePassword123!}
+    passwords:
+      admin: ${DEV_ADMIN_PASSWORD:SecurePassword123!}
+      users: ${DEV_USER_PASSWORD:SecurePassword123!}
+    oauth:
+      frontend-url: "${APP_FRONTEND_URL:http://localhost:3000}"
+      github:
+        authorization-uri: https://github.com/login/oauth/authorize
+        token-uri: https://github.com/login/oauth/access_token
+        user-uri: https://api.github.com/user
+        emails-uri: https://api.github.com/user/emails
+        client-id: ${GITHUB_CLIENT_ID}
+        client-secret: ${GITHUB_CLIENT_SECRET}
+        redirect-uri: "${APP_BACKEND_URL:http://localhost:8080}/api/v1/oauth/callback/GITHUB"
+
+      google:
+        authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+        token-uri: https://oauth2.googleapis.com/token
+        user-uri: https://openidconnect.googleapis.com/v1/userinfo
+        client-id: ${GOOGLE_CLIENT_ID}
+        client-secret: ${GOOGLE_CLIENT_SECRET}
+        redirect-uri: "${APP_BACKEND_URL:http://localhost:8080}/api/v1/oauth/callback/GOOGLE"
 jwt:
   secret: '${JWT_SECRET:your-256-bit-secret-key-here-make-it-at-least-32-bytes-long}'
   expiration: '${JWT_EXPIRATION:900000}'

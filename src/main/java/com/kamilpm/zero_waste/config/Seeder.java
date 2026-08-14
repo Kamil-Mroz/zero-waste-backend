@@ -25,8 +25,10 @@ public class Seeder implements ApplicationRunner {
   private final CategoryRepository categoryRepository;
   private final PasswordEncoder passwordEncoder;
 
-  @Value("${app.security.password}")
-  private String securityPassword;
+  @Value("${app.security.passwords.admin}")
+  private String adminPassword;
+  @Value("${app.security.passwords.users}")
+  private String userPassword;
 
   @Value("${app.prod}")
   private boolean isProd;
@@ -59,7 +61,7 @@ public class Seeder implements ApplicationRunner {
         User.builder()
             .nickname("JohnDoe")
             .email("john.doe@example.com")
-            .password(passwordEncoder.encode(securityPassword))
+            .password(passwordEncoder.encode(adminPassword))
             .roles(Set.of(UserRole.ADMIN))
             .banActive(false)
             .bannedUntil(null)
@@ -68,7 +70,7 @@ public class Seeder implements ApplicationRunner {
         User.builder()
             .nickname("JohnDoe1")
             .email("john.doe1@example.com")
-            .password(passwordEncoder.encode(securityPassword))
+            .password(passwordEncoder.encode(userPassword))
             .roles(Set.of(UserRole.USER))
             .banActive(false)
             .bannedUntil(null)
@@ -77,18 +79,18 @@ public class Seeder implements ApplicationRunner {
         User.builder()
             .nickname("JohnDoe2")
             .email("john.doe2@example.com")
-            .password(passwordEncoder.encode("SecurePassword123!"))
+            .password(passwordEncoder.encode(userPassword))
             .roles(Set.of(UserRole.WRITER))
             .banActive(false)
             .bannedUntil(null)
             .build());
 
-    for (int i = 1; i <= 50; i++) {
+    for (int i = 1; i <= 20; i++) {
       users.add(
           User.builder()
               .nickname("User" + i)
               .email("user" + i + "@example.com")
-              .password(passwordEncoder.encode(securityPassword))
+              .password(passwordEncoder.encode(userPassword))
               .roles(Set.of(UserRole.USER))
               .banActive(false)
               .bannedUntil(null)

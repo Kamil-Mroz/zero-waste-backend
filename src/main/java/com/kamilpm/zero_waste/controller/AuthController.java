@@ -6,11 +6,14 @@ import com.kamilpm.zero_waste.domain.dto.UserDto;
 import com.kamilpm.zero_waste.domain.entity.RefreshToken;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.mapper.UserMapper;
+import com.kamilpm.zero_waste.domain.request.CreatePasswordRequest;
 import com.kamilpm.zero_waste.domain.request.LoginRequest;
 import com.kamilpm.zero_waste.domain.request.RegisterRequest;
+import com.kamilpm.zero_waste.domain.request.UpdatePasswordRequest;
 import com.kamilpm.zero_waste.domain.response.AuthResponse;
 import com.kamilpm.zero_waste.exception.TokenException;
 import com.kamilpm.zero_waste.exception.UnauthorizedException;
+import com.kamilpm.zero_waste.service.AuthCookieService;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.JwtService;
 import com.kamilpm.zero_waste.service.RefreshTokenService;
@@ -33,26 +36,30 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/auth", version = "1")
 @RequiredArgsConstructor
 public class AuthController {
-  @Value("${app.prod}")
-  private boolean isProd;
 
+  private final AuthCookieService authCookieService;
   private final AuthService authService;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
   private final UserMapper userMapper;
+
+  @Value("${app.prod}")
+  private boolean isProd;
 
   @Value("${refresh-token.expiration}")
   private long refreshTokenExpiration;
 
   @PostMapping(path = "/register")
   public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequest registerRequest) {
-    User user = authService.register(registerRequest);
-    return new ResponseEntity<>(userMapper.toDto(user), HttpStatus.CREATED);
+    throw new UnauthorizedException("Registration disabled");
+    // User user = authService.register(registerRequest);
+    // return new ResponseEntity<>(userMapper.toDto(user), HttpStatus.CREATED);
   }
 
   @PostMapping(path = "/login")
@@ -61,27 +68,20 @@ public class AuthController {
 
     Authentication authentication = authService.verify(loginRequest);
 
-    String accessToken = jwtService.generateToken(authentication);
-    RefreshToken refresh = refreshTokenService.generateRefreshToken(authentication);
+    User user = (User) authentication.getPrincipal();
+
+    String accessToken = jwtService.generateToken(user);
+    RefreshToken refresh = refreshTokenService.generateRefreshToken(user);
 
     String refreshToken = refresh.getToken();
 
-    Cookie cookie = new Cookie("refreshToken", refreshToken);
-    cookie.setHttpOnly(true);
-    cookie.setSecure(isProd);
-    cookie.setPath("/");
-    if (isProd) {
-      cookie.setAttribute("SameSite", "Strict");
-    }
-    cookie.setMaxAge((int) refreshTokenExpiration);
+    authCookieService.addRefreshCookie(response, refreshToken);
 
-    response.addCookie(cookie);
-
-    UserDto user = userMapper.toDto(refresh.getUser());
+    UserDto userDto = userMapper.toDto(refresh.getUser());
 
     AuthResponse authResponse = AuthResponse.builder()
         .accessToken(accessToken)
-        .user(user)
+        .user(userDto)
         .build();
     return ResponseEntity.ok(authResponse);
   }
@@ -105,7 +105,7 @@ public class AuthController {
     Authentication authentication = new UsernamePasswordAuthenticationToken(user, null,
         user.getAuthorities());
 
-    String newAccessToken = jwtService.generateToken(authentication);
+    String newAccessToken = jwtService.generateToken((User) authentication.getPrincipal());
 
     AuthResponse authResponse = AuthResponse.builder()
         .accessToken(newAccessToken)
@@ -124,30 +124,10 @@ public class AuthController {
         //
       }
     });
-
-    Cookie cookie = new Cookie("refreshToken", null);
-    cookie.setHttpOnly(true);
-
-    cookie.setSecure(isProd);
-    cookie.setPath("/");
-    cookie.setMaxAge(0);
-    if (isProd) {
-      cookie.setAttribute("SameSite", "Strict");
-    }
-
-    response.addCookie(cookie);
+    authCookieService.clearRefreshCookie(response);
 
     return ResponseEntity.noContent().build();
   }
-
-  // @GetMapping("/me")
-  // public ResponseEntity<CurrentUserDto> getCurrentUser() {
-  // User user = authService.getAuthenticatedUser();
-  // CurrentUserDto currentUserDto =
-  // CurrentUserDto.builder().id(user.getId()).email(user.getEmail())
-  // .roles(user.getRoles()).build();
-  // return ResponseEntity.ok(currentUserDto);
-  // }
 
   private Optional<String> extractRefreshToken(HttpServletRequest request) {
 
@@ -160,6 +140,18 @@ public class AuthController {
         .filter(c -> Objects.equals("refreshToken", c.getName()))
         .map(Cookie::getValue)
         .findFirst();
+  }
+
+  @PostMapping("/password")
+  public ResponseEntity<Void> createPassword(@Valid @RequestBody CreatePasswordRequest passwords) {
+    authService.handlePasswordCreation(passwords);
+    return new ResponseEntity<>(HttpStatus.CREATED);
+  }
+
+  @PutMapping("/password")
+  public ResponseEntity<Void> updatePassword(@Valid @RequestBody UpdatePasswordRequest passwords) {
+    authService.handlePasswordUpdate(passwords);
+    return ResponseEntity.ok().build();
   }
 
 }

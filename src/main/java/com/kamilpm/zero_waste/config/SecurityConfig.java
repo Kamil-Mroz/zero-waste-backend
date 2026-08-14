@@ -36,6 +36,7 @@ public class SecurityConfig {
   private final JwtFilter jwtFilter;
   private final UserDetailsService userDetailsService;
   private final JwtAuthEntryPoint authEntryPoint;
+
   @Value("${app.cors.allowed-origins}")
   private String allowedOrigins;
 
@@ -47,25 +48,24 @@ public class SecurityConfig {
         .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
         .authorizeHttpRequests(
             (authorize) -> authorize
+                .requestMatchers("/api/v{version}/auth/logout", "/api/v{version}/auth/password").authenticated()
                 .requestMatchers("/api/v{version}/auth/**").permitAll()
-
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/blogs/own").hasAnyRole("ADMIN", "WRITER")
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/blogs/**").permitAll()
                 .requestMatchers("/api/v{version}/blogs/**").hasAnyRole("ADMIN", "WRITER")
                 .requestMatchers("/api/v{version}/docs/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v{version}/oauth/callback/**")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v{version}/oauth/login/**").permitAll()
+                .requestMatchers("/api/v{version}/oauth/**").authenticated()
                 .requestMatchers("/ws/**").permitAll()
-
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/categories/**").permitAll()
                 .requestMatchers("/api/v{version}/categories/**").hasRole("ADMIN")
-
                 .requestMatchers("/api/v{version}/items/own").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/items/**").permitAll()
-
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/images/**").permitAll()
-
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/profiles/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
-
                 .requestMatchers(HttpMethod.DELETE, "/api/v{version}/users/account").authenticated()
                 .requestMatchers("/api/v{version}/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated())

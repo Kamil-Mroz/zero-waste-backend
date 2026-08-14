@@ -5,7 +5,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.domain.entity.RefreshToken;
@@ -27,8 +26,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
   @Override
   @Transactional
-  public RefreshToken generateRefreshToken(Authentication authentication) {
-    User user = (User) authentication.getPrincipal();
+  public RefreshToken generateRefreshToken(User user) {
 
     RefreshToken token = new RefreshToken();
     token.setUser(user);

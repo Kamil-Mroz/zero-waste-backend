@@ -45,7 +45,8 @@ public class UserController {
       @RequestParam(value = "roles", required = false) List<UserRole> roles) {
     Page<UserDto> users = userService.getUsersWithoutCurrentUser(text, roles, PageRequest.of(page, size));
 
-    return ResponseEntity.ok(new PageResponse<>(users.getContent(), users.getNumber(), users.getSize(),
+    return ResponseEntity.ok(new PageResponse<>(users.getContent(),
+        users.getNumber(), users.getSize(),
         users.getTotalElements(), users.getTotalPages()));
   }
 

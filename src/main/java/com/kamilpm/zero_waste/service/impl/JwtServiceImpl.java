@@ -8,7 +8,6 @@ import java.util.function.Function;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.domain.entity.User;
@@ -30,20 +29,18 @@ public class JwtServiceImpl implements JwtService {
   @Value("${jwt.expiration}")
   private long jwtExpiration;
 
-  public String generateToken(Authentication authentication) {
-    return generateToken(new HashMap<>(), authentication);
+  public String generateToken(User user) {
+    return generateToken(new HashMap<>(), user);
   }
 
-  public String generateToken(Map<String, Object> extraClaims, Authentication authentication) {
-
-    User userPrincipal = (User) authentication.getPrincipal();
+  public String generateToken(Map<String, Object> extraClaims, User user) {
 
     return Jwts.builder()
         .claims()
-        .add("id", userPrincipal.getId())
-        .add("roles", userPrincipal.getAuthorities())
+        .add("id", user.getId())
+        .add("roles", user.getAuthorities())
         .add(extraClaims)
-        .subject(userPrincipal.getUsername())
+        .subject(user.getUsername())
         .issuedAt(new Date(System.currentTimeMillis()))
         .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
         .and().signWith(getKey()).compact();
