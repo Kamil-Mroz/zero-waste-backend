@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.domain.dto.OfferDto;
+import com.kamilpm.zero_waste.domain.dto.OfferWithEmailDto;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
 import com.kamilpm.zero_waste.domain.response.PageResponse;
 import com.kamilpm.zero_waste.service.OfferService;
@@ -67,12 +68,12 @@ public class OfferController {
   }
 
   @GetMapping("/received")
-  public ResponseEntity<PageResponse<OfferDto>> getReceivedOffers(
+  public ResponseEntity<PageResponse<OfferWithEmailDto>> getReceivedOffers(
       @RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "size", defaultValue = "20") int size,
       @RequestParam(value = "status", required = false) OfferStatus status) {
 
-    Page<OfferDto> offersDto = offerService.getReceivedOffers(
+    Page<OfferWithEmailDto> offersDto = offerService.getReceivedOffers(
         PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"),
         status);
 

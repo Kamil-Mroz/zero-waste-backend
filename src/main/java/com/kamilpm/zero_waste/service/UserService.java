@@ -6,9 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.kamilpm.zero_waste.domain.dto.OAuthUserInfo;
 import com.kamilpm.zero_waste.domain.dto.UserDto;
-import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.request.BanRequest;
 import com.kamilpm.zero_waste.domain.request.CreateUserRequest;

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kamilpm.zero_waste.domain.dto.OfferDto;
+import com.kamilpm.zero_waste.domain.dto.OfferWithEmailDto;
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
 import com.kamilpm.zero_waste.domain.entity.NotificationType;
@@ -164,12 +165,13 @@ public class OfferServiceImpl implements OfferService {
 
   @Override
   @Transactional
-  public Page<OfferDto> getReceivedOffers(Pageable pageable, OfferStatus status) {
+  public Page<OfferWithEmailDto> getReceivedOffers(Pageable pageable, OfferStatus status) {
     User user = authService.getRequiredAuthenticatedUser();
     if (status != null) {
-      return offerRepository.findByItem_Owner_IdAndStatus(user.getId(), status, pageable).map(offerMapper::toDto);
+      return offerRepository.findByItem_Owner_IdAndStatus(user.getId(), status, pageable)
+          .map(offerMapper::toDtoWithEmail);
     }
-    return offerRepository.findByItem_Owner_Id(user.getId(), pageable).map(offerMapper::toDto);
+    return offerRepository.findByItem_Owner_Id(user.getId(), pageable).map(offerMapper::toDtoWithEmail);
 
   }
 

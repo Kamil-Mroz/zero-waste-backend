@@ -76,4 +76,6 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
   @Query("DELETE FROM Review r WHERE r.reviewee.id = :revieweeId AND r.offer.item.id = :itemId")
 
   void deleteByRevieweeIdAndItemId(@Param("revieweeId") UUID revieweeId, @Param("itemId") UUID itemId);
+
+  boolean existsByIdAndReviewer_IdNotAndReviewee_Id(UUID subjectId, UUID reviewerId, UUID revieweeId);
 }

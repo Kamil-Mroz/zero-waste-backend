@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.kamilpm.zero_waste.domain.dto.OfferDto;
+import com.kamilpm.zero_waste.domain.dto.OfferWithEmailDto;
 import com.kamilpm.zero_waste.domain.entity.Offer;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
 
@@ -23,7 +24,7 @@ public interface OfferService {
 
   Page<OfferDto> getMyOffers(Pageable pageable, OfferStatus status);
 
-  Page<OfferDto> getReceivedOffers(Pageable pageable, OfferStatus status);
+  Page<OfferWithEmailDto> getReceivedOffers(Pageable pageable, OfferStatus status);
 
   void deleteAllByUserIds(List<UUID> ids);
 

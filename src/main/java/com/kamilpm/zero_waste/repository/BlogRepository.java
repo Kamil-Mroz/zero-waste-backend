@@ -27,4 +27,7 @@ public interface BlogRepository extends JpaRepository<Blog, UUID> {
 
   @EntityGraph(attributePaths = { "author" })
   void deleteByAuthor_IdIn(List<UUID> ids);
+
+  @EntityGraph(attributePaths = { "author" })
+  boolean existsByIdAndAuthor_IdNot(UUID id, UUID userId);
 }

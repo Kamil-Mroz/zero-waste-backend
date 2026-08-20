@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   boolean existsByEmailAndIdNot(String email, UUID id);
 
+  boolean existsByIdAndIdNot(UUID subjectId, UUID userId);
+
   @EntityGraph(attributePaths = { "roles" })
   @Query("""
       SELECT DISTINCT u
