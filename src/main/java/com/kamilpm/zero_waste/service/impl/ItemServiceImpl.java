@@ -17,7 +17,10 @@ import com.kamilpm.zero_waste.domain.entity.Category;
 import com.kamilpm.zero_waste.domain.entity.Image;
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
+import com.kamilpm.zero_waste.domain.entity.ReportStatus;
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.mapper.ItemMapper;
 import com.kamilpm.zero_waste.domain.request.ItemRequest;
 import com.kamilpm.zero_waste.domain.request.UpdateItemRequest;
@@ -31,6 +34,7 @@ import com.kamilpm.zero_waste.service.ImageService;
 import com.kamilpm.zero_waste.service.ItemOwnershipService;
 import com.kamilpm.zero_waste.service.ItemService;
 import com.kamilpm.zero_waste.service.OfferItemQuery;
+import com.kamilpm.zero_waste.service.ReportService;
 import com.kamilpm.zero_waste.utils.SqlUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -46,6 +50,7 @@ public class ItemServiceImpl implements ItemService {
   private final ItemOwnershipService itemOwnershipService;
   private final ItemMapper itemMapper;
   private final OfferItemQuery offerService;
+  private final ReportService reportService;
 
   @Override
   @Transactional
@@ -99,7 +104,8 @@ public class ItemServiceImpl implements ItemService {
 
     Category category = categoryService.getCategoryById(itemRequest.getCategoryId());
 
-    Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
+    Item item = itemRepository.findByIdAndModerationStatus(id, ModerationStatus.VISIBLE)
+        .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
     User user = authService.getRequiredAuthenticatedUser();
 
@@ -111,42 +117,32 @@ public class ItemServiceImpl implements ItemService {
       throw new ForbiddenException("Can not update a given item");
     }
     Set<UUID> itemImageIds = item.getImages().stream().map(Image::getId).collect(Collectors.toSet());
-
     List<UUID> validIdsToRemove = itemRequest.getRemovedImageIds().stream().filter(itemImageIds::contains).toList();
-
     if (validIdsToRemove.size() != itemRequest.getRemovedImageIds().size()) {
       throw new ForbiddenException("Some images do not belong to this item");
     }
-
     if ((item.getImages().size() - validIdsToRemove.size() + itemRequest.getImages().size()) > 5) {
       throw new ConflictException("Max image count is 5", "images");
     }
-
     item.setTitle(itemRequest.getTitle());
     item.setDescription(itemRequest.getDescription());
     item.setCondition(itemRequest.getCondition());
     item.setCity(itemRequest.getCity());
     item.setCategory(category);
     item.setState(itemRequest.getState());
-
     if (item.getThumbnail() != null && validIdsToRemove.contains(item.getThumbnail().getId())) {
       item.setThumbnail(null);
       itemRepository.saveAndFlush(item);
     }
-
     imageService.deleteImages(item.getId(), validIdsToRemove);
     List<Image> uploadedImages = imageService.uploadItemImages(item, itemRequest.getImages());
-
     updateThumbnail(item, itemRequest, uploadedImages, validIdsToRemove);
-
     Item updatedItem = itemRepository.save(item);
     return itemMapper.toDto(updatedItem);
-
   }
 
   private void updateThumbnail(Item item, UpdateItemRequest request, List<Image> uploadedImages,
       List<UUID> removedImageIds) {
-
     if (request.getThumbnailExistingImageId() != null) {
       Image thumbnail = item.getImages().stream()
           .filter(img -> img.getId().equals(request.getThumbnailExistingImageId())).findFirst()
@@ -161,15 +157,12 @@ public class ItemServiceImpl implements ItemService {
       item.setThumbnail(uploadedImages.get(request.getThumbnailIndex()));
       return;
     }
-
     if (item.getThumbnail() != null && !removedImageIds.contains(item.getThumbnail().getId())) {
       return;
     }
     Image fallback = item.getImages().stream().filter(img -> !removedImageIds.contains(img.getId())).findFirst()
         .orElse(null);
-
     item.setThumbnail(fallback);
-
   }
 
   @Override
@@ -183,7 +176,8 @@ public class ItemServiceImpl implements ItemService {
     Optional<User> user = authService.getAuthenticatedUser();
     UUID excludeOwnerId = user.map(User::getId).orElse(null);
 
-    return itemRepository.searchItems(excludeOwnerId, ItemState.AVAILABLE, text, categoryIds, pageable)
+    return itemRepository
+        .searchItems(excludeOwnerId, ItemState.AVAILABLE, text, ModerationStatus.VISIBLE, categoryIds, pageable)
         .map(itemMapper::toDto);
   }
 
@@ -193,16 +187,22 @@ public class ItemServiceImpl implements ItemService {
     Item item = itemRepository.findByIdWithOwnerAndCategoryAndImages(id)
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
-    if (Objects.equals(item.getState(), ItemState.AVAILABLE))
+    if (Objects.equals(item.getState(), ItemState.AVAILABLE)
+        && Objects.equals(item.getModerationStatus(), ModerationStatus.VISIBLE))
       return itemMapper.toDtoWithOwner(item);
 
     User user = authService.getRequiredAuthenticatedUser();
     UUID userId = user.getId();
 
+    if (user.getRoles().stream().anyMatch(role -> Objects.equals(UserRole.ADMIN, role))) {
+      return itemMapper.toDtoWithOwner(item);
+    }
+
     if (userId.equals(item.getOwner().getId()))
       return itemMapper.toDtoWithOwner(item);
 
-    if (itemOwnershipService.isBuyerOfItem(userId, item.getId()))
+    if (itemOwnershipService.isBuyerOfItem(userId, item.getId())
+        && Objects.equals(item.getModerationStatus(), ModerationStatus.VISIBLE))
       return itemMapper.toDtoWithOwner(item);
 
     throw new EntityNotFoundException("Item not available");
@@ -253,7 +253,8 @@ public class ItemServiceImpl implements ItemService {
   @Override
   @Transactional
   public ItemDto publishItem(UUID id) {
-    Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
+    Item item = itemRepository.findByIdAndModerationStatus(id, ModerationStatus.VISIBLE)
+        .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
     User user = authService.getRequiredAuthenticatedUser();
 
@@ -273,7 +274,8 @@ public class ItemServiceImpl implements ItemService {
   @Override
   @Transactional
   public ItemDto hideItem(UUID id) {
-    Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
+    Item item = itemRepository.findByIdAndModerationStatus(id, ModerationStatus.VISIBLE)
+        .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
     User user = authService.getRequiredAuthenticatedUser();
 
@@ -298,19 +300,7 @@ public class ItemServiceImpl implements ItemService {
     itemRepository.saveAndFlush(item);
     imageService.deleteImagesFromDisk(item.getImages());
     itemRepository.delete(item);
-  }
-
-  @Override
-  @Transactional
-  public void deleteItemsByUser(UUID userId) {
-    List<Item> items = itemRepository.findByOwner_id(userId);
-    for (Item item : items) {
-      imageService.deleteImagesFromDisk(item.getImages());
-
-      imageService.deleteImagesByItemId(item.getId());
-    }
-    itemRepository.deleteAll(items);
-
+    reportService.rejectAllBySubjectId(item.getId());
   }
 
   @Override
@@ -339,7 +329,9 @@ public class ItemServiceImpl implements ItemService {
   @Transactional(readOnly = true)
   public List<ItemDto> getUserItems(UUID userId) {
 
-    return itemRepository.findByOwner_IdAndState(userId, ItemState.AVAILABLE).stream().map(itemMapper::toDto).toList();
+    return itemRepository
+        .findByOwner_IdAndStateAndModerationStatus(userId, ItemState.AVAILABLE, ModerationStatus.VISIBLE).stream()
+        .map(itemMapper::toDto).toList();
   }
 
   @Override

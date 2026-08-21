@@ -41,7 +41,5 @@ public interface ItemService {
 
   void deleteItemsByUserIds(List<UUID> userIds);
 
-  void deleteItemsByUser(UUID userId);
-
   boolean existsByCategory_Id(UUID categoryId);
 }

@@ -3,11 +3,13 @@ package com.kamilpm.zero_waste.service.impl;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +57,7 @@ public class UserServiceImpl implements UserService {
   private final OfferService offerService;
   private final UserMapper userMapper;
   private final NotificationService notificationService;
+  private final SimpMessagingTemplate simpMessagingTemplate;
 
   @Override
   @Transactional(readOnly = true)
@@ -92,6 +95,10 @@ public class UserServiceImpl implements UserService {
   @Transactional(readOnly = true)
   public UserDto getUser(final UUID id) {
     User user = findUser(id);
+    if (user.isBanActive()) {
+      throw new EntityNotFoundException("User not found");
+    }
+
     return userMapper.toDto(user);
   }
 
@@ -175,6 +182,11 @@ public class UserServiceImpl implements UserService {
     userBanRepository.saveAll(bans);
     userRepository.saveAll(users);
 
+    for (User user : users) {
+      simpMessagingTemplate.convertAndSendToUser(user.getEmail(),
+          "/queue/ban", Map.of("message", "You have been banned"));
+    }
+
   }
 
   @Override
@@ -220,7 +232,6 @@ public class UserServiceImpl implements UserService {
     refreshTokenRepository.deleteAllByUserIds(ids);
 
     userBanRepository.deleteAllByUserIds(ids);
-
 
     oAuthService.deleteAllByUserIds(ids);
     reviewService.deleteAllByUserIds(ids);

@@ -1,19 +1,24 @@
 package com.kamilpm.zero_waste.service.impl;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.domain.dto.BlogDto;
 import com.kamilpm.zero_waste.domain.entity.Blog;
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.mapper.BlogMapper;
 import com.kamilpm.zero_waste.domain.request.BlogRequest;
 import com.kamilpm.zero_waste.exception.EntityNotFoundException;
+import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.repository.BlogRepository;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.BlogService;
+import com.kamilpm.zero_waste.service.ReportService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +30,7 @@ public class BlogServiceImpl implements BlogService {
   private final AuthService authService;
   private final BlogRepository blogRepository;
   private final BlogMapper blogMapper;
+  private final ReportService reportService;
 
   @Override
   public BlogDto createBlog(BlogRequest blog) {
@@ -44,7 +50,8 @@ public class BlogServiceImpl implements BlogService {
   @Transactional
   public BlogDto updateBlog(UUID blogId, BlogRequest blog) {
     User user = authService.getRequiredAuthenticatedUser();
-    Blog existingBlog = blogRepository.findByIdAndAuthor_Id(blogId, user.getId())
+    Blog existingBlog = blogRepository
+        .findByIdAndAuthor_IdAndModerationStatus(blogId, user.getId(), ModerationStatus.VISIBLE)
         .orElseThrow(() -> new EntityNotFoundException("Blog not found"));
 
     existingBlog.setContent(blog.getContent());
@@ -58,31 +65,48 @@ public class BlogServiceImpl implements BlogService {
 
   @Override
   public List<BlogDto> getBlogs() {
-    return blogRepository.findAll().stream().map(blogMapper::toDto).toList();
+    return blogRepository.findByModerationStatusAndAuthorBanActiveFalseOrderByCreatedAtDesc(ModerationStatus.VISIBLE)
+        .stream()
+        .map(blogMapper::toDto).toList();
   }
 
   @Override
   public List<BlogDto> getOwnBlogs() {
     User user = authService.getRequiredAuthenticatedUser();
-    return blogRepository.findByAuthor_Id(user.getId()).stream().map(blogMapper::toDto).toList();
+    return blogRepository.findByAuthor_IdOrderByCreatedAtDesc(user.getId()).stream().map(blogMapper::toDto).toList();
   }
 
   @Override
   public BlogDto getBlog(UUID blogId) {
 
-    return blogMapper
-        .toDto(blogRepository.findById(blogId).orElseThrow(() -> new EntityNotFoundException("Blog not found")));
+    Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new EntityNotFoundException("Blog not found"));
+    if (Objects.equals(blog.getModerationStatus(), ModerationStatus.VISIBLE)) {
+      return blogMapper.toDto(blog);
+    }
+    User user = authService.getRequiredAuthenticatedUser();
+    if (user.getRoles().stream().anyMatch(role -> Objects.equals(role, UserRole.ADMIN)))
+      return blogMapper.toDto(blog);
+
+    if (Objects.equals(user.getId(), blog.getAuthor().getId()))
+      return blogMapper.toDto(blog);
+
+    throw new EntityNotFoundException("Blog not available");
+
   }
 
   @Override
   public void deleteBlog(UUID blogId) {
-    blogRepository.deleteById(blogId);
-
+    User user = authService.getRequiredAuthenticatedUser();
+    Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new EntityNotFoundException("Blog not found"));
+    if (!Objects.equals(user.getId(), blog.getAuthor().getId())) {
+      throw new ForbiddenException("You are not the owner of this blog");
+    }
+    blogRepository.deleteById(blog.getId());
+    reportService.rejectAllBySubjectId(blogId);
   }
 
   @Override
   public void deleteAllByUserIds(List<UUID> ids) {
     blogRepository.deleteByAuthor_IdIn(ids);
-
   }
 }

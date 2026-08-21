@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
 import com.kamilpm.zero_waste.domain.interfaces.IItemCount;
 
 import jakarta.persistence.LockModeType;
@@ -28,14 +29,18 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
       FROM Item i
       WHERE i.state = :state
       AND (:ownerId IS NULL OR i.owner.id != :ownerId)
+      AND i.moderationStatus = :moderationStatus
       AND (:categoryIds IS NULL OR i.category.id IN :categoryIds)
+      AND (i.owner.banActive = false)
       AND (:text IS NULL
         OR LOWER(i.title) LIKE :text ESCAPE '\\'
         OR LOWER(i.city) LIKE :text ESCAPE '\\'
       )
+        order by i.createdAt desc
         """)
   Page<Item> searchItems(@Param("ownerId") UUID ownerId, @Param("state") ItemState state, @Param("text") String text,
-      @Param("categoryIds") Set<UUID> categoryIds, Pageable pageable);
+      @Param("moderationStatus") ModerationStatus moderationStatus, @Param("categoryIds") Set<UUID> categoryIds,
+      Pageable pageable);
 
   @EntityGraph(attributePaths = { "owner", "category", "images", "thumbnail" })
   @Query("""
@@ -48,6 +53,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
         OR LOWER(i.city) LIKE :text ESCAPE '\\'
         )
         AND i.state IN :states
+        order by i.createdAt desc
       """)
   Page<Item> findOwnItems(@Param("ownerId") UUID ownerId, @Param("text") String text,
       @Param("categoryIds") Set<UUID> categoryIds, @Param("states") List<ItemState> states, Pageable pageable);
@@ -71,13 +77,14 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   List<IItemCount> countTotalItemsByOwnerIdAndState(@Param("userId") UUID userId);
 
   @EntityGraph(attributePaths = { "owner", "owner.roles", "category", "images", "thumbnail" })
-  List<Item> findTop3ByOwner_IdAndStateOrderByCreatedAtDesc(UUID ownerId, ItemState itemState);
+  List<Item> findTop3ByOwner_IdAndStateAndModerationStatusOrderByCreatedAtDesc(UUID ownerId, ItemState itemState,
+      ModerationStatus status);
 
   @EntityGraph(attributePaths = { "owner", "owner.roles", "category", "images", "thumbnail" })
-  List<Item> findByOwner_IdAndState(UUID id, ItemState state);
+  List<Item> findByOwner_IdAndStateAndModerationStatus(UUID id, ItemState state, ModerationStatus moderationStatus);
 
   @EntityGraph(attributePaths = { "owner", "images", "thumbnail" })
-  List<Item> findByOwner_id(UUID ownerId);
+  List<Item> findByOwner_IdAndModerationStatus(UUID ownerId, ModerationStatus moderationStatus);
 
   @EntityGraph(attributePaths = { "owner", "images", "owner.roles", "thumbnail" })
   List<Item> findByOwnerIdIn(List<UUID> userIds);
@@ -88,6 +95,9 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   @EntityGraph(attributePaths = { "owner", "owner.roles", "thumbnail" })
   Optional<Item> findById(UUID id);
 
+  @EntityGraph(attributePaths = { "owner", "owner.roles", "thumbnail" })
+  Optional<Item> findByIdAndModerationStatus(UUID id, ModerationStatus status);
+
   @EntityGraph(attributePaths = { "owner" })
-  boolean existsByIdAndOwner_IdNot(UUID id, UUID userId);
+  boolean existsByIdAndOwner_IdNotAndState(UUID id, UUID userId, ItemState state);
 }

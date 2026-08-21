@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.kamilpm.zero_waste.domain.entity.ItemCondition;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,7 @@ public class ItemDto {
   private String city;
   private ItemCondition condition;
   private ItemState state;
+  private ModerationStatus moderationStatus;
   private CategoryDto category;
   private UserSummaryDto owner;
   private List<ImageDto> images;

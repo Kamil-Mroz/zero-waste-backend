@@ -33,6 +33,7 @@ public class ProfileServiceImpl implements ProfileService {
     ProfileQueryData data = profileQueryService.getPublicProfileData(user.getId());
     return PublicUserProfileResponse.builder()
         .id(user.getId())
+        .banned(user.isHasActiveBan())
         .nickname(user.getNickname())
         .joinedAt(user.getJoinedAt())
         .items(data.items())

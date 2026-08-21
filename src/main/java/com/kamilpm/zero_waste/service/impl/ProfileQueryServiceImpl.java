@@ -13,6 +13,7 @@ import com.kamilpm.zero_waste.domain.dto.ProfileReviewSummary;
 import com.kamilpm.zero_waste.domain.dto.RatingBreakdown;
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
 import com.kamilpm.zero_waste.domain.entity.Review;
 import com.kamilpm.zero_waste.domain.interfaces.IRatingBreakdownWithStats;
 import com.kamilpm.zero_waste.domain.mapper.ItemMapper;
@@ -42,7 +43,8 @@ public class ProfileQueryServiceImpl implements ProfileQueryService {
   }
 
   private ProfileItemSummary buildItemSummary(UUID userId) {
-    List<Item> latestItems = itemRepository.findTop3ByOwner_IdAndStateOrderByCreatedAtDesc(userId, ItemState.AVAILABLE);
+    List<Item> latestItems = itemRepository.findTop3ByOwner_IdAndStateAndModerationStatusOrderByCreatedAtDesc(userId,
+        ItemState.AVAILABLE, ModerationStatus.VISIBLE);
 
     ItemCountBreakDown itemCountBreakDown = buildItemCountBreakDown(userId);
     return ProfileItemSummary.builder()
@@ -84,7 +86,8 @@ public class ProfileQueryServiceImpl implements ProfileQueryService {
       }
     }
 
-    List<Review> latestReviews = reviewRepository.findTop3ByReviewee_IdOrderByCreatedAtDesc(userId);
+    List<Review> latestReviews = reviewRepository.findTop3ByReviewee_IdAndModerationStatusOrderByCreatedAtDesc(userId,
+        ModerationStatus.VISIBLE);
 
     return ProfileReviewSummary.builder()
         .averageRating(avg == null ? 0.0 : avg)

@@ -26,7 +26,7 @@ import lombok.ToString;
 @ToString
 @Builder
 @Table(name = "reviews")
-public class Review extends BaseEntity {
+public class Review extends ModeratableEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "id", nullable = false, updatable = false)

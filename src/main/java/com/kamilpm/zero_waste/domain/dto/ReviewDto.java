@@ -2,6 +2,7 @@ package com.kamilpm.zero_waste.domain.dto;
 
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
 import com.kamilpm.zero_waste.domain.entity.Offer;
 
 public class ReviewDto {
@@ -9,4 +10,5 @@ public class ReviewDto {
   String comment;
   int rating;
   Offer offer;
+  ModerationStatus moderationStatus;
 }

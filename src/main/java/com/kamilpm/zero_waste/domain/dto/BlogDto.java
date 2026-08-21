@@ -3,6 +3,8 @@ package com.kamilpm.zero_waste.domain.dto;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +20,7 @@ public class BlogDto {
   private String description;
   private String content;
   private UserSummaryDto author;
+  private ModerationStatus moderationStatus;
   private Instant createdAt;
   private Instant updatedAt;
 }

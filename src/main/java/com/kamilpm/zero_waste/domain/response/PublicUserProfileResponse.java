@@ -13,6 +13,7 @@ public record PublicUserProfileResponse(
     UUID id,
     String nickname,
     Instant joinedAt,
+    Boolean banned,
     ProfileItemSummary items,
     ProfileReviewSummary reviews) {
 

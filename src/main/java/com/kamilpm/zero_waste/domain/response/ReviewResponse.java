@@ -3,6 +3,8 @@ package com.kamilpm.zero_waste.domain.response;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
+
 import lombok.Builder;
 
 @Builder
@@ -11,5 +13,6 @@ public record ReviewResponse(UUID id,
     String comment,
     UUID reviewerId,
     String reviewerName,
+    ModerationStatus moderationStatus,
     Instant createdAt) {
 }

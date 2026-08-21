@@ -36,7 +36,7 @@ public class BlogController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<BlogDto> createBlog(@PathVariable(name = "id") UUID id, @RequestBody BlogRequest blog) {
+  public ResponseEntity<BlogDto> updateBlog(@PathVariable(name = "id") UUID id, @RequestBody BlogRequest blog) {
     BlogDto updatedBlog = blogService.updateBlog(id, blog);
     return new ResponseEntity<BlogDto>(updatedBlog, HttpStatus.CREATED);
   }

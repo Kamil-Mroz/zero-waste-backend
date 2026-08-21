@@ -1,6 +1,7 @@
 package com.kamilpm.zero_waste.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
 import com.kamilpm.zero_waste.domain.entity.Review;
 import com.kamilpm.zero_waste.domain.interfaces.IRatingBreakdownWithStats;
 import com.kamilpm.zero_waste.domain.interfaces.IRatingCountProjection;
@@ -23,13 +25,14 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
   boolean existsByOffer_Id(UUID offerId);
 
   @EntityGraph(attributePaths = { "reviewee" })
-  Page<Review> findByReviewee_IdOrderByCreatedAtDesc(UUID revieweeId, Pageable pageable);
+  Page<Review> findByReviewee_IdAndModerationStatusOrderByCreatedAtDesc(UUID revieweeId, ModerationStatus status,
+      Pageable pageable);
 
   @EntityGraph(attributePaths = { "reviewer" })
   Page<Review> findByReviewer_Id(UUID reviewerId, Pageable pageable);
 
   @EntityGraph(attributePaths = { "reviewee" })
-  List<Review> findTop3ByReviewee_IdOrderByCreatedAtDesc(UUID revieweeId);
+  List<Review> findTop3ByReviewee_IdAndModerationStatusOrderByCreatedAtDesc(UUID revieweeId, ModerationStatus status);
 
   @EntityGraph(attributePaths = { "reviewee" })
   @Query("""
@@ -77,5 +80,19 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
   void deleteByRevieweeIdAndItemId(@Param("revieweeId") UUID revieweeId, @Param("itemId") UUID itemId);
 
+  @EntityGraph(attributePaths = { "reviewee", "reviewer" })
   boolean existsByIdAndReviewer_IdNotAndReviewee_Id(UUID subjectId, UUID reviewerId, UUID revieweeId);
+
+  @EntityGraph(attributePaths = { "reviewee", "reviewer" })
+  boolean existsByIdAndReviewer_Id(UUID reviewId, UUID reviewerId);
+
+  @EntityGraph(attributePaths = { "reviewee", "reviewer" })
+  boolean existsByIdAndReviewee_Id(UUID reviewId, UUID reviewerId);
+
+  @EntityGraph(attributePaths = { "reviewee", "reviewer" })
+  Optional<Review> findById(UUID id);
+
+  @EntityGraph(attributePaths = { "reviewee", "reviewer" })
+  Optional<Review> findByIdAndModerationStatus(UUID id, ModerationStatus moderationStatus);
+
 }

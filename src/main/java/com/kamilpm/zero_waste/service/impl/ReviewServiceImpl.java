@@ -13,18 +13,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kamilpm.zero_waste.domain.dto.ReviewDto;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
 import com.kamilpm.zero_waste.domain.entity.Offer;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
 import com.kamilpm.zero_waste.domain.entity.Review;
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.mapper.ReviewMapper;
 import com.kamilpm.zero_waste.domain.request.ReviewRequest;
 import com.kamilpm.zero_waste.domain.response.ReviewResponse;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.OfferService;
+import com.kamilpm.zero_waste.service.ReportService;
 import com.kamilpm.zero_waste.service.ReviewService;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,6 +38,7 @@ public class ReviewServiceImpl implements ReviewService {
   private final AuthService authService;
   private final OfferService offerService;
   private final ReviewMapper reviewMapper;
+  private final ReportService reportService;
 
   @Override
   @Transactional
@@ -72,15 +77,15 @@ public class ReviewServiceImpl implements ReviewService {
   public Page<ReviewResponse> getReceivedReviews(Pageable pageable) {
     User user = authService.getRequiredAuthenticatedUser();
 
-    return reviewRepository.findByReviewee_IdOrderByCreatedAtDesc(user.getId(), pageable).map(reviewMapper::toResponse);
+    return reviewRepository
+        .findByReviewee_IdAndModerationStatusOrderByCreatedAtDesc(user.getId(), ModerationStatus.VISIBLE, pageable)
+        .map(reviewMapper::toResponse);
   }
 
   @Override
   @Transactional(readOnly = true)
   public Page<ReviewResponse> getGivenReviews(Pageable pageable) {
-
     User user = authService.getRequiredAuthenticatedUser();
-
     return reviewRepository.findByReviewer_Id(user.getId(), pageable).map(reviewMapper::toResponse);
   }
 
@@ -88,7 +93,9 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional(readOnly = true)
   public Page<ReviewResponse> getUserReviews(UUID userId, Pageable pageable) {
 
-    return reviewRepository.findByReviewee_IdOrderByCreatedAtDesc(userId, pageable).map(reviewMapper::toResponse);
+    return reviewRepository
+        .findByReviewee_IdAndModerationStatusOrderByCreatedAtDesc(userId, ModerationStatus.VISIBLE, pageable)
+        .map(reviewMapper::toResponse);
   }
 
   @Override
@@ -98,4 +105,38 @@ public class ReviewServiceImpl implements ReviewService {
 
   }
 
+  @Override
+  public ReviewDto getReview(UUID id) {
+    Review review = reviewRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Review not found"));
+    if (Objects.equals(review.getModerationStatus(), ModerationStatus.VISIBLE)) {
+      return reviewMapper.toDto(review);
+    }
+
+    User user = authService.getRequiredAuthenticatedUser();
+
+    if (Objects.equals(review.getReviewer().getId(), user.getId())) {
+      return reviewMapper.toDto(review);
+    }
+
+    if (user.getRoles().stream().anyMatch(role -> Objects.equals(UserRole.ADMIN, role))) {
+      return reviewMapper.toDto(review);
+    }
+
+    throw new EntityNotFoundException("Review not available");
+  }
+
+  @Override
+  public void deleteReview(UUID id) {
+    User user = authService.getRequiredAuthenticatedUser();
+
+    Review review = reviewRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Review not found"));
+
+    if (!Objects.equals(user.getId(), review.getReviewer().getId())) {
+      throw new ForbiddenException("Only the owner of the review can delete");
+    }
+
+    reviewRepository.deleteById(id);
+    reportService.rejectAllBySubjectId(id);
+
+  }
 }
