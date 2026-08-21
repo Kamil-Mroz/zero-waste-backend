@@ -204,6 +204,7 @@ public class OAuthServiceImpl implements OAuthService {
         .queryParam(
             "state",
             state)
+        .queryParam("prompt", "select_account")
         .build()
         .encode()
         .toUriString();

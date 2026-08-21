@@ -49,13 +49,14 @@ public class OAuthController {
       @RequestParam(required = false) String error,
       HttpServletResponse response) throws IOException {
     String frontendUrl = properties.frontendUrl();
-
-    OAuthSession session = oauthService.consume(state);
-    if (session.provider() != provider) {
-      throw new OAuthAuthenticationException("OAuth provider mismatch");
-    }
-    OAuthUserInfo info = oauthService.authenticate(provider, code);
+    OAuthSession session = null;
     try {
+      session = oauthService.consume(state);
+      if (session.provider() != provider) {
+        throw new OAuthAuthenticationException("OAuth provider mismatch");
+      }
+      OAuthUserInfo info = oauthService.authenticate(provider, code);
+
       switch (session.flow()) {
         case LOGIN -> {
           User user = oauthService.processLogin(info);
@@ -70,10 +71,10 @@ public class OAuthController {
       }
 
     } catch (ApiException ex) {
-      if (session.flow() == OAuthFlow.LINK) {
+      if (session != null && session.flow() == OAuthFlow.LINK) {
         redirectLinkError(response, ex.getMessage());
       } else {
-        redirectLoginError(response, frontendUrl);
+        redirectLoginError(response, ex.getMessage());
       }
     }
   }
