@@ -194,7 +194,7 @@ public class ItemServiceImpl implements ItemService {
     User user = authService.getRequiredAuthenticatedUser();
     UUID userId = user.getId();
 
-    if (Objects.equals(user.getRole(), UserRole.ADMIN)){
+    if (Objects.equals(user.getRole(), UserRole.ADMIN)) {
       return itemMapper.toDtoWithOwner(item);
     }
 
@@ -239,7 +239,7 @@ public class ItemServiceImpl implements ItemService {
     User user = authService.getRequiredAuthenticatedUser();
     Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
-    if (!Objects.equals(user.getId(), item.getOwner().getId())) {
+    if (!Objects.equals(user.getId(), item.getOwner().getId()) && user.getRole() != UserRole.ADMIN) {
       throw new ForbiddenException("Others items can not be deleted");
     }
     if (Objects.equals(item.getState(), ItemState.GIVEN)) {

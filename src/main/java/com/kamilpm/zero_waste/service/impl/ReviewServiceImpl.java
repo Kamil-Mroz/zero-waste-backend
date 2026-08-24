@@ -22,13 +22,13 @@ import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.mapper.ReviewMapper;
 import com.kamilpm.zero_waste.domain.request.ReviewRequest;
 import com.kamilpm.zero_waste.domain.response.ReviewResponse;
+import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.OfferService;
 import com.kamilpm.zero_waste.service.ReportService;
 import com.kamilpm.zero_waste.service.ReviewService;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -106,20 +106,20 @@ public class ReviewServiceImpl implements ReviewService {
   }
 
   @Override
-  public ReviewDto getReview(UUID id) {
+  public ReviewResponse getReview(UUID id) {
     Review review = reviewRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Review not found"));
     if (Objects.equals(review.getModerationStatus(), ModerationStatus.VISIBLE)) {
-      return reviewMapper.toDto(review);
+      return reviewMapper.toResponse(review);
     }
 
     User user = authService.getRequiredAuthenticatedUser();
 
     if (Objects.equals(review.getReviewer().getId(), user.getId())) {
-      return reviewMapper.toDto(review);
+      return reviewMapper.toResponse(review);
     }
 
     if (Objects.equals(user.getRole(), UserRole.ADMIN)) {
-      return reviewMapper.toDto(review);
+      return reviewMapper.toResponse(review);
     }
 
     throw new EntityNotFoundException("Review not available");
@@ -131,7 +131,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     Review review = reviewRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Review not found"));
 
-    if (!Objects.equals(user.getId(), review.getReviewer().getId())) {
+    if (!Objects.equals(user.getId(), review.getReviewer().getId()) && user.getRole() != UserRole.ADMIN) {
       throw new ForbiddenException("Only the owner of the review can delete");
     }
 

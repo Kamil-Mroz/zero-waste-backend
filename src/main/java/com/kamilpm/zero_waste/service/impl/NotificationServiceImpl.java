@@ -16,10 +16,10 @@ import com.kamilpm.zero_waste.domain.request.CursorDirection;
 import com.kamilpm.zero_waste.domain.request.CursorRequest;
 import com.kamilpm.zero_waste.domain.response.CursorResponse;
 import com.kamilpm.zero_waste.domain.response.NotificationResponse;
+import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.repository.NotificationRepository;
 import com.kamilpm.zero_waste.service.NotificationService;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service

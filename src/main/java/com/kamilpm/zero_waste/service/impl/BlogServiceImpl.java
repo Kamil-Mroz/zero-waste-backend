@@ -98,7 +98,7 @@ public class BlogServiceImpl implements BlogService {
   public void deleteBlog(UUID blogId) {
     User user = authService.getRequiredAuthenticatedUser();
     Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new EntityNotFoundException("Blog not found"));
-    if (!Objects.equals(user.getId(), blog.getAuthor().getId())) {
+    if (!Objects.equals(user.getId(), blog.getAuthor().getId()) && user.getRole() != UserRole.ADMIN) {
       throw new ForbiddenException("You are not the owner of this blog");
     }
     blogRepository.deleteById(blog.getId());

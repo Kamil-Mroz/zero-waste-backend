@@ -21,7 +21,8 @@ public interface ReviewService {
 
   void deleteAllByUserIds(List<UUID> ids);
 
-  ReviewDto getReview(UUID id);
+  ReviewResponse getReview(UUID id);
+
   void deleteReview(UUID id);
 
 }

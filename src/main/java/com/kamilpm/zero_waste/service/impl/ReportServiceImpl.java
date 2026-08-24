@@ -32,12 +32,12 @@ import com.kamilpm.zero_waste.domain.request.ReportRequest;
 import com.kamilpm.zero_waste.domain.request.ResolveReportRequest;
 import com.kamilpm.zero_waste.exception.BadRequestException;
 import com.kamilpm.zero_waste.exception.ConflictException;
+import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.exception.ForbiddenException;
 import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.ReportService;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
