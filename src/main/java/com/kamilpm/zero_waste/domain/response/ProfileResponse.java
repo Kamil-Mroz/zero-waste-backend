@@ -13,5 +13,5 @@ public record ProfileResponse(
     String phoneNumber,
     boolean hasActiveBan,
     Instant bannedUntil,
-    Set<UserRole> roles) {
+    UserRole role) {
 }

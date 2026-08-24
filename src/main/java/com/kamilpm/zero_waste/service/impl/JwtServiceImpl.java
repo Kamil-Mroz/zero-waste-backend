@@ -38,7 +38,6 @@ public class JwtServiceImpl implements JwtService {
     return Jwts.builder()
         .claims()
         .add("id", user.getId())
-        .add("roles", user.getAuthorities())
         .add(extraClaims)
         .subject(user.getUsername())
         .issuedAt(new Date(System.currentTimeMillis()))

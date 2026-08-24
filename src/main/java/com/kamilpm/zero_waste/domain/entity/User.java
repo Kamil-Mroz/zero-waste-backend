@@ -3,9 +3,7 @@ package com.kamilpm.zero_waste.domain.entity;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,15 +11,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.annotation.Nullable;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -62,11 +56,9 @@ public class User implements UserDetails {
   @Column(name = "banned_until")
   private Instant bannedUntil;
 
-  @ElementCollection(targetClass = UserRole.class, fetch = FetchType.EAGER)
-  @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-  @Column(name = "roles", nullable = false)
   @Enumerated(EnumType.STRING)
-  private Set<UserRole> roles;
+  @Column(name = "role", nullable = false)
+  private UserRole role;
 
   @CreationTimestamp
   @Column(name = "joined_at", nullable = false, updatable = false)
@@ -74,8 +66,7 @@ public class User implements UserDetails {
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    List<GrantedAuthority> authorities = roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-        .collect(Collectors.toList());
+    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     return authorities;
   }
 

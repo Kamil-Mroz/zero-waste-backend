@@ -24,5 +24,5 @@ public class CreateUserRequest {
   private String email;
   @StrongPassword
   private String password;
-  private Set<UserRole> roles;
+  private UserRole role;
 }

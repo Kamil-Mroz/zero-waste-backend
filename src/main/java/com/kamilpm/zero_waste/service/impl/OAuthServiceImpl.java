@@ -115,7 +115,7 @@ public class OAuthServiceImpl implements OAuthService {
         .nickname(info.nickname())
         .email(info.email())
         .password(null)
-        .roles(Set.of(UserRole.USER))
+        .role(UserRole.USER)
         .banActive(false)
         .bannedUntil(null)
         .build();

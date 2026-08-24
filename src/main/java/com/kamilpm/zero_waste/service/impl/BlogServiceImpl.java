@@ -84,7 +84,7 @@ public class BlogServiceImpl implements BlogService {
       return blogMapper.toDto(blog);
     }
     User user = authService.getRequiredAuthenticatedUser();
-    if (user.getRoles().stream().anyMatch(role -> Objects.equals(role, UserRole.ADMIN)))
+    if (Objects.equals(user.getRole(), UserRole.ADMIN))
       return blogMapper.toDto(blog);
 
     if (Objects.equals(user.getId(), blog.getAuthor().getId()))

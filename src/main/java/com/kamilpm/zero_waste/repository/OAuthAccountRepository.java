@@ -13,7 +13,7 @@ import com.kamilpm.zero_waste.domain.entity.OAuthProvider;
 
 @Repository
 public interface OAuthAccountRepository extends JpaRepository<OAuthAccount, UUID> {
-  @EntityGraph(attributePaths = { "user", "user.roles" })
+  @EntityGraph(attributePaths = { "user", })
   Optional<OAuthAccount> findByProviderAndProviderId(OAuthProvider provider, String providerId);
 
   @EntityGraph(attributePaths = { "user" })

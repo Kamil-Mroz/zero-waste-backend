@@ -18,7 +18,7 @@ import com.kamilpm.zero_waste.domain.entity.UserRole;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-  @EntityGraph(attributePaths = { "roles" })
+
   Optional<User> findByEmail(String email);
 
   boolean existsByEmail(String email);
@@ -27,13 +27,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   boolean existsByIdAndIdNot(UUID subjectId, UUID userId);
 
-  @EntityGraph(attributePaths = { "roles" })
   @Query("""
       SELECT DISTINCT u
       FROM User u
-      LEFT JOIN u.roles r
-      WHERE u.id !=:id
-      AND (:roles IS NULL OR r In :roles)
+      WHERE u.id != :id
+      AND (:roles IS NULL OR u.role In :roles)
       AND (:text IS NULL
         OR LOWER(u.nickname) LIKE :text ESCAPE '\\'
         OR LOWER(u.email) LIKE :text ESCAPE '\\'

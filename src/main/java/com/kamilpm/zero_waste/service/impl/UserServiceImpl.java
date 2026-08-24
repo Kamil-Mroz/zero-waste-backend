@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
         .nickname(userRequest.getNickname())
         .email(userRequest.getEmail())
         .password(passwordEncoder.encode(userRequest.getPassword()))
-        .roles(userRequest.getRoles())
+        .role(userRequest.getRole())
         .banActive(false)
         .bannedUntil(null)
         .build();
@@ -124,7 +124,7 @@ public class UserServiceImpl implements UserService {
 
     user.setNickname(userRequest.getNickname());
     user.setEmail(userRequest.getEmail());
-    user.setRoles(userRequest.getRoles());
+    user.setRole(userRequest.getRole());
     if (userRequest.getEmail() != null && !userRequest.getPassword().isBlank()) {
       user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
     }

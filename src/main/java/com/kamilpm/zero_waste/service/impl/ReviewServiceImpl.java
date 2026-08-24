@@ -118,7 +118,7 @@ public class ReviewServiceImpl implements ReviewService {
       return reviewMapper.toDto(review);
     }
 
-    if (user.getRoles().stream().anyMatch(role -> Objects.equals(UserRole.ADMIN, role))) {
+    if (Objects.equals(user.getRole(), UserRole.ADMIN)) {
       return reviewMapper.toDto(review);
     }
 

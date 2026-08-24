@@ -2,7 +2,6 @@ package com.kamilpm.zero_waste.config;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -62,7 +61,7 @@ public class Seeder implements ApplicationRunner {
             .nickname("JohnDoe")
             .email("john.doe@example.com")
             .password(passwordEncoder.encode(adminPassword))
-            .roles(Set.of(UserRole.ADMIN))
+            .role(UserRole.ADMIN)
             .banActive(false)
             .bannedUntil(null)
             .build());
@@ -71,7 +70,7 @@ public class Seeder implements ApplicationRunner {
             .nickname("JohnDoe1")
             .email("john.doe1@example.com")
             .password(passwordEncoder.encode(userPassword))
-            .roles(Set.of(UserRole.USER))
+            .role(UserRole.USER)
             .banActive(false)
             .bannedUntil(null)
             .build());
@@ -80,7 +79,7 @@ public class Seeder implements ApplicationRunner {
             .nickname("JohnDoe2")
             .email("john.doe2@example.com")
             .password(passwordEncoder.encode(userPassword))
-            .roles(Set.of(UserRole.WRITER))
+            .role(UserRole.WRITER)
             .banActive(false)
             .bannedUntil(null)
             .build());
@@ -91,7 +90,7 @@ public class Seeder implements ApplicationRunner {
               .nickname("User" + i)
               .email("user" + i + "@example.com")
               .password(passwordEncoder.encode(userPassword))
-              .roles(Set.of(UserRole.USER))
+              .role(UserRole.USER)
               .banActive(false)
               .bannedUntil(null)
               .build());

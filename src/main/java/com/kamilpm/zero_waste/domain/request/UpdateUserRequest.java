@@ -24,5 +24,5 @@ public class UpdateUserRequest {
   private String email;
   @NullablePassword
   private String password;
-  private Set<UserRole> roles;
+  private UserRole role;
 }

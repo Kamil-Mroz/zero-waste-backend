@@ -14,19 +14,19 @@ import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
 @Repository
 public interface BlogRepository extends JpaRepository<Blog, UUID> {
 
-  @EntityGraph(attributePaths = { "author", "author.roles" })
+  @EntityGraph(attributePaths = { "author", })
   List<Blog> findByModerationStatusAndAuthorBanActiveFalseOrderByCreatedAtDesc(ModerationStatus moderationStatus);
 
-  @EntityGraph(attributePaths = { "author", "author.roles" })
+  @EntityGraph(attributePaths = { "author", })
   Optional<Blog> findById(UUID id);
 
   @EntityGraph(attributePaths = { "author" })
   Optional<Blog> findByIdAndModerationStatus(UUID id, ModerationStatus status);
 
-  @EntityGraph(attributePaths = { "author", "author.roles" })
+  @EntityGraph(attributePaths = { "author", })
   List<Blog> findByAuthor_IdOrderByCreatedAtDesc(UUID id);
 
-  @EntityGraph(attributePaths = { "author", "author.roles" })
+  @EntityGraph(attributePaths = { "author", })
   Optional<Blog> findByIdAndAuthor_IdAndModerationStatus(UUID blogId, UUID authorId, ModerationStatus moderationStatus);
 
   @EntityGraph(attributePaths = { "author" })

@@ -2,7 +2,6 @@ package com.kamilpm.zero_waste.service.impl;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -44,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
         .nickname(registerRequest.getNickname())
         .email(registerRequest.getEmail())
         .password(passwordEncoder.encode(registerRequest.getPassword()))
-        .roles(Set.of(UserRole.USER))
+        .role(UserRole.USER)
         .bannedUntil(null)
         .banActive(false)
         .build();

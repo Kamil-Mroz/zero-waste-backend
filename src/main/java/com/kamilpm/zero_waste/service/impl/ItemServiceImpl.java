@@ -194,7 +194,7 @@ public class ItemServiceImpl implements ItemService {
     User user = authService.getRequiredAuthenticatedUser();
     UUID userId = user.getId();
 
-    if (user.getRoles().stream().anyMatch(role -> Objects.equals(UserRole.ADMIN, role))) {
+    if (Objects.equals(user.getRole(), UserRole.ADMIN)){
       return itemMapper.toDtoWithOwner(item);
     }
 

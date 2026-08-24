@@ -22,6 +22,6 @@ public class UserDto {
   private boolean hasActiveBan;
   private Instant bannedUntil;
   private Instant joinedAt;
-  private Set<UserRole> roles;
+  private UserRole role;
 
 }

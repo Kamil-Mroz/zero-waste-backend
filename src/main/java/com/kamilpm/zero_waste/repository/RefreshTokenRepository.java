@@ -15,7 +15,7 @@ import com.kamilpm.zero_waste.domain.entity.User;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
-  @EntityGraph(attributePaths = { "user", "user.roles" })
+  @EntityGraph(attributePaths = { "user" })
   Optional<RefreshToken> findByToken(String token);
 
   @EntityGraph(attributePaths = { "user" })

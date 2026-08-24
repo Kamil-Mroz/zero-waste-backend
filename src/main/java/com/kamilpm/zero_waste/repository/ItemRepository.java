@@ -60,12 +60,12 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
 
   boolean existsByCategory_Id(UUID id);
 
-  @EntityGraph(attributePaths = { "owner", "owner.roles", "category", "images", "thumbnail" })
+  @EntityGraph(attributePaths = { "owner", "category", "images", "thumbnail" })
   @Query("SELECT DISTINCT i FROM Item i WHERE i.id = ?1")
   Optional<Item> findByIdWithOwnerAndCategoryAndImages(UUID id);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
-  @EntityGraph(attributePaths = { "owner", "owner.roles", "thumbnail" })
+  @EntityGraph(attributePaths = { "owner", "thumbnail" })
   @Query("SELECT i FROM Item i WHERE i.id = :id")
   Optional<Item> findByIdForUpdate(@Param("id") UUID id);
 
@@ -76,26 +76,26 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   @Query("select i.state as itemState, COUNT(i.state) as totalItem from Item as i where i.owner.id = :userId group by i.state")
   List<IItemCount> countTotalItemsByOwnerIdAndState(@Param("userId") UUID userId);
 
-  @EntityGraph(attributePaths = { "owner", "owner.roles", "category", "images", "thumbnail" })
+  @EntityGraph(attributePaths = { "owner", "category", "images", "thumbnail" })
   List<Item> findTop3ByOwner_IdAndStateAndModerationStatusOrderByCreatedAtDesc(UUID ownerId, ItemState itemState,
       ModerationStatus status);
 
-  @EntityGraph(attributePaths = { "owner", "owner.roles", "category", "images", "thumbnail" })
+  @EntityGraph(attributePaths = { "owner", "category", "images", "thumbnail" })
   List<Item> findByOwner_IdAndStateAndModerationStatus(UUID id, ItemState state, ModerationStatus moderationStatus);
 
   @EntityGraph(attributePaths = { "owner", "images", "thumbnail" })
   List<Item> findByOwner_IdAndModerationStatus(UUID ownerId, ModerationStatus moderationStatus);
 
-  @EntityGraph(attributePaths = { "owner", "images", "owner.roles", "thumbnail" })
+  @EntityGraph(attributePaths = { "owner", "images", "thumbnail" })
   List<Item> findByOwnerIdIn(List<UUID> userIds);
 
   @EntityGraph(attributePaths = { "owner", })
   boolean existsByIdAndOwner_Id(UUID itemId, UUID userId);
 
-  @EntityGraph(attributePaths = { "owner", "owner.roles", "thumbnail" })
+  @EntityGraph(attributePaths = { "owner", "thumbnail" })
   Optional<Item> findById(UUID id);
 
-  @EntityGraph(attributePaths = { "owner", "owner.roles", "thumbnail" })
+  @EntityGraph(attributePaths = { "owner", "thumbnail" })
   Optional<Item> findByIdAndModerationStatus(UUID id, ModerationStatus status);
 
   @EntityGraph(attributePaths = { "owner" })
