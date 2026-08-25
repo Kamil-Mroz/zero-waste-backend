@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,12 +18,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.kamilpm.zero_waste.security.JwtAuthEntryPoint;
 import com.kamilpm.zero_waste.security.JwtFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -35,7 +38,9 @@ public class SecurityConfig {
 
   private final JwtFilter jwtFilter;
   private final UserDetailsService userDetailsService;
-  private final JwtAuthEntryPoint authEntryPoint;
+  private final AuthenticationEntryPoint authEntryPoint;
+  private final AccessDeniedHandler accessDeniedHandler;
+  private final AuthorizationManager<RequestAuthorizationContext> demoReadonlyAuthorizationManager;
 
   @Value("${app.cors.allowed-origins}")
   private String allowedOrigins;
@@ -45,12 +50,26 @@ public class SecurityConfig {
     http
         .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
         .csrf(csrf -> csrf.disable())
-        .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
+        .exceptionHandling(
+            exception -> exception.authenticationEntryPoint(authEntryPoint).accessDeniedHandler(accessDeniedHandler))
         .authorizeHttpRequests(
             (authorize) -> authorize
-                .requestMatchers("/api/v{version}/auth/logout", "/api/v{version}/auth/password").authenticated()
+                .requestMatchers("/api/v{version}/auth/logout").authenticated()
+                .requestMatchers(
+                    "/api/v{version}/auth/password")
+                .hasAnyRole("ADMIN", "WRITER", "USER")
                 .requestMatchers("/api/v{version}/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v{version}/blogs/own").hasAnyRole("ADMIN", "WRITER")
+
+                .requestMatchers(HttpMethod.POST, "/api/v{version}/**")
+                .access(demoReadonlyAuthorizationManager)
+                .requestMatchers(HttpMethod.PUT, "/api/v{version}/**")
+                .access(demoReadonlyAuthorizationManager)
+                .requestMatchers(HttpMethod.PATCH, "/api/v{version}/**")
+                .access(demoReadonlyAuthorizationManager)
+                .requestMatchers(HttpMethod.DELETE, "/api/v{version}/**")
+                .access(demoReadonlyAuthorizationManager)
+
+                .requestMatchers(HttpMethod.GET, "/api/v{version}/blogs/own").hasAnyRole("ADMIN", "WRITER", "DEMO")
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/blogs/**").permitAll()
                 .requestMatchers("/api/v{version}/blogs/**").hasAnyRole("ADMIN", "WRITER")
                 .requestMatchers("/api/v{version}/docs/**").hasRole("ADMIN")

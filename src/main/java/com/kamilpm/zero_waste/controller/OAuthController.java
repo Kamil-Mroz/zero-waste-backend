@@ -48,7 +48,6 @@ public class OAuthController {
       @RequestParam(required = false) String state,
       @RequestParam(required = false) String error,
       HttpServletResponse response) throws IOException {
-    String frontendUrl = properties.frontendUrl();
     OAuthSession session = null;
     try {
       session = oauthService.consume(state);

@@ -5,7 +5,6 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -102,7 +101,7 @@ public class OAuthServiceImpl implements OAuthService {
       return user;
     }
 
-    Optional<User> existingUser = userRepository.findByEmail(info.email());
+    Optional<User> existingUser = userRepository.findByEmail(info.email().toLowerCase());
 
     if (existingUser.isPresent()) {
 
@@ -113,7 +112,7 @@ public class OAuthServiceImpl implements OAuthService {
 
     User user = User.builder()
         .nickname(info.nickname())
-        .email(info.email())
+        .email(info.email().toLowerCase())
         .password(null)
         .role(UserRole.USER)
         .banActive(false)

@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.service.impl;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,7 @@ import com.kamilpm.zero_waste.exception.UnauthorizedException;
 import com.kamilpm.zero_waste.repository.UserRepository;
 import com.kamilpm.zero_waste.service.AuthService;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -32,6 +34,9 @@ public class AuthServiceImpl implements AuthService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
+
+  @Value("${app.security.demo.email}")
+  private String demoEmail;
 
   @Override
   public User register(RegisterRequest registerRequest) {
@@ -56,13 +61,19 @@ public class AuthServiceImpl implements AuthService {
 
     try {
       Authentication authentication = authenticationManager.authenticate(
-          new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+          new UsernamePasswordAuthenticationToken(loginRequest.getEmail().toLowerCase(), loginRequest.getPassword()));
 
       return authentication;
     } catch (BadCredentialsException e) {
       throw new BadCredentialsExceptionCustom("Invalid credentials");
     }
 
+  }
+
+  @Override
+  public User getDemoUser() {
+    return userRepository.findByEmail(demoEmail)
+        .orElseThrow(() -> new EntityNotFoundException("Demo user not found"));
   }
 
   @Override

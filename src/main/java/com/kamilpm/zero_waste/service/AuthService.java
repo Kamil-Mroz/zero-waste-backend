@@ -15,6 +15,8 @@ public interface AuthService {
 
   Authentication verify(LoginRequest loginRequest);
 
+  User getDemoUser();
+
   Optional<User> getAuthenticatedUser();
 
   User getRequiredAuthenticatedUser();

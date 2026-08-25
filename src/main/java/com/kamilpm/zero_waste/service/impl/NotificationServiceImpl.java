@@ -20,6 +20,7 @@ import com.kamilpm.zero_waste.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.repository.NotificationRepository;
 import com.kamilpm.zero_waste.service.NotificationService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -125,6 +126,7 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
+  @Transactional
   public NotificationDto getNotification(UUID userId, UUID notificationId) {
 
     Notification notification = notificationRepository.findByIdAndRecipient_Id(notificationId, userId)

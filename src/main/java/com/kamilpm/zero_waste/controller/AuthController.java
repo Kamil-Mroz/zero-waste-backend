@@ -70,6 +70,24 @@ public class AuthController {
 
     User user = (User) authentication.getPrincipal();
 
+    AuthResponse authResponse = getAuthResponse(user, response);
+
+    return ResponseEntity.ok(authResponse);
+  }
+
+  @PostMapping(path = "/demo")
+  public ResponseEntity<AuthResponse> loginDemo(
+      HttpServletResponse response) {
+
+    User user = authService.getDemoUser();
+
+    AuthResponse authResponse = getAuthResponse(user, response);
+
+    return ResponseEntity.ok(authResponse);
+  }
+
+  private AuthResponse getAuthResponse(User user, HttpServletResponse response) {
+
     String accessToken = jwtService.generateToken(user);
     RefreshToken refresh = refreshTokenService.generateRefreshToken(user);
 
@@ -79,11 +97,11 @@ public class AuthController {
 
     UserDto userDto = userMapper.toDto(refresh.getUser());
 
-    AuthResponse authResponse = AuthResponse.builder()
+    return AuthResponse.builder()
         .accessToken(accessToken)
         .user(userDto)
         .build();
-    return ResponseEntity.ok(authResponse);
+
   }
 
   @PostMapping("/refresh")

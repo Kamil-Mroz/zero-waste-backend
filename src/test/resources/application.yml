@@ -56,6 +56,8 @@ app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
   security:
+    demo:
+      email: ${DEMO_EMAIL}
     passwords:
       admin: ${DEV_ADMIN_PASSWORD:SecurePassword123!}
       users: ${DEV_USER_PASSWORD:SecurePassword123!}

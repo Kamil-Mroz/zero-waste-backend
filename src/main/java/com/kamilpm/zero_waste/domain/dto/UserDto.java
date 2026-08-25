@@ -1,7 +1,6 @@
 package com.kamilpm.zero_waste.domain.dto;
 
 import java.time.Instant;
-import java.util.Set;
 import java.util.UUID;
 
 import com.kamilpm.zero_waste.domain.entity.UserRole;
