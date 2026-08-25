@@ -7,6 +7,7 @@ import com.kamilpm.zero_waste.domain.dto.BlogDto;
 import com.kamilpm.zero_waste.domain.request.BlogRequest;
 import com.kamilpm.zero_waste.service.BlogService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -14,7 +15,6 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,13 +30,13 @@ public class BlogController {
   private final BlogService blogService;
 
   @PostMapping
-  public ResponseEntity<BlogDto> createBlog(@RequestBody BlogRequest blog) {
+  public ResponseEntity<BlogDto> createBlog(@Valid @RequestBody BlogRequest blog) {
     BlogDto createdBlog = blogService.createBlog(blog);
     return new ResponseEntity<BlogDto>(createdBlog, HttpStatus.CREATED);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<BlogDto> updateBlog(@PathVariable(name = "id") UUID id, @RequestBody BlogRequest blog) {
+  public ResponseEntity<BlogDto> updateBlog(@PathVariable(name = "id") UUID id, @Valid @RequestBody BlogRequest blog) {
     BlogDto updatedBlog = blogService.updateBlog(id, blog);
     return new ResponseEntity<BlogDto>(updatedBlog, HttpStatus.CREATED);
   }

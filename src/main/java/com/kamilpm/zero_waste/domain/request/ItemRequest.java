@@ -26,6 +26,7 @@ public class ItemRequest {
   @NotBlank(message = "Title is required")
   private String title;
   @NotBlank(message = "Description is required")
+  @Size(max = 255, message = "Description can not exceed  255 characters")
   private String description;
   private ItemCondition condition;
   private ItemState state;
