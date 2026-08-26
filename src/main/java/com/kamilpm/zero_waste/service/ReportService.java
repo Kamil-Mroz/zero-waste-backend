@@ -3,7 +3,6 @@ package com.kamilpm.zero_waste.service;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.coyote.BadRequestException;
 
 import com.kamilpm.zero_waste.domain.dto.ReportDto;
 import com.kamilpm.zero_waste.domain.request.ReportRequest;

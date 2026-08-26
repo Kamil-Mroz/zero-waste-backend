@@ -10,12 +10,14 @@ import org.springframework.stereotype.Repository;
 
 import com.kamilpm.zero_waste.domain.entity.Blog;
 import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
+import com.kamilpm.zero_waste.domain.entity.UserRole;
 
 @Repository
 public interface BlogRepository extends JpaRepository<Blog, UUID> {
 
   @EntityGraph(attributePaths = { "author", })
-  List<Blog> findByModerationStatusAndAuthorBanActiveFalseOrderByCreatedAtDesc(ModerationStatus moderationStatus);
+  List<Blog> findByModerationStatusAndAuthorBanActiveFalseAndAuthorRoleNotOrderByCreatedAtDesc(
+      ModerationStatus moderationStatus, UserRole role);
 
   @EntityGraph(attributePaths = { "author", })
   Optional<Blog> findById(UUID id);

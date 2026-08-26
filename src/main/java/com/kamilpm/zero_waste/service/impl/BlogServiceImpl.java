@@ -65,7 +65,9 @@ public class BlogServiceImpl implements BlogService {
 
   @Override
   public List<BlogDto> getBlogs() {
-    return blogRepository.findByModerationStatusAndAuthorBanActiveFalseOrderByCreatedAtDesc(ModerationStatus.VISIBLE)
+    return blogRepository
+        .findByModerationStatusAndAuthorBanActiveFalseAndAuthorRoleNotOrderByCreatedAtDesc(ModerationStatus.VISIBLE,
+            UserRole.DEMO)
         .stream()
         .map(blogMapper::toDto).toList();
   }
@@ -80,7 +82,9 @@ public class BlogServiceImpl implements BlogService {
   public BlogDto getBlog(UUID blogId) {
 
     Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new EntityNotFoundException("Blog not found"));
-    if (Objects.equals(blog.getModerationStatus(), ModerationStatus.VISIBLE)) {
+
+    if (Objects.equals(blog.getModerationStatus(), ModerationStatus.VISIBLE)
+        && !Objects.equals(blog.getAuthor().getRole(), UserRole.DEMO)) {
       return blogMapper.toDto(blog);
     }
     User user = authService.getRequiredAuthenticatedUser();

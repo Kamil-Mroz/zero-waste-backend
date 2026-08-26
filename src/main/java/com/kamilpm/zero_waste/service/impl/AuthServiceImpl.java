@@ -99,7 +99,7 @@ public class AuthServiceImpl implements AuthService {
     } catch (ForbiddenException ex) {
       throw ex;
     } catch (Exception ex) {
-      throw new UnauthorizedException("User is not authenticated");
+      throw new UnauthorizedException("You are not authenticated");
     }
   }
 

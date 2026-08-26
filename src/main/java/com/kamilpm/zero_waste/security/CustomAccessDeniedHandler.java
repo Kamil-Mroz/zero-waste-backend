@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.kamilpm.zero_waste.domain.response.ErrorResponse;
 
-import io.lettuce.core.dynamic.annotation.CommandNaming;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

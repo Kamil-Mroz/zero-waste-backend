@@ -25,10 +25,10 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
     response.setCharacterEncoding("UTF-8");
     response.setStatus(HttpStatus.UNAUTHORIZED.value());
     ErrorResponse error = new ErrorResponse(
-        "Token invalid or expired",
+        "You are not authenticated",
         request.getRequestURI(),
         401,
-        "unauthorized");
+        "unauthenticated");
 
     final JsonMapper mapper = JsonMapper.builder().build();
 

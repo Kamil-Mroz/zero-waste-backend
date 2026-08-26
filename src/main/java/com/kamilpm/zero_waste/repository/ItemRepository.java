@@ -32,6 +32,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
       AND i.moderationStatus = :moderationStatus
       AND (:categoryIds IS NULL OR i.category.id IN :categoryIds)
       AND (i.owner.banActive = false)
+      AND (i.owner.role != 'DEMO')
       AND (:text IS NULL
         OR LOWER(i.title) LIKE :text ESCAPE '\\'
         OR LOWER(i.city) LIKE :text ESCAPE '\\'

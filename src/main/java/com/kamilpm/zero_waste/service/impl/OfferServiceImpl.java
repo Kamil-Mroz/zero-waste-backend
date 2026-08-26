@@ -18,6 +18,7 @@ import com.kamilpm.zero_waste.domain.entity.NotificationType;
 import com.kamilpm.zero_waste.domain.entity.Offer;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
 import com.kamilpm.zero_waste.domain.entity.User;
+import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.mapper.OfferMapper;
 import com.kamilpm.zero_waste.exception.ConflictException;
 import com.kamilpm.zero_waste.exception.EntityNotFoundException;
@@ -27,7 +28,6 @@ import com.kamilpm.zero_waste.service.AuthService;
 import com.kamilpm.zero_waste.service.ItemService;
 import com.kamilpm.zero_waste.service.NotificationService;
 import com.kamilpm.zero_waste.service.OfferService;
-
 
 import lombok.RequiredArgsConstructor;
 
@@ -107,6 +107,9 @@ public class OfferServiceImpl implements OfferService {
     Item item = itemService.findByIdForUpdate(id);
     if (Objects.equals(user.getId(), item.getOwner().getId()))
       throw new ConflictException("You can not make an offer on your own item");
+
+    if (Objects.equals(item.getOwner().getRole(), UserRole.DEMO))
+      throw new ForbiddenException("Unable to interact with demo users");
 
     if (ItemState.GIVEN == item.getState())
       throw new ConflictException("Item already given");

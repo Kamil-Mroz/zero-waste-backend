@@ -27,6 +27,7 @@ import com.kamilpm.zero_waste.domain.entity.ReportSubjectType;
 import com.kamilpm.zero_waste.domain.entity.Review;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.entity.UserBan;
+import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.mapper.ReportMapper;
 import com.kamilpm.zero_waste.domain.request.ReportRequest;
 import com.kamilpm.zero_waste.domain.request.ResolveReportRequest;
@@ -59,7 +60,7 @@ public class ReportServiceImpl implements ReportService {
   @Transactional
   public void createReport(ReportRequest reportRequest) {
     User user = authService.getRequiredAuthenticatedUser();
-    validateSubjectExists(user.getId(), reportRequest.subjectType(), reportRequest.subjectId());
+    validateSubjectExists(user, reportRequest.subjectType(), reportRequest.subjectId());
 
     if (reportRepository.existsByReporter_IdAndSubjectId(user.getId(),
         reportRequest.subjectId())) {
@@ -80,19 +81,74 @@ public class ReportServiceImpl implements ReportService {
     simpMessagingTemplate.convertAndSend("/topic/reports", savedReport);
   }
 
-  private void validateSubjectExists(UUID userId, ReportSubjectType type, UUID subjectId) {
-
-    boolean isValid = switch (type) {
-      case USER -> userRepository.existsByIdAndIdNot(subjectId, userId);
-      case BLOG -> blogRepository.existsByIdAndAuthor_IdNot(subjectId, userId);
-      case ITEM -> itemRepository.existsByIdAndOwner_IdNotAndState(subjectId, userId, ItemState.AVAILABLE);
-      case REVIEW -> reviewRepository.existsByIdAndReviewer_IdNotAndReviewee_Id(subjectId, userId, userId);
-      default -> false;
-    };
-
-    if (!isValid) {
-      throw new EntityNotFoundException("Subject doesn't exists or can not report yourself");
+  private void validateSubjectExists(User user, ReportSubjectType type, UUID subjectId) {
+    switch (type) {
+      case USER -> userExists(subjectId, user);
+      case BLOG -> blogExists(subjectId, user);
+      case ITEM -> itemExists(subjectId, user);
+      case REVIEW -> reviewExists(subjectId, user);
     }
+    ;
+  }
+
+  private void reviewExists(UUID subjectId, User user) {
+    Review review = reviewRepository.findById(subjectId)
+        .orElseThrow(() -> new EntityNotFoundException("Review not found"));
+
+    if (Objects.equals(review.getReviewer().getId(), user.getId()))
+      throw new ForbiddenException("You can not report yourself");
+
+    if (!Objects.equals(review.getReviewee().getId(), user.getId()))
+      throw new ForbiddenException("You can not report review not received");
+
+    if (Objects.equals(review.getModerationStatus(), ModerationStatus.HIDDEN))
+      throw new ForbiddenException("Unable to report a hidden review");
+
+  }
+
+  private void itemExists(UUID subjectId, User user) {
+    Item item = itemRepository.findById(subjectId).orElseThrow(() -> new EntityNotFoundException("Item not found"));
+
+    if (Objects.equals(item.getOwner().getId(), user.getId()))
+      throw new ForbiddenException("You can not report yourself");
+
+    if (Objects.equals(item.getOwner().getRole(), UserRole.DEMO))
+      throw new ForbiddenException("Unable to interact with demo users");
+
+    if (Objects.equals(item.getModerationStatus(), ModerationStatus.HIDDEN))
+      throw new ForbiddenException("Unable to report a hidden item");
+
+    if (!Objects.equals(item.getState(), ItemState.AVAILABLE))
+      throw new ForbiddenException("Only available items can be reported");
+
+  }
+
+  private void userExists(UUID subjectId, User user) {
+    User reportedUser = userRepository.findById(subjectId)
+        .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+    if (Objects.equals(reportedUser.getId(), user.getId()))
+      throw new ForbiddenException("You can not report yourself");
+
+    if (Objects.equals(reportedUser.getRole(), UserRole.DEMO))
+      throw new ForbiddenException("Unable to interact with demo users");
+
+    if (reportedUser.isBanActive())
+      throw new ForbiddenException("Unable to report banned user");
+
+  }
+
+  private void blogExists(UUID subjectId, User user) {
+    Blog blog = blogRepository.findById(subjectId).orElseThrow(() -> new EntityNotFoundException("Blog not found"));
+
+    if (Objects.equals(blog.getAuthor().getId(), user.getId()))
+      throw new ForbiddenException("You can not report yourself");
+
+    if (Objects.equals(blog.getAuthor().getRole(), UserRole.DEMO))
+      throw new ForbiddenException("Unable to interact with demo users");
+
+    if (Objects.equals(blog.getModerationStatus(), ModerationStatus.HIDDEN))
+      throw new ForbiddenException("Unable to report a hidden blog");
 
   }
 

@@ -18,7 +18,6 @@ import com.kamilpm.zero_waste.domain.entity.Image;
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
 import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
-import com.kamilpm.zero_waste.domain.entity.ReportStatus;
 import com.kamilpm.zero_waste.domain.entity.User;
 import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.mapper.ItemMapper;
@@ -188,7 +187,7 @@ public class ItemServiceImpl implements ItemService {
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
     if (Objects.equals(item.getState(), ItemState.AVAILABLE)
-        && Objects.equals(item.getModerationStatus(), ModerationStatus.VISIBLE))
+        && Objects.equals(item.getModerationStatus(), ModerationStatus.VISIBLE) && !Objects.equals(item.getOwner().getRole(), UserRole.DEMO))
       return itemMapper.toDtoWithOwner(item);
 
     User user = authService.getRequiredAuthenticatedUser();
