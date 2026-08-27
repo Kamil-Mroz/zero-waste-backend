@@ -187,7 +187,8 @@ public class ItemServiceImpl implements ItemService {
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
     if (Objects.equals(item.getState(), ItemState.AVAILABLE)
-        && Objects.equals(item.getModerationStatus(), ModerationStatus.VISIBLE) && !Objects.equals(item.getOwner().getRole(), UserRole.DEMO))
+        && Objects.equals(item.getModerationStatus(), ModerationStatus.VISIBLE)
+        && !Objects.equals(item.getOwner().getRole(), UserRole.DEMO))
       return itemMapper.toDtoWithOwner(item);
 
     User user = authService.getRequiredAuthenticatedUser();
@@ -200,7 +201,7 @@ public class ItemServiceImpl implements ItemService {
     if (userId.equals(item.getOwner().getId()))
       return itemMapper.toDtoWithOwner(item);
 
-    if (itemOwnershipService.isBuyerOfItem(userId, item.getId())
+    if (Objects.equals(item.getState(), ItemState.GIVEN) && itemOwnershipService.isBuyerOfItem(userId, item.getId())
         && Objects.equals(item.getModerationStatus(), ModerationStatus.VISIBLE))
       return itemMapper.toDtoWithOwner(item);
 
@@ -246,6 +247,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     deleteItemCompletely(item);
+
+    reportService.rejectAllBySubjectId(item.getId(), user.getRole() == UserRole.ADMIN);
 
   }
 
@@ -299,7 +302,6 @@ public class ItemServiceImpl implements ItemService {
     itemRepository.saveAndFlush(item);
     imageService.deleteImagesFromDisk(item.getImages());
     itemRepository.delete(item);
-    reportService.rejectAllBySubjectId(item.getId());
   }
 
   @Override

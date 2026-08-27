@@ -106,7 +106,7 @@ public class BlogServiceImpl implements BlogService {
       throw new ForbiddenException("You are not the owner of this blog");
     }
     blogRepository.deleteById(blog.getId());
-    reportService.rejectAllBySubjectId(blogId);
+    reportService.rejectAllBySubjectId(blogId, user.getRole() == UserRole.ADMIN);
   }
 
   @Override

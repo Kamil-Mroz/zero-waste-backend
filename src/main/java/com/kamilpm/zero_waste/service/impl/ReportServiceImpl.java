@@ -236,7 +236,7 @@ public class ReportServiceImpl implements ReportService {
     report.setAdminNote(resolveRequest.adminNote());
 
     reportRepository.save(report);
-    rejectAllBySubjectId(report.getSubjectId());
+    rejectAllBySubjectId(report.getSubjectId(), true);
   }
 
   private void removeReportedEntity(Report report) {
@@ -323,10 +323,10 @@ public class ReportServiceImpl implements ReportService {
   }
 
   @Override
-  public void rejectAllBySubjectId(UUID subjectId) {
+  public void rejectAllBySubjectId(UUID subjectId, boolean isAdmin) {
     List<Report> reports = reportRepository.findBySubjectIdAndStatus(subjectId, ReportStatus.PENDING);
     for (Report report : reports) {
-      report.setAdminNote("Content was deleted by its owner.");
+      report.setAdminNote(isAdmin ? "Content was deleted by admin." : "Content was deleted by its owner.");
       report.setResolvedAt(Instant.now());
       report.setStatus(ReportStatus.RESOLVED);
     }

@@ -136,7 +136,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     reviewRepository.deleteById(id);
-    reportService.rejectAllBySubjectId(id);
+    reportService.rejectAllBySubjectId(id, user.getRole() == UserRole.ADMIN);
 
   }
 }

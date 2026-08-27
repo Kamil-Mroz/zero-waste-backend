@@ -14,6 +14,7 @@ import com.kamilpm.zero_waste.domain.dto.OfferDto;
 import com.kamilpm.zero_waste.domain.dto.OfferWithEmailDto;
 import com.kamilpm.zero_waste.domain.entity.Item;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
+import com.kamilpm.zero_waste.domain.entity.ModerationStatus;
 import com.kamilpm.zero_waste.domain.entity.NotificationType;
 import com.kamilpm.zero_waste.domain.entity.Offer;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
@@ -105,16 +106,22 @@ public class OfferServiceImpl implements OfferService {
     User user = authService.getRequiredAuthenticatedUser();
 
     Item item = itemService.findByIdForUpdate(id);
+
     if (Objects.equals(user.getId(), item.getOwner().getId()))
       throw new ConflictException("You can not make an offer on your own item");
 
     if (Objects.equals(item.getOwner().getRole(), UserRole.DEMO))
       throw new ForbiddenException("Unable to interact with demo users");
 
-    if (ItemState.GIVEN == item.getState())
-      throw new ConflictException("Item already given");
+    if (ItemState.AVAILABLE != item.getState())
+      throw new ForbiddenException("Unable to make an offer to an unavailable item");
+
     if (offerRepository.existsByBuyer_IdAndItem_Id(user.getId(), id))
       throw new ConflictException("You have made already an offer for this item");
+    if (item.getModerationStatus() != ModerationStatus.VISIBLE) {
+      throw new ForbiddenException("Unable to make an offer for a hidden item");
+
+    }
 
     Offer offer = Offer.builder()
         .buyer(user)

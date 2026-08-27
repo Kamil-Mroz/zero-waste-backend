@@ -11,6 +11,7 @@ import com.kamilpm.zero_waste.domain.response.ReviewResponse;
 public interface ReviewMapper {
 
   @Mapping(target = "reviewerId", source = "reviewer.id")
+  @Mapping(target = "revieweeId", source = "reviewee.id")
   @Mapping(target = "reviewerName", expression = "java(review.getReviewer().getNickname())")
   ReviewResponse toResponse(Review review);
 

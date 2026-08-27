@@ -12,6 +12,7 @@ public record ReviewResponse(UUID id,
     int rating,
     String comment,
     UUID reviewerId,
+    UUID revieweeId,
     String reviewerName,
     ModerationStatus moderationStatus,
     Instant createdAt) {

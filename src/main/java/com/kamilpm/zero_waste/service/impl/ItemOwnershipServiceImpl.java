@@ -17,7 +17,7 @@ public class ItemOwnershipServiceImpl implements ItemOwnershipService {
   private final ItemRepository itemRepository;
 
   @Override
-  public boolean isBuyerOfItem(UUID itemId, UUID userId) {
+  public boolean isBuyerOfItem(UUID userId, UUID itemId) {
     return offerRepository.existsByBuyer_IdAndItem_Id(userId, itemId);
   }
 

@@ -17,9 +17,10 @@ public interface OfferRepository extends JpaRepository<Offer, UUID> {
   @EntityGraph(attributePaths = { "buyer" })
   List<Offer> findByItem_idAndStatusAndIdNot(UUID itemId, OfferStatus status, UUID id);
 
+  @EntityGraph(attributePaths = { "buyer", "item" })
   boolean existsByBuyer_IdAndItem_Id(UUID buyerId, UUID itemId);
 
-  @EntityGraph(attributePaths = { "buyer" })
+  @EntityGraph(attributePaths = { "buyer", "item" })
   Optional<Offer> findByBuyer_IdAndItem_Id(UUID buyerId, UUID itemId);
 
   @EntityGraph(attributePaths = { "buyer", "item", "item.owner" })
