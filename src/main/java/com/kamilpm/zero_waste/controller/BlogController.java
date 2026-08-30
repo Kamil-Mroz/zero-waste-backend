@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.annotation.RateLimit;
 import com.kamilpm.zero_waste.domain.dto.BlogDto;
 import com.kamilpm.zero_waste.domain.request.BlogRequest;
 import com.kamilpm.zero_waste.service.BlogService;
@@ -10,6 +11,7 @@ import com.kamilpm.zero_waste.service.BlogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,12 +31,14 @@ public class BlogController {
 
   private final BlogService blogService;
 
+  @RateLimit(action = "create-blog", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping
   public ResponseEntity<BlogDto> createBlog(@Valid @RequestBody BlogRequest blog) {
     BlogDto createdBlog = blogService.createBlog(blog);
     return new ResponseEntity<BlogDto>(createdBlog, HttpStatus.CREATED);
   }
 
+  @RateLimit(action = "update-blog", limit = 20, window = 1, unit = ChronoUnit.MINUTES)
   @PutMapping("/{id}")
   public ResponseEntity<BlogDto> updateBlog(@PathVariable(name = "id") UUID id, @Valid @RequestBody BlogRequest blog) {
     BlogDto updatedBlog = blogService.updateBlog(id, blog);
@@ -60,6 +64,7 @@ public class BlogController {
     return ResponseEntity.ok(blogs);
   }
 
+  @RateLimit(action = "delete-blog", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteBlog(@PathVariable(name = "id") UUID id) {
     blogService.deleteBlog(id);

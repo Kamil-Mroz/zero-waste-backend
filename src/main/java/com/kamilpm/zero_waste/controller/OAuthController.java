@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.controller;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.annotation.RateLimit;
 import com.kamilpm.zero_waste.config.OAuthProperties;
 import com.kamilpm.zero_waste.domain.dto.Connections;
 import com.kamilpm.zero_waste.domain.dto.OAuthFlow;
@@ -123,12 +125,14 @@ public class OAuthController {
         oauthService.initiateLogin(provider)));
   }
 
+  @RateLimit(action = "initiate-link", limit = 5, window = 15, unit = ChronoUnit.MINUTES)
   @PostMapping("/link/{provider}")
   public ResponseEntity<?> initiateLink(@PathVariable OAuthProvider provider) {
 
     return ResponseEntity.ok(Map.of("redirectUrl", oauthService.initiateLink(provider)));
   }
 
+  @RateLimit(action = "unlink-account", limit = 5, window = 15, unit = ChronoUnit.MINUTES)
   @DeleteMapping("/link/{provider}")
   public ResponseEntity<Void> unlinkAccount(@PathVariable OAuthProvider provider) {
     oauthService.unlinkAccount(provider);

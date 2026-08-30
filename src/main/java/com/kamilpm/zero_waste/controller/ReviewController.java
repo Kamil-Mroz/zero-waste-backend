@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.annotation.RateLimit;
 import com.kamilpm.zero_waste.domain.dto.ReviewDto;
 import com.kamilpm.zero_waste.domain.request.ReviewRequest;
 import com.kamilpm.zero_waste.domain.response.PageResponse;
@@ -12,6 +13,7 @@ import com.kamilpm.zero_waste.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -31,6 +33,7 @@ public class ReviewController {
 
   private final ReviewService reviewService;
 
+  @RateLimit(action = "create-review", limit = 5, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping
   public ResponseEntity<ReviewDto> createReview(@Valid @RequestBody ReviewRequest reviewRequest) {
 
@@ -87,6 +90,7 @@ public class ReviewController {
     return ResponseEntity.ok(reviewService.getReview(id));
   }
 
+  @RateLimit(action = "delete-review", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteReview(@PathVariable UUID id) {
     reviewService.deleteReview(id);

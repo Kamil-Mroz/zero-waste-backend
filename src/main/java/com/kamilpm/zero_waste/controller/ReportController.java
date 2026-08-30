@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.annotation.RateLimit;
 import com.kamilpm.zero_waste.domain.dto.ReportDto;
 import com.kamilpm.zero_waste.domain.request.ReportRejectRequest;
 import com.kamilpm.zero_waste.domain.request.ReportRequest;
@@ -12,6 +13,7 @@ import com.kamilpm.zero_waste.service.ReportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +30,7 @@ public class ReportController {
 
   private final ReportService reportService;
 
+  @RateLimit(action = "create-report", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping
   public ResponseEntity<Void> createReport(@Valid @RequestBody ReportRequest report) {
 
@@ -44,6 +47,7 @@ public class ReportController {
         reportService.getReports());
   }
 
+  @RateLimit(action = "reject-report", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping("{id}/reject")
   public ResponseEntity<Void> rejectReport(@PathVariable UUID id,
       @Valid @RequestBody ReportRejectRequest rejectRequest) {
@@ -51,6 +55,7 @@ public class ReportController {
     return ResponseEntity.ok().build();
   }
 
+  @RateLimit(action = "resolve-report", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping("{id}/resolve")
   public ResponseEntity<Void> resolveReport(@PathVariable UUID id,
       @Valid @RequestBody ResolveReportRequest resolveRequest) {

@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.annotation.RateLimit;
 import com.kamilpm.zero_waste.domain.dto.OfferDto;
 import com.kamilpm.zero_waste.domain.dto.OfferWithEmailDto;
 import com.kamilpm.zero_waste.domain.entity.OfferStatus;
@@ -11,6 +12,7 @@ import com.kamilpm.zero_waste.service.OfferService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -29,6 +31,7 @@ public class OfferController {
 
   private final OfferService offerService;
 
+  @RateLimit(action = "make-offer", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping("/{id}")
   public ResponseEntity<Void> makeOffer(@PathVariable("id") UUID id) {
     offerService.makeOffer(id);
@@ -36,18 +39,21 @@ public class OfferController {
     return ResponseEntity.noContent().build();
   }
 
+  @RateLimit(action = "accept-offer", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping("/{id}/accept")
   public ResponseEntity<Void> acceptOffer(@PathVariable("id") UUID id) {
     offerService.acceptOffer(id);
     return ResponseEntity.noContent().build();
   }
 
+  @RateLimit(action = "reject-offer", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping("/{id}/reject")
   public ResponseEntity<Void> rejectOffer(@PathVariable("id") UUID id) {
     offerService.rejectOffer(id);
     return ResponseEntity.noContent().build();
   }
 
+  @RateLimit(action = "cancel-offer", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping("/{id}/cancel")
   public ResponseEntity<Void> cancelOffer(@PathVariable("id") UUID id) {
     offerService.cancelOffer(id);

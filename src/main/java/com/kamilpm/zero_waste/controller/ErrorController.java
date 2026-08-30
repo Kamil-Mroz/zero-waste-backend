@@ -1,11 +1,13 @@
 package com.kamilpm.zero_waste.controller;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
-import org.springframework.security.authentication.LockedException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,7 +18,9 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import com.kamilpm.zero_waste.domain.entity.ErrorContent;
 import com.kamilpm.zero_waste.exception.ApiException;
 import com.kamilpm.zero_waste.exception.ConflictException;
+import com.kamilpm.zero_waste.exception.RateLimitException;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
@@ -37,12 +41,32 @@ public class ErrorController {
             ex.getMessage());
   }
 
-  @ExceptionHandler(LockedException.class)
-  public ProblemDetail handleLockedException(LockedException ex) {
+  @ExceptionHandler(RateLimitException.class)
+  public ResponseEntity<ProblemDetail> handleRateLimitException(
+      RateLimitException ex, HttpServletRequest request) {
+    log.error("Caught rate limit exception");
+    long retryAfter = Math.max(
+        1,
+        ex.getRetryAfter().toSeconds());
 
-    log.error("Caught locked exception: Global Error Handler " + ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatus(
+        HttpStatus.TOO_MANY_REQUESTS);
 
-    return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+    problem.setTitle("Too Many Requests");
+
+    problem.setDetail(
+        "You have exceeded the rate limit. " +
+            "Please try again later.");
+
+    problem.setInstance(
+        URI.create(request.getRequestURI()));
+
+    return ResponseEntity
+        .status(HttpStatus.TOO_MANY_REQUESTS)
+        .header(
+            HttpHeaders.RETRY_AFTER,
+            String.valueOf(retryAfter))
+        .body(problem);
   }
 
   @ExceptionHandler(ConflictException.class)

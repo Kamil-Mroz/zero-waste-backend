@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.annotation.RateLimit;
 import com.kamilpm.zero_waste.domain.dto.CategoryDto;
 import com.kamilpm.zero_waste.domain.dto.CategoryTreeDto;
 import com.kamilpm.zero_waste.domain.entity.Category;
@@ -13,6 +14,7 @@ import com.kamilpm.zero_waste.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,6 +50,7 @@ public class CategoryController {
     return ResponseEntity.ok(categoryMapper.toDto(category));
   }
 
+  @RateLimit(action = "create-category", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping
   public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryRequest categoryRequest) {
 
@@ -63,6 +66,7 @@ public class CategoryController {
     return ResponseEntity.ok(categories);
   }
 
+  @RateLimit(action = "update-category", limit = 20, window = 1, unit = ChronoUnit.MINUTES)
   @PutMapping("/{id}")
   public ResponseEntity<CategoryDto> updateCategory(@PathVariable("id") UUID id,
       @Valid @RequestBody CategoryRequest categoryRequest) {
@@ -71,6 +75,7 @@ public class CategoryController {
     return ResponseEntity.ok(categoryMapper.toDto(category));
   }
 
+  @RateLimit(action = "delete-category", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteCategory(@PathVariable("id") UUID id) {
     categoryService.deleteCategory(id);

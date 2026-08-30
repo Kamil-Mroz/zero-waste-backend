@@ -2,6 +2,7 @@ package com.kamilpm.zero_waste.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.annotation.RateLimit;
 import com.kamilpm.zero_waste.domain.dto.ItemDto;
 import com.kamilpm.zero_waste.domain.entity.ItemState;
 import com.kamilpm.zero_waste.domain.request.ItemRequest;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +40,7 @@ public class ItemController {
 
   private final ItemService itemService;
 
+  @RateLimit(action = "create-item", limit = 5, window = 1, unit = ChronoUnit.HOURS)
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ItemDto> createItem(@Valid @ModelAttribute ItemRequest itemRequest) {
 
@@ -46,6 +49,7 @@ public class ItemController {
     return new ResponseEntity<>(item, HttpStatus.CREATED);
   }
 
+  @RateLimit(action = "update-item", limit = 20, window = 1, unit = ChronoUnit.MINUTES)
   @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ItemDto> updateItem(@PathVariable("id") UUID id,
       @Valid @ModelAttribute UpdateItemRequest itemRequest) {
@@ -54,6 +58,7 @@ public class ItemController {
     return ResponseEntity.ok(item);
   }
 
+  @RateLimit(action = "publish-item", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @PatchMapping(path = "/{id}/publish")
   public ResponseEntity<ItemDto> publishItem(@PathVariable("id") UUID id) {
     ItemDto item = itemService.publishItem(id);
@@ -61,6 +66,7 @@ public class ItemController {
 
   }
 
+  @RateLimit(action = "hide-item", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
   @PatchMapping(path = "/{id}/hide")
   public ResponseEntity<ItemDto> hideItem(@PathVariable("id") UUID id) {
     ItemDto item = itemService.hideItem(id);
@@ -103,6 +109,7 @@ public class ItemController {
     return ResponseEntity.ok(item);
   }
 
+  @RateLimit(action = "delete-item", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteItem(@PathVariable("id") UUID id) {
     itemService.deleteItem(id);

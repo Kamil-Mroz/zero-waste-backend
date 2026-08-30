@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.annotation.RateLimit;
 import com.kamilpm.zero_waste.domain.dto.NotificationDto;
 import com.kamilpm.zero_waste.domain.entity.NotificationType;
 import com.kamilpm.zero_waste.domain.entity.User;
@@ -15,6 +16,7 @@ import com.kamilpm.zero_waste.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
 
@@ -67,6 +69,7 @@ public class NotificationController {
     return ResponseEntity.ok(notifications);
   }
 
+  @RateLimit(action = "mark-as-read", limit = 60, window = 1, unit = ChronoUnit.MINUTES)
   @PatchMapping("/{id}/read")
   public ResponseEntity<Void> markAsRead(@PathVariable("id") UUID id) {
 
@@ -76,6 +79,7 @@ public class NotificationController {
     return ResponseEntity.ok().build();
   }
 
+  @RateLimit(action = "mark-all-as-read", limit = 20, window = 1, unit = ChronoUnit.MINUTES)
   @PatchMapping("/read-all")
   public ResponseEntity<Void> markAllAsRead() {
 

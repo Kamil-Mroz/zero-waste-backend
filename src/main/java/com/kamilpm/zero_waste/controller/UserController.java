@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.annotation.RateLimit;
 import com.kamilpm.zero_waste.domain.dto.UserDto;
 import com.kamilpm.zero_waste.domain.entity.UserRole;
 import com.kamilpm.zero_waste.domain.request.BanRequest;
@@ -16,6 +17,7 @@ import com.kamilpm.zero_waste.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,6 +58,7 @@ public class UserController {
     return ResponseEntity.ok(user);
   }
 
+  @RateLimit(action = "create-user", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping
   public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserRequest createUserRequest) {
 
@@ -65,6 +68,7 @@ public class UserController {
   }
 
   @PutMapping("/{id}")
+  @RateLimit(action = "update-user", limit = 20, window = 1, unit = ChronoUnit.MINUTES)
   public ResponseEntity<UserDto> updateUser(@PathVariable UUID id,
       @Valid @RequestBody UpdateUserRequest updateUserRequest) {
     UserDto user = userService.updateUser(id, updateUserRequest);
@@ -72,6 +76,7 @@ public class UserController {
     return ResponseEntity.ok(user);
   }
 
+  @RateLimit(action = "ban-user", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping("/ban")
   public ResponseEntity<Void> banUser(@Valid @RequestBody BanRequest banRequest) {
     userService.banUsers(banRequest);
@@ -79,6 +84,7 @@ public class UserController {
     return ResponseEntity.noContent().build();
   }
 
+  @RateLimit(action = "unban-user", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping("/unban")
   public ResponseEntity<Void> unbanUser(@Valid @RequestBody UnbanRequest unbanRequest) {
     userService.unbanUsers(unbanRequest);
@@ -86,6 +92,7 @@ public class UserController {
     return ResponseEntity.noContent().build();
   }
 
+  @RateLimit(action = "delete-users", limit = 5, window = 10, unit = ChronoUnit.MINUTES)
   @DeleteMapping
   public ResponseEntity<Void> deleteUsers(@RequestBody List<UUID> ids) {
     userService.deleteUser(ids);
@@ -93,6 +100,7 @@ public class UserController {
     return ResponseEntity.noContent().build();
   }
 
+  @RateLimit(action = "delete-own-account", limit = 3, window = 1, unit = ChronoUnit.HOURS)
   @DeleteMapping("/account")
   public ResponseEntity<Void> deleteOwnAccount() {
     userService.deleteOwnAccount();

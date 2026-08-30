@@ -2,6 +2,7 @@ package com.kamilpm.zero_waste.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kamilpm.zero_waste.annotation.RateLimit;
 import com.kamilpm.zero_waste.domain.dto.UserDto;
 import com.kamilpm.zero_waste.domain.entity.RefreshToken;
 import com.kamilpm.zero_waste.domain.entity.User;
@@ -24,6 +25,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -132,6 +134,7 @@ public class AuthController {
     return ResponseEntity.ok(authResponse);
   }
 
+  @RateLimit(action = "logout", limit = 30, window = 1, unit = ChronoUnit.MINUTES)
   @PostMapping("/logout")
   public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
 
@@ -160,12 +163,14 @@ public class AuthController {
         .findFirst();
   }
 
+  @RateLimit(action = "create-password", limit = 5, window = 15, unit = ChronoUnit.MINUTES)
   @PostMapping("/password")
   public ResponseEntity<Void> createPassword(@Valid @RequestBody CreatePasswordRequest passwords) {
     authService.handlePasswordCreation(passwords);
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
+  @RateLimit(action = "update-password", limit = 5, window = 15, unit = ChronoUnit.MINUTES)
   @PutMapping("/password")
   public ResponseEntity<Void> updatePassword(@Valid @RequestBody UpdatePasswordRequest passwords) {
     authService.handlePasswordUpdate(passwords);
