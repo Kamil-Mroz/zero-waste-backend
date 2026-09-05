@@ -1,0 +1,89 @@
+package com.kamilpm.zero_waste.offer.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.kamilpm.zero_waste.common.annotation.RateLimit;
+import com.kamilpm.zero_waste.common.dto.PageResponse;
+import com.kamilpm.zero_waste.offer.api.OfferDto;
+import com.kamilpm.zero_waste.offer.dto.OfferWithEmailDto;
+import com.kamilpm.zero_waste.offer.entity.OfferStatus;
+import com.kamilpm.zero_waste.offer.service.OfferService;
+
+import lombok.RequiredArgsConstructor;
+
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@RestController
+@RequestMapping(path = "/api/v{version}/offers", version = "1")
+@RequiredArgsConstructor
+public class OfferController {
+
+  private final OfferService offerService;
+
+  @RateLimit(action = "make-offer", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
+  @PostMapping("/{id}")
+  public ResponseEntity<Void> makeOffer(@PathVariable("id") UUID id) {
+    offerService.makeOffer(id);
+
+    return ResponseEntity.noContent().build();
+  }
+
+  @RateLimit(action = "accept-offer", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
+  @PostMapping("/{id}/accept")
+  public ResponseEntity<Void> acceptOffer(@PathVariable("id") UUID id) {
+    offerService.acceptOffer(id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @RateLimit(action = "reject-offer", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
+  @PostMapping("/{id}/reject")
+  public ResponseEntity<Void> rejectOffer(@PathVariable("id") UUID id) {
+    offerService.rejectOffer(id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @RateLimit(action = "cancel-offer", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
+  @PostMapping("/{id}/cancel")
+  public ResponseEntity<Void> cancelOffer(@PathVariable("id") UUID id) {
+    offerService.cancelOffer(id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/own")
+  public ResponseEntity<PageResponse<OfferDto>> getOwnOffers(
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size,
+      @RequestParam(value = "status", required = false) OfferStatus status) {
+
+    Page<OfferDto> offersDto = offerService.getMyOffers(PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"),
+        status);
+
+    return ResponseEntity.ok(new PageResponse<>(offersDto.getContent(), offersDto.getNumber(), offersDto.getSize(),
+        offersDto.getTotalElements(), offersDto.getTotalPages()));
+  }
+
+  @GetMapping("/received")
+  public ResponseEntity<PageResponse<OfferWithEmailDto>> getReceivedOffers(
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size,
+      @RequestParam(value = "status", required = false) OfferStatus status) {
+
+    Page<OfferWithEmailDto> offersDto = offerService.getReceivedOffers(
+        PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"),
+        status);
+
+    return ResponseEntity.ok(new PageResponse<>(offersDto.getContent(), offersDto.getNumber(), offersDto.getSize(),
+        offersDto.getTotalElements(), offersDto.getTotalPages()));
+  }
+}

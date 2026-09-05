@@ -1,6 +1,13 @@
 spring:
   application:
     name: zero-waste
+  modulith:
+    events:
+      jpa:
+        schema-initialization:
+          enabled: false
+      republish-outstanding-events-on-restart: true
+
   servlet:
     multipart:
       max-file-size:
@@ -14,7 +21,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:

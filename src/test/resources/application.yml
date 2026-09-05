@@ -1,6 +1,12 @@
 spring:
   application:
     name: zero-waste
+  modulith:
+    events:
+      jpa:
+        schema-initialization:
+          enabled: true
+      republish-outstanding-events-on-restart: true
   servlet:
     multipart:
       max-file-size:
@@ -14,7 +20,7 @@ spring:
     driver-class-name: org.h2.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
