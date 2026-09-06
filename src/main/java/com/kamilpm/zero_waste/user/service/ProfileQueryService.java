@@ -1,14 +1,10 @@
 package com.kamilpm.zero_waste.user.service;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kamilpm.zero_waste.common.entity.ModerationStatus;
-import com.kamilpm.zero_waste.common.interfaces.IRatingBreakdownWithStats;
-import com.kamilpm.zero_waste.item.api.ItemCountBreakDown;
 import com.kamilpm.zero_waste.item.api.ItemProfileApi;
 import com.kamilpm.zero_waste.review.api.ReviewProfileApi;
 import com.kamilpm.zero_waste.user.api.ProfileItemSummary;

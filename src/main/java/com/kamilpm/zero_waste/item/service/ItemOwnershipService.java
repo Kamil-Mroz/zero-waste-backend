@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.item.service;
 
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 

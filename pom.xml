@@ -228,6 +228,15 @@
       <groupId>org.springframework.modulith</groupId>
       <artifactId>spring-modulith-events-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+    </dependency>
   </dependencies>
   <dependencyManagement>
     <dependencies>
@@ -243,6 +252,16 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>13.4.0</version>
+        <configuration>
+          <url>${env.DB_URL}</url>
+          <user>${env.DB_USER}</user>
+          <password>${env.DB_PASSWORD}</password>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

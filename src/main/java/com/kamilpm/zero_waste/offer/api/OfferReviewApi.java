@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.offer.api;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 

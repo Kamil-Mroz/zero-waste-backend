@@ -7,6 +7,9 @@ spring:
         schema-initialization:
           enabled: false
       republish-outstanding-events-on-restart: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 
   servlet:
     multipart:

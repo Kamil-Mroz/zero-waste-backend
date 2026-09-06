@@ -18,7 +18,6 @@ import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
-import com.kamilpm.zero_waste.item.api.DeleteItemEvent;
 import com.kamilpm.zero_waste.item.api.ItemDto;
 import com.kamilpm.zero_waste.item.api.ItemReviewApi;
 import com.kamilpm.zero_waste.item.api.SimpleItemDto;

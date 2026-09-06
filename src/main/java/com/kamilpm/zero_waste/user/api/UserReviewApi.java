@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
-import com.kamilpm.zero_waste.user.mapper.UserMapper;
 import com.kamilpm.zero_waste.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;

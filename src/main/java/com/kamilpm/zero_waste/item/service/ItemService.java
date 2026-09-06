@@ -171,7 +171,7 @@ public class ItemService {
       imageItemApi.deleteItemImages(item.getId(), new ArrayList<>(removedImageIds));
     }
 
-    List<ImageDto> remainingImages = imageItemApi.getImagesByIds(remainingImageIds);
+    List<ImageDto> remainingImages = new ArrayList<>(imageItemApi.getImagesByIds(remainingImageIds));
     List<ImageDto> uploadedImages = imageItemApi.uploadItemImages(item.getId(), newImages);
 
     remainingImages.addAll(uploadedImages);

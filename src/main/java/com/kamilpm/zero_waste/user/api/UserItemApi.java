@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.user.api;
 
-import com.kamilpm.zero_waste.user.mapper.UserMapper;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;

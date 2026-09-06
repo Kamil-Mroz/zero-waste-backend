@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.item.api;
 
-import com.kamilpm.zero_waste.item.service.ItemService;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
