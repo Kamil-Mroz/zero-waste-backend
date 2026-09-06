@@ -25,11 +25,9 @@ import com.kamilpm.zero_waste.item.api.ItemCategoryApi;
 import io.jsonwebtoken.lang.Collections;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class CategoryService {
   private final CategoryRepository categoryRepository;
   private final ItemCategoryApi itemCategoryApi;
@@ -85,6 +83,7 @@ public class CategoryService {
   }
 
   @Transactional
+  @CacheEvict(value = { "categoryTree", "categoryDescendants" }, allEntries = true)
   public Category createCategory(CategoryRequest categoryRequest) {
     Category parent = null;
     if (categoryRepository.existsByName(categoryRequest.getName())) {
@@ -99,12 +98,11 @@ public class CategoryService {
 
     Category savedCategory = categoryRepository.save(category);
 
-    invalidateCache();
-
     return savedCategory;
   }
 
   @Transactional
+  @CacheEvict(value = { "categoryTree", "categoryDescendants" }, allEntries = true)
   public Category updateCategory(UUID categoryId, CategoryRequest categoryRequest) {
     Category parent = null;
 
@@ -138,7 +136,6 @@ public class CategoryService {
 
     Category updatedCategory = categoryRepository.save(category);
 
-    invalidateCache();
     return updatedCategory;
   }
 
@@ -153,6 +150,7 @@ public class CategoryService {
   }
 
   @Transactional
+  @CacheEvict(value = { "categoryTree", "categoryDescendants" }, allEntries = true)
   public void deleteCategory(UUID categoryId) {
     if (!categoryRepository.existsById(categoryId)) {
 
@@ -168,19 +166,16 @@ public class CategoryService {
     }
 
     categoryRepository.deleteById(categoryId);
-    invalidateCache();
 
   }
 
   @Cacheable(value = "categoryDescendants", key = "#categoryId")
   public Set<UUID> getCategoryDescendantsById(UUID categoryId) {
-    log.info("BUILDING CATEGORY DESCENDATS FOR ID {}  FROM DATABASE", categoryId);
 
     // return getCategoryDescendantsCache().get(categoryId)
     List<Category> categories = categoryRepository.findAll();
     return buildDescendantMap(categories).getOrDefault(categoryId, Collections.emptySet());
   }
-
 
   private Map<UUID, Set<UUID>> buildDescendantMap(List<Category> categories) {
 
@@ -219,10 +214,6 @@ public class CategoryService {
         collect(child, children, result);
       }
     }
-  }
-
-  @CacheEvict(value = { "categoryTree", "categoryDescendants" }, allEntries = true)
-  private void invalidateCache() {
   }
 
 }
