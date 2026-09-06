@@ -1,0 +1,100 @@
+package com.kamilpm.zero_waste.review.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.kamilpm.zero_waste.common.annotation.RateLimit;
+import com.kamilpm.zero_waste.common.dto.PageResponse;
+import com.kamilpm.zero_waste.review.api.ReviewResponse;
+import com.kamilpm.zero_waste.review.dto.ReviewDto;
+import com.kamilpm.zero_waste.review.dto.ReviewRequest;
+import com.kamilpm.zero_waste.review.service.ReviewService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@RestController
+@RequestMapping(path = "/api/v{version}/reviews", version = "1")
+@RequiredArgsConstructor
+public class ReviewController {
+
+  private final ReviewService reviewService;
+
+  @RateLimit(action = "create-review", limit = 5, window = 10, unit = ChronoUnit.MINUTES)
+  @PostMapping
+  public ResponseEntity<ReviewDto> createReview(@Valid @RequestBody ReviewRequest reviewRequest) {
+
+    ReviewDto review = reviewService.createReview(reviewRequest);
+
+    return ResponseEntity.ok(review);
+  }
+
+  @GetMapping("/received")
+  public ResponseEntity<PageResponse<ReviewResponse>> getReceivedReviews(
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size) {
+    Page<ReviewResponse> reviews = reviewService.getReceivedReviews(PageRequest.of(page, size));
+    return ResponseEntity.ok(PageResponse.<ReviewResponse>builder()
+        .content(reviews.getContent())
+        .page(reviews.getNumber())
+        .size(reviews.getSize())
+        .totalElements(reviews.getTotalElements())
+        .totalPages(reviews.getTotalPages())
+        .build());
+  }
+
+  @GetMapping("/given")
+  public ResponseEntity<PageResponse<ReviewResponse>> getGivenReview(
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size) {
+    Page<ReviewResponse> reviews = reviewService.getGivenReviews(PageRequest.of(page, size));
+    return ResponseEntity.ok(PageResponse.<ReviewResponse>builder()
+        .content(reviews.getContent())
+        .page(reviews.getNumber())
+        .size(reviews.getSize())
+        .totalElements(reviews.getTotalElements())
+        .totalPages(reviews.getTotalPages())
+        .build());
+  }
+
+  @GetMapping("/user/{id}")
+  public ResponseEntity<PageResponse<ReviewResponse>> getUserReviews(
+      @PathVariable("id") UUID userId,
+      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "size", defaultValue = "20") int size) {
+    Page<ReviewResponse> reviews = reviewService.getUserReviews(userId, PageRequest.of(page, size));
+    return ResponseEntity.ok(PageResponse.<ReviewResponse>builder()
+        .content(reviews.getContent())
+        .page(reviews.getNumber())
+        .size(reviews.getSize())
+        .totalElements(reviews.getTotalElements())
+        .totalPages(reviews.getTotalPages())
+        .build());
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<ReviewResponse> getReview(@PathVariable UUID id) {
+    return ResponseEntity.ok(reviewService.getReview(id));
+  }
+
+  @RateLimit(action = "delete-review", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteReview(@PathVariable UUID id) {
+    reviewService.deleteReview(id);
+    return ResponseEntity.ok().build();
+  }
+
+}

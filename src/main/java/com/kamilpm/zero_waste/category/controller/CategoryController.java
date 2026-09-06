@@ -1,0 +1,86 @@
+package com.kamilpm.zero_waste.category.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.kamilpm.zero_waste.category.api.CategoryDto;
+import com.kamilpm.zero_waste.category.dto.CategoryRequest;
+import com.kamilpm.zero_waste.category.dto.CategoryTreeDto;
+import com.kamilpm.zero_waste.category.entity.Category;
+import com.kamilpm.zero_waste.category.mapper.CategoryMapper;
+import com.kamilpm.zero_waste.category.service.CategoryService;
+import com.kamilpm.zero_waste.common.annotation.RateLimit;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+@RestController
+@RequestMapping(path = "/api/v{version}/categories", version = "1")
+@RequiredArgsConstructor
+public class CategoryController {
+
+  private final CategoryService categoryService;
+  private final CategoryMapper categoryMapper;
+
+  @GetMapping
+  public ResponseEntity<List<CategoryDto>> getAllCategories() {
+
+    List<CategoryDto> categories = categoryService.getAllCategories()
+        .stream().map(categoryMapper::toDto).toList();
+    return ResponseEntity.ok(categories);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<CategoryDto> getCategory(@PathVariable("id") UUID id) {
+
+    Category category = categoryService.getCategoryById(id);
+    return ResponseEntity.ok(categoryMapper.toDto(category));
+  }
+
+  @RateLimit(action = "create-category", limit = 20, window = 10, unit = ChronoUnit.MINUTES)
+  @PostMapping
+  public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryRequest categoryRequest) {
+
+    Category category = categoryService.createCategory(categoryRequest);
+
+    return new ResponseEntity<>(categoryMapper.toDto(category), HttpStatus.CREATED);
+  }
+
+  @GetMapping("/tree")
+  public ResponseEntity<List<CategoryTreeDto>> getCategoriesTree() {
+    List<CategoryTreeDto> categories = categoryService.getCategoryTree();
+
+    return ResponseEntity.ok(categories);
+  }
+
+  @RateLimit(action = "update-category", limit = 20, window = 1, unit = ChronoUnit.MINUTES)
+  @PutMapping("/{id}")
+  public ResponseEntity<CategoryDto> updateCategory(@PathVariable("id") UUID id,
+      @Valid @RequestBody CategoryRequest categoryRequest) {
+    Category category = categoryService.updateCategory(id, categoryRequest);
+
+    return ResponseEntity.ok(categoryMapper.toDto(category));
+  }
+
+  @RateLimit(action = "delete-category", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteCategory(@PathVariable("id") UUID id) {
+    categoryService.deleteCategory(id);
+
+    return ResponseEntity.noContent().build();
+  }
+
+}
