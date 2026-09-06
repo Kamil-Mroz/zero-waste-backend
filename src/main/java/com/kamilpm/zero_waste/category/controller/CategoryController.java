@@ -4,8 +4,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.category.api.CategoryDto;
+import com.kamilpm.zero_waste.category.api.CategoryTreeDto;
 import com.kamilpm.zero_waste.category.dto.CategoryRequest;
-import com.kamilpm.zero_waste.category.dto.CategoryTreeDto;
 import com.kamilpm.zero_waste.category.entity.Category;
 import com.kamilpm.zero_waste.category.mapper.CategoryMapper;
 import com.kamilpm.zero_waste.category.service.CategoryService;

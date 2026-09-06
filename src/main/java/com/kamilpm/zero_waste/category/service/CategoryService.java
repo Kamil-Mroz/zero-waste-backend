@@ -9,10 +9,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import com.kamilpm.zero_waste.category.api.CategoryTreeDto;
 import com.kamilpm.zero_waste.category.dto.CategoryRequest;
-import com.kamilpm.zero_waste.category.dto.CategoryTreeDto;
 import com.kamilpm.zero_waste.category.entity.Category;
 import com.kamilpm.zero_waste.category.mapper.CategoryMapper;
 import com.kamilpm.zero_waste.category.repository.CategoryRepository;
@@ -20,49 +22,59 @@ import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.item.api.ItemCategoryApi;
 
+import io.jsonwebtoken.lang.Collections;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CategoryService {
   private final CategoryRepository categoryRepository;
   private final ItemCategoryApi itemCategoryApi;
   private final CategoryMapper categoryMapper;
 
-  private List<CategoryTreeDto> cachedTree;
-  private Map<UUID, Set<UUID>> categoryDescendantsCache;
-
   public List<Category> getAllCategories() {
     return categoryRepository.findAll();
   }
 
+  @Cacheable("categoryTree")
   public List<CategoryTreeDto> getCategoryTree() {
-    if (cachedTree == null) {
-      cachedTree = buildTree();
-    }
-    return cachedTree;
+    return buildTree();
   }
 
   private List<CategoryTreeDto> buildTree() {
     List<Category> categories = categoryRepository.findAll();
+
     Map<UUID, CategoryTreeDto> map = new HashMap<>();
 
-    for (Category c : categories) {
-      map.put(c.getId(), categoryMapper.toTreeDto(c));
+    for (Category category : categories) {
+      CategoryTreeDto dto = categoryMapper.toTreeDto(category);
+
+      if (dto.getChildren() == null) {
+        dto.setChildren(new ArrayList<>());
+      }
+
+      map.put(category.getId(), dto);
     }
 
     List<CategoryTreeDto> roots = new ArrayList<>();
 
-    for (Category c : categories) {
-      CategoryTreeDto dto = map.get(c.getId());
+    for (Category category : categories) {
+      CategoryTreeDto dto = map.get(category.getId());
 
-      if (c.getParent() == null) {
+      if (category.getParent() == null) {
         roots.add(dto);
       } else {
-        map.get(c.getParent().getId()).getChildren().add(dto);
+        CategoryTreeDto parent = map.get(category.getParent().getId());
+
+        if (parent != null) {
+          parent.getChildren().add(dto);
+        }
       }
     }
+
     return roots;
   }
 
@@ -160,18 +172,15 @@ public class CategoryService {
 
   }
 
+  @Cacheable(value = "categoryDescendants", key = "#categoryId")
   public Set<UUID> getCategoryDescendantsById(UUID categoryId) {
+    log.info("BUILDING CATEGORY DESCENDATS FOR ID {}  FROM DATABASE", categoryId);
 
-    return getCategoryDescendantsCache().get(categoryId);
+    // return getCategoryDescendantsCache().get(categoryId)
+    List<Category> categories = categoryRepository.findAll();
+    return buildDescendantMap(categories).getOrDefault(categoryId, Collections.emptySet());
   }
 
-  private Map<UUID, Set<UUID>> getCategoryDescendantsCache() {
-    if (categoryDescendantsCache == null) {
-      List<Category> categories = categoryRepository.findAll();
-      categoryDescendantsCache = buildDescendantMap(categories);
-    }
-    return categoryDescendantsCache;
-  }
 
   private Map<UUID, Set<UUID>> buildDescendantMap(List<Category> categories) {
 
@@ -212,9 +221,8 @@ public class CategoryService {
     }
   }
 
+  @CacheEvict(value = { "categoryTree", "categoryDescendants" }, allEntries = true)
   private void invalidateCache() {
-    cachedTree = null;
-    categoryDescendantsCache = null;
   }
 
 }
