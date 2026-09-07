@@ -5,12 +5,12 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.kamilpm.zero_waste.category.api.CategoryDto;
-import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.image.api.ImageDto;
 import com.kamilpm.zero_waste.item.api.ItemDto;
 import com.kamilpm.zero_waste.item.api.SimpleItemDto;
 import com.kamilpm.zero_waste.item.dto.ItemListDto;
 import com.kamilpm.zero_waste.item.entity.Item;
+import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 
 import lombok.RequiredArgsConstructor;
 

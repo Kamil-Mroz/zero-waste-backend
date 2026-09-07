@@ -3,7 +3,7 @@ package com.kamilpm.zero_waste.user.api;
 import org.springframework.stereotype.Component;
 
 import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
-import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 import com.kamilpm.zero_waste.common.dto.UserSummaryWithEmailDto;
 import com.kamilpm.zero_waste.user.entity.User;
 

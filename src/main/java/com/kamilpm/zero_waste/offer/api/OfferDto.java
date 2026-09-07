@@ -2,7 +2,7 @@ package com.kamilpm.zero_waste.offer.api;
 
 import java.util.UUID;
 
-import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 import com.kamilpm.zero_waste.item.api.ItemDto;
 import com.kamilpm.zero_waste.offer.entity.OfferStatus;
 

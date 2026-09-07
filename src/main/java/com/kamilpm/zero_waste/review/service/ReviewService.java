@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kamilpm.zero_waste.auth.api.AuthApi;
 import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
-import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
@@ -34,7 +34,6 @@ import com.kamilpm.zero_waste.review.mapper.ReviewMapper;
 import com.kamilpm.zero_waste.review.repository.ReviewRepository;
 import com.kamilpm.zero_waste.user.api.UserReviewApi;
 import com.kamilpm.zero_waste.user.api.UserRole;
-import com.kamilpm.zero_waste.user.api.UsersDeletedEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -149,12 +148,6 @@ public class ReviewService {
 
     events.publishEvent(new RejectReportEvent(id, isAdmin));
 
-  }
-
-  @ApplicationModuleListener
-  void on(UsersDeletedEvent event) {
-    reviewRepository.deleteByReviewerIdIn(event.ids());
-    reviewRepository.deleteByRevieweeIdIn(event.ids());
   }
 
   @ApplicationModuleListener

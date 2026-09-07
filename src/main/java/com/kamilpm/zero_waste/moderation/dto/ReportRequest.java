@@ -2,8 +2,8 @@ package com.kamilpm.zero_waste.moderation.dto;
 
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.moderation.api.ReportSubjectType;
 import com.kamilpm.zero_waste.moderation.entity.ReportReason;
-import com.kamilpm.zero_waste.moderation.entity.ReportSubjectType;
 
 import jakarta.annotation.Nonnull;
 import lombok.NonNull;

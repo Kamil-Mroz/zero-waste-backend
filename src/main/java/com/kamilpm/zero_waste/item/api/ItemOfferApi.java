@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.item.entity.Item;
 import com.kamilpm.zero_waste.item.mapper.ItemMapper;
 import com.kamilpm.zero_waste.item.repository.ItemRepository;
 import com.kamilpm.zero_waste.user.api.UserItemApi;
+import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 
 import lombok.RequiredArgsConstructor;
 

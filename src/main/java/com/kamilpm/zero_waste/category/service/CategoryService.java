@@ -37,7 +37,7 @@ public class CategoryService {
     return categoryRepository.findAll();
   }
 
-  @Cacheable("categoryTree")
+  @Cacheable(value = "categoryTree", cacheManager = "categoryCacheManager")
   public List<CategoryTreeDto> getCategoryTree() {
     return buildTree();
   }
@@ -169,7 +169,7 @@ public class CategoryService {
 
   }
 
-  @Cacheable(value = "categoryDescendants", key = "#categoryId")
+  @Cacheable(value = "categoryDescendants", key = "#categoryId", cacheManager = "categoryCacheManager")
   public Set<UUID> getCategoryDescendantsById(UUID categoryId) {
 
     // return getCategoryDescendantsCache().get(categoryId)

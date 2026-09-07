@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.kamilpm.zero_waste.common.entity.BaseEntity;
+import com.kamilpm.zero_waste.moderation.api.ReportSubjectType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

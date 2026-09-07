@@ -7,28 +7,30 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.auth.api.AuthApi;
 import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
 import com.kamilpm.zero_waste.blog.api.BlogReportApi;
-import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 import com.kamilpm.zero_waste.common.exception.BadRequestException;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
 import com.kamilpm.zero_waste.item.api.ItemReportApi;
 import com.kamilpm.zero_waste.moderation.api.RejectReportEvent;
+import com.kamilpm.zero_waste.moderation.api.ReportSubjectType;
 import com.kamilpm.zero_waste.moderation.dto.ReportDto;
 import com.kamilpm.zero_waste.moderation.dto.ReportRequest;
 import com.kamilpm.zero_waste.moderation.dto.ResolveReportRequest;
 import com.kamilpm.zero_waste.moderation.entity.Report;
 import com.kamilpm.zero_waste.moderation.entity.ReportStatus;
-import com.kamilpm.zero_waste.moderation.entity.ReportSubjectType;
 import com.kamilpm.zero_waste.moderation.mapper.ReportMapper;
 import com.kamilpm.zero_waste.moderation.repository.ReportRepository;
+import com.kamilpm.zero_waste.notification.api.NotificationReferenceType;
+import com.kamilpm.zero_waste.notification.api.SendReportNotificationEvent;
 import com.kamilpm.zero_waste.review.api.ReviewReportApi;
 import com.kamilpm.zero_waste.user.api.UserReportApi;
 
@@ -40,12 +42,12 @@ import lombok.RequiredArgsConstructor;
 public class ReportService {
   private final AuthApi authApi;
   private final ReportRepository reportRepository;
-  private final SimpMessagingTemplate simpMessagingTemplate;
   private final ReportMapper reportMapper;
   private final ReviewReportApi reviewReportApi;
   private final ItemReportApi itemReportApi;
   private final UserReportApi userReportApi;
   private final BlogReportApi blogReportApi;
+  private final ApplicationEventPublisher events;
   // private final RefreshTokenRepository refreshTokenRepository;
   // private final UserBanRepository userBanRepository;
 
@@ -70,7 +72,8 @@ public class ReportService {
         .build();
 
     Report savedReport = reportRepository.save(report);
-    simpMessagingTemplate.convertAndSend("/topic/reports", savedReport);
+    events.publishEvent(new SendReportNotificationEvent(
+        NotificationReferenceType.valueOf(report.getSubjectType().name()), savedReport.getComment()));
   }
 
   private void validateSubjectExists(AuthenticatedUser user, ReportSubjectType type, UUID subjectId) {

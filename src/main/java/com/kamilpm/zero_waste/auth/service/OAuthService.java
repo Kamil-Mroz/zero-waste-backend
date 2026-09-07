@@ -32,7 +32,6 @@ import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.OAuthAccountRequiredException;
 import com.kamilpm.zero_waste.common.exception.OAuthAuthenticationException;
 import com.kamilpm.zero_waste.common.exception.UnauthorizedException;
-import com.kamilpm.zero_waste.user.api.UsersDeletedEvent;
 import com.kamilpm.zero_waste.user.api.UserApi;
 
 import jakarta.transaction.Transactional;
@@ -364,9 +363,4 @@ public class OAuthService {
     return oauthAccountRepository.findByUserId(userId).stream().map((account) -> account.getProvider()).toList();
   }
 
-  @ApplicationModuleListener
-  void on(UsersDeletedEvent event) {
-
-    oauthAccountRepository.deleteByUserIdIn(event.ids());
-  }
 }

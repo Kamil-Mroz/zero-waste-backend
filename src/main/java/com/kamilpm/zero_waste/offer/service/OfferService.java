@@ -42,7 +42,6 @@ import com.kamilpm.zero_waste.offer.entity.OfferStatus;
 import com.kamilpm.zero_waste.offer.mapper.OfferMapper;
 import com.kamilpm.zero_waste.offer.repository.OfferRepository;
 import com.kamilpm.zero_waste.user.api.UserOfferApi;
-import com.kamilpm.zero_waste.user.api.UsersDeletedEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -251,10 +250,4 @@ public class OfferService {
   void on(DeleteItemsEvent event) {
     offerRepository.deleteByItemIdIn(event.itemIds());
   }
-
-  @ApplicationModuleListener
-  void on(UsersDeletedEvent event) {
-    offerRepository.deleteByBuyerIdIn(event.ids());
-  }
-
 }

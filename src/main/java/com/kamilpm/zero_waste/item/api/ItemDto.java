@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.UUID;
 
 import com.kamilpm.zero_waste.category.api.CategoryDto;
-import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.image.api.ImageDto;
 import com.kamilpm.zero_waste.item.entity.ItemCondition;
+import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

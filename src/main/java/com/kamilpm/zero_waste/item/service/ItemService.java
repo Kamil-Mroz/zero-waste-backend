@@ -24,7 +24,7 @@ import com.kamilpm.zero_waste.auth.api.AuthApi;
 import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
 import com.kamilpm.zero_waste.category.api.CategoryDto;
 import com.kamilpm.zero_waste.category.api.CategoryItemApi;
-import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
@@ -45,7 +45,6 @@ import com.kamilpm.zero_waste.item.repository.ItemRepository;
 import com.kamilpm.zero_waste.moderation.api.RejectReportEvent;
 import com.kamilpm.zero_waste.offer.api.OfferAcceptEvent;
 import com.kamilpm.zero_waste.offer.api.OfferItemApi;
-import com.kamilpm.zero_waste.user.api.UsersDeletedEvent;
 import com.kamilpm.zero_waste.user.api.UserRole;
 
 import lombok.RequiredArgsConstructor;
@@ -402,11 +401,6 @@ public class ItemService {
 
   public boolean existsByCategory_Id(UUID categoryId) {
     return itemRepository.existsByCategoryId(categoryId);
-  }
-
-  @ApplicationModuleListener
-  void on(UsersDeletedEvent event) {
-    deleteItemsByUserIds(event.ids());
   }
 
   @ApplicationModuleListener

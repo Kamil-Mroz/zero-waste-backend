@@ -22,7 +22,6 @@ import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
 import com.kamilpm.zero_waste.common.utils.SqlUtils;
-import com.kamilpm.zero_waste.user.api.UsersDeletedEvent;
 import com.kamilpm.zero_waste.user.api.UserDto;
 import com.kamilpm.zero_waste.user.api.UserRole;
 import com.kamilpm.zero_waste.user.dto.BanRequest;
@@ -223,7 +222,6 @@ public class UserService {
 
     userRepository.deleteAllById(ids);
 
-    events.publishEvent(new UsersDeletedEvent(ids));
 
   }
 

@@ -2,7 +2,7 @@ package com.kamilpm.zero_waste.moderation.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 import com.kamilpm.zero_waste.moderation.dto.ReportDto;
 import com.kamilpm.zero_waste.moderation.entity.Report;
 

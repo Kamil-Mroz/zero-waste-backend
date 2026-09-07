@@ -8,10 +8,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
-import com.kamilpm.zero_waste.common.interfaces.IRatingBreakdownWithStats;
 import com.kamilpm.zero_waste.review.entity.Review;
+import com.kamilpm.zero_waste.review.interfaces.IRatingBreakdownWithStats;
 import com.kamilpm.zero_waste.review.repository.ReviewRepository;
 import com.kamilpm.zero_waste.user.api.ProfileReviewSummary;
 import com.kamilpm.zero_waste.user.api.RatingBreakdown;

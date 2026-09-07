@@ -14,8 +14,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
-import com.kamilpm.zero_waste.common.interfaces.IRatingBreakdownWithStats;
 import com.kamilpm.zero_waste.review.entity.Review;
+import com.kamilpm.zero_waste.review.interfaces.IRatingBreakdownWithStats;
 import com.kamilpm.zero_waste.review.interfaces.IRatingCountProjection;
 
 @Repository

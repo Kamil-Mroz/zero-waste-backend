@@ -21,12 +21,12 @@ import com.kamilpm.zero_waste.notification.api.NotificationType;
 import com.kamilpm.zero_waste.notification.api.SendBanNotificationEvent;
 import com.kamilpm.zero_waste.notification.api.SendNotificationEvent;
 import com.kamilpm.zero_waste.notification.api.SendNotificationsEvent;
+import com.kamilpm.zero_waste.notification.api.SendReportNotificationEvent;
 import com.kamilpm.zero_waste.notification.dto.NotificationDto;
 import com.kamilpm.zero_waste.notification.dto.NotificationResponse;
 import com.kamilpm.zero_waste.notification.entity.Notification;
 import com.kamilpm.zero_waste.notification.mapper.NotificationMapper;
 import com.kamilpm.zero_waste.notification.repository.NotificationRepository;
-import com.kamilpm.zero_waste.user.api.UsersDeletedEvent;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -171,13 +171,15 @@ public class NotificationService {
   }
 
   @ApplicationModuleListener
-  void on(UsersDeletedEvent event) {
-    deleteAllByUserIds(event.ids());
+  void on(SendBanNotificationEvent event) {
+    sendBanNotification(event.userEmail());
   }
 
   @ApplicationModuleListener
-  void on(SendBanNotificationEvent event) {
-    sendBanNotification(event.userEmail());
+  void on(SendReportNotificationEvent event) {
+
+    simpMessagingTemplate.convertAndSend("/topic/reports",
+        new SendReportNotificationEvent(event.subjectType(), event.comment()));
   }
 
 }

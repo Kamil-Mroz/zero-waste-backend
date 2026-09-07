@@ -14,7 +14,6 @@ import com.kamilpm.zero_waste.auth.api.RevokeRefreshTokenEvent;
 import com.kamilpm.zero_waste.auth.entity.RefreshToken;
 import com.kamilpm.zero_waste.auth.repository.RefreshTokenRepository;
 import com.kamilpm.zero_waste.common.exception.TokenException;
-import com.kamilpm.zero_waste.user.api.UsersDeletedEvent;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,11 +29,6 @@ public class RefreshTokenService {
   @ApplicationModuleListener
   void on(RevokeRefreshTokenEvent event) {
     revokeAllTokens(event.ids());
-  }
-
-  @ApplicationModuleListener
-  void on(UsersDeletedEvent event) {
-    refreshTokenRepository.deleteAllByUserIds(event.ids());
   }
 
   @Transactional

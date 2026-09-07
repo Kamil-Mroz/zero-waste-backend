@@ -21,7 +21,6 @@ import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
 import com.kamilpm.zero_waste.moderation.api.RejectReportEvent;
-import com.kamilpm.zero_waste.user.api.UsersDeletedEvent;
 import com.kamilpm.zero_waste.user.api.UserBlogApi;
 import com.kamilpm.zero_waste.user.api.UserRole;
 
@@ -116,8 +115,4 @@ public class BlogService {
     events.publishEvent(new RejectReportEvent(blogId, isAdmin));
   }
 
-  @ApplicationModuleListener
-  void on(UsersDeletedEvent event) {
-    blogRepository.deleteByAuthorIdIn(event.ids());
-  }
 }
