@@ -1,7 +1,8 @@
 package com.kamilpm.zero_waste.image.mapper;
 
 import org.springframework.stereotype.Component;
-import com.kamilpm.zero_waste.image.api.ImageDto;
+
+import com.kamilpm.zero_waste.image.dto.ImageDto;
 import com.kamilpm.zero_waste.image.entity.Image;
 
 @Component

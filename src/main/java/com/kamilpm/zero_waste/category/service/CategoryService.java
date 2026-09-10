@@ -13,8 +13,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.category.api.CategoryTreeDto;
 import com.kamilpm.zero_waste.category.dto.CategoryRequest;
+import com.kamilpm.zero_waste.category.dto.CategoryTreeDto;
 import com.kamilpm.zero_waste.category.entity.Category;
 import com.kamilpm.zero_waste.category.mapper.CategoryMapper;
 import com.kamilpm.zero_waste.category.repository.CategoryRepository;

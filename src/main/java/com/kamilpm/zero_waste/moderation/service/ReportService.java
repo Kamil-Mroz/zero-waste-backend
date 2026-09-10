@@ -1,9 +1,11 @@
 package com.kamilpm.zero_waste.moderation.service;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -11,20 +13,21 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.AuthApi;
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
+import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
+import com.kamilpm.zero_waste.moderation.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.blog.api.BlogReportApi;
-import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 import com.kamilpm.zero_waste.common.exception.BadRequestException;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
+import com.kamilpm.zero_waste.common.utils.OwnMapper;
 import com.kamilpm.zero_waste.item.api.ItemReportApi;
 import com.kamilpm.zero_waste.moderation.api.RejectReportEvent;
-import com.kamilpm.zero_waste.moderation.api.ReportSubjectType;
 import com.kamilpm.zero_waste.moderation.dto.ReportDto;
 import com.kamilpm.zero_waste.moderation.dto.ReportRequest;
+import com.kamilpm.zero_waste.moderation.dto.ReportSubjectType;
 import com.kamilpm.zero_waste.moderation.dto.ResolveReportRequest;
+import com.kamilpm.zero_waste.moderation.dto.UserRole;
 import com.kamilpm.zero_waste.moderation.entity.Report;
 import com.kamilpm.zero_waste.moderation.entity.ReportStatus;
 import com.kamilpm.zero_waste.moderation.mapper.ReportMapper;
@@ -33,6 +36,7 @@ import com.kamilpm.zero_waste.notification.api.NotificationReferenceType;
 import com.kamilpm.zero_waste.notification.api.SendReportNotificationEvent;
 import com.kamilpm.zero_waste.review.api.ReviewReportApi;
 import com.kamilpm.zero_waste.user.api.UserReportApi;
+import com.kamilpm.zero_waste.moderation.dto.UserSummaryDto;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +44,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ReportService {
-  private final AuthApi authApi;
+  private final CurrentUserApi currentUser;
   private final ReportRepository reportRepository;
   private final ReportMapper reportMapper;
   private final ReviewReportApi reviewReportApi;
@@ -53,7 +57,7 @@ public class ReportService {
 
   @Transactional
   public void createReport(ReportRequest reportRequest) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     validateSubjectExists(user, reportRequest.subjectType(), reportRequest.subjectId());
 
     if (reportRepository.existsByReporterIdAndSubjectId(user.id(),
@@ -88,10 +92,11 @@ public class ReportService {
 
   public List<ReportDto> getReports() {
     List<Report> reports = reportRepository.findAllByOrderByCreatedAtDesc();
+    Set<UUID> userIds = reports.stream()
+        .flatMap(report -> List.of(report.getReporterId(), report.getResolvedBy()).stream())
+        .collect(Collectors.toSet());
 
-    Map<UUID, UserSummaryDto> usersById = userReportApi.getUsersByIds(
-        reports.stream().flatMap(report -> List.of(report.getReporterId(), report.getResolvedBy()).stream())
-            .collect(Collectors.toSet()));
+    Map<UUID, UserSummaryDto> usersById = getUsersByIds(userIds);
 
     return reports.stream()
         .map((report) -> reportMapper.toDto(report,
@@ -102,7 +107,7 @@ public class ReportService {
 
   @Transactional
   public void rejectReport(UUID reportId, String adminNote) {
-    AuthenticatedUser admin = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser admin = getRequiredAuthenticatedUser();
 
     Report report = reportRepository.findById(reportId)
         .orElseThrow(() -> new EntityNotFoundException("Report not found"));
@@ -142,7 +147,7 @@ public class ReportService {
   @Transactional
   public void resolveReport(UUID reportId, ResolveReportRequest resolveRequest) {
 
-    AuthenticatedUser admin = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser admin = getRequiredAuthenticatedUser();
 
     Report report = reportRepository.findById(reportId)
         .orElseThrow(() -> new EntityNotFoundException("Report not found"));
@@ -217,5 +222,23 @@ public class ReportService {
   @ApplicationModuleListener
   void on(RejectReportEvent event) {
     rejectAllBySubjectId(event.subjectId(), event.isAdmin());
+  }
+
+  private AuthenticatedUser getRequiredAuthenticatedUser() {
+    return OwnMapper.map(currentUser.getRequiredAuthenticatedUser(), (user) -> new AuthenticatedUser(
+        user.id(),
+        user.email(),
+        user.nickname(),
+        user.password(),
+        UserRole.valueOf(user.role().name()),
+        user.banActive(),
+        user.bannedUntil(),
+        user.joinedAt()));
+  }
+
+  private Map<UUID, UserSummaryDto> getUsersByIds(Collection<UUID> ids) {
+    return OwnMapper.mapValues(userReportApi.getUsersByIds(ids),
+        user -> new UserSummaryDto(user.id(), user.nickname()));
+
   }
 }

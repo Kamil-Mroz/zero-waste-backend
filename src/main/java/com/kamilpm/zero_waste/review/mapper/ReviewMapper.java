@@ -2,9 +2,9 @@ package com.kamilpm.zero_waste.review.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.kamilpm.zero_waste.offer.api.OfferDto;
-import com.kamilpm.zero_waste.review.api.ReviewResponse;
+import com.kamilpm.zero_waste.review.dto.OfferDto;
 import com.kamilpm.zero_waste.review.dto.ReviewDto;
+import com.kamilpm.zero_waste.review.dto.ReviewResponse;
 import com.kamilpm.zero_waste.review.entity.Review;
 
 @Component

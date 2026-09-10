@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
+import com.kamilpm.zero_waste.item.dto.ItemState;
+import com.kamilpm.zero_waste.item.dto.SimpleItemDto;
 import com.kamilpm.zero_waste.item.mapper.ItemMapper;
 import com.kamilpm.zero_waste.item.repository.ItemRepository;
 

@@ -8,12 +8,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.kamilpm.zero_waste.auth.api.AuthApi;
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
+import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
+import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
+import com.kamilpm.zero_waste.auth.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.auth.dto.Connections;
 import com.kamilpm.zero_waste.auth.dto.GithubEmail;
 import com.kamilpm.zero_waste.auth.dto.GithubTokenResponse;
@@ -23,6 +23,7 @@ import com.kamilpm.zero_waste.auth.dto.GoogleUserInfo;
 import com.kamilpm.zero_waste.auth.dto.OAuthFlow;
 import com.kamilpm.zero_waste.auth.dto.OAuthSession;
 import com.kamilpm.zero_waste.auth.dto.OAuthUserInfo;
+import com.kamilpm.zero_waste.auth.dto.UserRole;
 import com.kamilpm.zero_waste.auth.entity.OAuthAccount;
 import com.kamilpm.zero_waste.auth.entity.OAuthProvider;
 import com.kamilpm.zero_waste.auth.properties.OAuthProperties;
@@ -32,6 +33,8 @@ import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.OAuthAccountRequiredException;
 import com.kamilpm.zero_waste.common.exception.OAuthAuthenticationException;
 import com.kamilpm.zero_waste.common.exception.UnauthorizedException;
+import com.kamilpm.zero_waste.common.utils.OwnMapper;
+
 import com.kamilpm.zero_waste.user.api.UserApi;
 
 import jakarta.transaction.Transactional;
@@ -49,12 +52,12 @@ public class OAuthService {
   private final OAuthProperties properties;
   private final GithubOAuthClient githubLinkClient;
   private final GoogleOAuthClient googleLinkClient;
-  private final AuthApi authApi;
+  private final CurrentUserApi currentUser;
   private final UserApi userApi;
   private final String OAUTH_KEY = "oauth:";
 
   public Connections getConnections() {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = currentUser.getRequiredAuthenticatedUser();
     return new Connections(getProviders(user.id()), user.password() != null);
   }
 
@@ -73,7 +76,7 @@ public class OAuthService {
 
   @Transactional
   public String initiateLink(OAuthProvider provider) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = currentUser.getRequiredAuthenticatedUser();
     String state = create(OAuthFlow.LINK, user.id(), provider);
     return buildAuthorizationUrl(provider, state);
   }
@@ -86,7 +89,7 @@ public class OAuthService {
         info.providerId());
 
     if (existingAccount.isPresent()) {
-      AuthenticatedUser user = userApi.findById(existingAccount.get().getUserId());
+      AuthenticatedUser user = findById(existingAccount.get().getUserId());
       if (user.banActive()) {
         throw new UnauthorizedException("Account suspended");
       }
@@ -94,7 +97,7 @@ public class OAuthService {
       return user;
     }
 
-    Optional<AuthenticatedUser> existingUser = userApi.findAuthenticatedUserByEmail(info.email().toLowerCase());
+    Optional<AuthenticatedUser> existingUser = findAuthenticatedUserByEmail(info.email().toLowerCase());
 
     if (existingUser.isPresent()) {
 
@@ -103,7 +106,7 @@ public class OAuthService {
               + " account.");
     }
 
-    AuthenticatedUser user = userApi.createOAuthUser(info.email(), info.nickname());
+    AuthenticatedUser user = createOAuthUser(info.email(), info.nickname());
 
     OAuthAccount oauthAccount = OAuthAccount.builder()
         .userId(user.id())
@@ -288,7 +291,7 @@ public class OAuthService {
       UUID userId,
       OAuthUserInfo info) {
 
-    AuthenticatedUser user = userApi.findById(userId);
+    AuthenticatedUser user = findById(userId);
 
     if (user.banActive()) {
       throw new UnauthorizedException(
@@ -337,7 +340,7 @@ public class OAuthService {
 
   @Transactional
   public void unlinkAccount(OAuthProvider provider) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = currentUser.getRequiredAuthenticatedUser();
 
     OAuthAccount account = oauthAccountRepository.findByUserIdAndProvider(user.id(), provider)
         .orElseThrow(() -> new EntityNotFoundException("Account not linked"));
@@ -361,6 +364,25 @@ public class OAuthService {
 
   private List<OAuthProvider> getProviders(UUID userId) {
     return oauthAccountRepository.findByUserId(userId).stream().map((account) -> account.getProvider()).toList();
+  }
+
+  private Optional<AuthenticatedUser> findAuthenticatedUserByEmail(String email) {
+    return OwnMapper.mapOptional(userApi.findAuthenticatedUserByEmail(email),
+        user -> new AuthenticatedUser(user.id(), user.email(), user.nickname(), user.password(),
+            UserRole.valueOf(user.role().name()), user.banActive(), user.bannedUntil(), user.joinedAt()));
+
+  }
+
+  private AuthenticatedUser findById(UUID userId) {
+    return OwnMapper.map(userApi.findById(userId),
+        user -> new AuthenticatedUser(user.id(), user.email(), user.nickname(), user.password(),
+            UserRole.valueOf(user.role().name()), user.banActive(), user.bannedUntil(), user.joinedAt()));
+  }
+
+  private AuthenticatedUser createOAuthUser(String email, String nickname) {
+    return OwnMapper.map(userApi.createOAuthUser(email, nickname),
+        user -> new AuthenticatedUser(user.id(), user.email(), user.nickname(), user.password(),
+            UserRole.valueOf(user.role().name()), user.banActive(), user.bannedUntil(), user.joinedAt()));
   }
 
 }

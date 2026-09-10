@@ -15,7 +15,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
-import com.kamilpm.zero_waste.item.api.ItemState;
+import com.kamilpm.zero_waste.item.dto.ItemState;
 import com.kamilpm.zero_waste.item.entity.Item;
 import com.kamilpm.zero_waste.item.interfaces.IItemCount;
 

@@ -8,8 +8,9 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
+import com.kamilpm.zero_waste.user.dto.AuthenticatedUser;
+import com.kamilpm.zero_waste.user.dto.UserRole;
 import com.kamilpm.zero_waste.user.entity.User;
 import com.kamilpm.zero_waste.user.repository.UserBanRepository;
 import com.kamilpm.zero_waste.user.repository.UserRepository;
@@ -25,12 +26,12 @@ public class UserApi {
   @Value("${app.security.demo.email}")
   private String demoEmail;
 
-  public UserAuthenticationData findAuthenticationData(String email) {
+  public AuthenticatedUser findAuthenticationData(String email) {
     User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
     clearExpiredBan(user);
 
-    return new UserAuthenticationData(user.getId(), user.getEmail(), user.getNickname(), user.getPassword(),
+    return new AuthenticatedUser(user.getId(), user.getEmail(), user.getNickname(), user.getPassword(),
         user.getRole(),
         user.isBanActive(), user.getBannedUntil(), user.getJoinedAt());
 

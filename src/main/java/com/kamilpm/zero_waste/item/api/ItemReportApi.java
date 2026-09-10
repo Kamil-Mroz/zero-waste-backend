@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
+import com.kamilpm.zero_waste.item.dto.ItemState;
 import com.kamilpm.zero_waste.item.entity.Item;
 import com.kamilpm.zero_waste.item.repository.ItemRepository;
 import com.kamilpm.zero_waste.item.service.ItemService;

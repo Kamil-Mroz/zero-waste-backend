@@ -5,12 +5,14 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kamilpm.zero_waste.auth.api.AuthApi;
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
-import com.kamilpm.zero_waste.user.api.UserDto;
+import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
+import com.kamilpm.zero_waste.common.utils.OwnMapper;
+import com.kamilpm.zero_waste.user.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.user.dto.OwnProfileResponse;
 import com.kamilpm.zero_waste.user.dto.ProfileQueryData;
 import com.kamilpm.zero_waste.user.dto.PublicUserProfileResponse;
+import com.kamilpm.zero_waste.user.dto.UserDto;
+import com.kamilpm.zero_waste.user.dto.UserRole;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class ProfileService {
 
   private final UserService userService;
-  private final AuthApi authApi;
+  private final CurrentUserApi currentUser;
   private final ProfileQueryService profileQueryService;
 
   @Transactional(readOnly = true)
@@ -39,7 +41,7 @@ public class ProfileService {
 
   @Transactional(readOnly = true)
   public OwnProfileResponse getOwnProfile() {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
 
     ProfileQueryData data = profileQueryService.getPublicProfileData(user.id());
 
@@ -47,7 +49,18 @@ public class ProfileService {
         .items(data.items())
         .reviews(data.reviews())
         .build();
+  }
 
+  private AuthenticatedUser getRequiredAuthenticatedUser() {
+    return OwnMapper.map(currentUser.getRequiredAuthenticatedUser(), (user) -> new AuthenticatedUser(
+        user.id(),
+        user.email(),
+        user.nickname(),
+        user.password(),
+        UserRole.valueOf(user.role().name()),
+        user.banActive(),
+        user.bannedUntil(),
+        user.joinedAt()));
   }
 
 }

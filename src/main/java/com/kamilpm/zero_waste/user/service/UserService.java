@@ -15,19 +15,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kamilpm.zero_waste.auth.api.AuthApi;
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
+import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
 import com.kamilpm.zero_waste.auth.api.RevokeRefreshTokenEvent;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
+import com.kamilpm.zero_waste.common.utils.OwnMapper;
 import com.kamilpm.zero_waste.common.utils.SqlUtils;
-import com.kamilpm.zero_waste.user.api.UserDto;
-import com.kamilpm.zero_waste.user.api.UserRole;
+import com.kamilpm.zero_waste.user.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.user.dto.BanRequest;
 import com.kamilpm.zero_waste.user.dto.CreateUserRequest;
 import com.kamilpm.zero_waste.user.dto.UnbanRequest;
 import com.kamilpm.zero_waste.user.dto.UpdateUserRequest;
+import com.kamilpm.zero_waste.user.dto.UserDto;
+import com.kamilpm.zero_waste.user.dto.UserRole;
 import com.kamilpm.zero_waste.user.entity.User;
 import com.kamilpm.zero_waste.user.entity.UserBan;
 import com.kamilpm.zero_waste.user.mapper.UserMapper;
@@ -40,18 +41,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 
-  // private final BlogService blogService;
   private final UserRepository userRepository;
-  // private final OAuthService oAuthService;
-  private final AuthApi authApi;
+  private final CurrentUserApi currentUser;
   private final PasswordEncoder passwordEncoder;
-  // private final ItemService itemService;
   private final UserBanRepository userBanRepository;
-  // private final ReviewService reviewService;
-  // private final RefreshTokenRepository refreshTokenRepository;
-  // private final OfferService offerService;
   private final UserMapper userMapper;
-  // private final NotificationService notificationService;
   private final SimpMessagingTemplate simpMessagingTemplate;
   private final ApplicationEventPublisher events;
 
@@ -61,7 +55,7 @@ public class UserService {
     if (roles != null && roles.isEmpty())
       roles = null;
     text = SqlUtils.prepareLikePattern(text);
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     return userRepository.findAllByIdNot(user.id(), text, roles, pageable).map(userMapper::toDto);
   }
 
@@ -102,7 +96,7 @@ public class UserService {
   @Transactional
   public UserDto updateUser(final UUID id, final UpdateUserRequest userRequest) {
 
-    AuthenticatedUser admin = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser admin = getRequiredAuthenticatedUser();
 
     if (Objects.equals(admin.id(), id)) {
       throw new ForbiddenException("You can not update your account");
@@ -127,7 +121,7 @@ public class UserService {
   @Transactional
   public void deleteUser(final List<UUID> ids) {
 
-    AuthenticatedUser admin = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser admin = getRequiredAuthenticatedUser();
 
     if (ids.stream().anyMatch((id) -> Objects.equals(admin.id(), id))) {
       throw new ForbiddenException("You can not delete your account");
@@ -138,7 +132,7 @@ public class UserService {
 
   @Transactional
   public void banUsers(final BanRequest banRequest) {
-    AuthenticatedUser admin = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser admin = getRequiredAuthenticatedUser();
 
     List<User> users = userRepository.findAllById(banRequest.getIds());
 
@@ -182,7 +176,7 @@ public class UserService {
   @Transactional
   public void unbanUsers(UnbanRequest unbanRequest) {
 
-    AuthenticatedUser admin = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser admin = getRequiredAuthenticatedUser();
 
     List<UserBan> userBans = userBanRepository.findBanWithUser(unbanRequest.getIds());
     Instant now = Instant.now();
@@ -203,7 +197,7 @@ public class UserService {
   @Transactional
   public void deleteOwnAccount() {
 
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     deleteUsersByIds(List.of(user.id()));
 
   }
@@ -222,7 +216,18 @@ public class UserService {
 
     userRepository.deleteAllById(ids);
 
+  }
 
+  private AuthenticatedUser getRequiredAuthenticatedUser() {
+    return OwnMapper.map(currentUser.getRequiredAuthenticatedUser(), (user) -> new AuthenticatedUser(
+        user.id(),
+        user.email(),
+        user.nickname(),
+        user.password(),
+        UserRole.valueOf(user.role().name()),
+        user.banActive(),
+        user.bannedUntil(),
+        user.joinedAt()));
   }
 
 }

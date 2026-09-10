@@ -10,11 +10,14 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
+import com.kamilpm.zero_waste.common.utils.OwnMapper;
+import com.kamilpm.zero_waste.item.dto.ItemDto;
+import com.kamilpm.zero_waste.item.dto.SimpleItemDto;
+import com.kamilpm.zero_waste.item.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.item.entity.Item;
 import com.kamilpm.zero_waste.item.mapper.ItemMapper;
 import com.kamilpm.zero_waste.item.repository.ItemRepository;
 import com.kamilpm.zero_waste.user.api.UserItemApi;
-import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,8 +41,8 @@ public class ItemOfferApi {
   public Map<UUID, ItemDto> getItemsByIds(Collection<UUID> ids) {
     List<Item> items = itemRepository.findAllById(ids);
 
-    Map<UUID, UserSummaryDto> usersById = userItemApi
-        .getUsersByIds(items.stream().map(item -> item.getOwnerId()).collect(Collectors.toSet()));
+    Set<UUID> ownerIds = items.stream().map(item -> item.getOwnerId()).collect(Collectors.toSet());
+    Map<UUID, UserSummaryDto> usersById = getUsersByIds(ownerIds);
 
     return items.stream().collect(
         Collectors.toMap((item) -> item.getId(),
@@ -58,5 +61,10 @@ public class ItemOfferApi {
   public Set<UUID> findByUserIds(List<UUID> ids) {
     return itemRepository.findByOwnerIdIn(ids).stream().map(item -> item.getId()).collect(Collectors.toSet());
 
+  }
+
+  private Map<UUID, UserSummaryDto> getUsersByIds(Set<UUID> ids) {
+    return OwnMapper.mapValues(userItemApi.getUsersByIds(ids),
+        (user) -> new UserSummaryDto(user.id(), user.nickname()));
   }
 }

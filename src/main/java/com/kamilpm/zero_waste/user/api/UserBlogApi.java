@@ -8,7 +8,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
+import com.kamilpm.zero_waste.user.dto.AuthenticatedUser;
+import com.kamilpm.zero_waste.user.dto.UserRole;
 import com.kamilpm.zero_waste.user.mapper.UserMapper;
 import com.kamilpm.zero_waste.user.repository.UserRepository;
 

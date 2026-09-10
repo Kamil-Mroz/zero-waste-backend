@@ -5,7 +5,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Configuration;
 
-import com.kamilpm.zero_waste.user.api.SeedUserApi;
+import com.kamilpm.zero_waste.user.dto.SeedUserApi;
 
 import lombok.RequiredArgsConstructor;
 

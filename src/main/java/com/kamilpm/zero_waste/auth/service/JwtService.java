@@ -10,7 +10,7 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
+import com.kamilpm.zero_waste.auth.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.common.exception.TokenException;
 
 import io.jsonwebtoken.Claims;

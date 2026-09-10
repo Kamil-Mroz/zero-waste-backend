@@ -6,12 +6,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
 import com.kamilpm.zero_waste.common.dto.PageResponse;
-import com.kamilpm.zero_waste.user.api.UserDto;
-import com.kamilpm.zero_waste.user.api.UserRole;
 import com.kamilpm.zero_waste.user.dto.BanRequest;
 import com.kamilpm.zero_waste.user.dto.CreateUserRequest;
 import com.kamilpm.zero_waste.user.dto.UnbanRequest;
 import com.kamilpm.zero_waste.user.dto.UpdateUserRequest;
+import com.kamilpm.zero_waste.user.dto.UserDto;
+import com.kamilpm.zero_waste.user.dto.UserRole;
 import com.kamilpm.zero_waste.user.service.UserService;
 
 import jakarta.validation.Valid;

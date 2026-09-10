@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.offer.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,19 +16,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kamilpm.zero_waste.auth.api.AuthApi;
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
-import com.kamilpm.zero_waste.common.dto.UserSummaryWithEmailDto;
+import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
+import com.kamilpm.zero_waste.common.utils.OwnMapper;
 import com.kamilpm.zero_waste.item.api.DeleteItemEvent;
 import com.kamilpm.zero_waste.item.api.DeleteItemsEvent;
-import com.kamilpm.zero_waste.item.api.ItemDto;
 import com.kamilpm.zero_waste.item.api.ItemOfferApi;
-import com.kamilpm.zero_waste.item.api.ItemState;
-import com.kamilpm.zero_waste.item.api.SimpleItemDto;
 import com.kamilpm.zero_waste.notification.api.NotificationRecipient;
 import com.kamilpm.zero_waste.notification.api.NotificationReferenceType;
 import com.kamilpm.zero_waste.notification.api.NotificationType;
@@ -35,8 +32,15 @@ import com.kamilpm.zero_waste.notification.api.SendNotificationEvent;
 import com.kamilpm.zero_waste.notification.api.SendNotificationsEvent;
 import com.kamilpm.zero_waste.offer.api.DeleteOffersEvent;
 import com.kamilpm.zero_waste.offer.api.OfferAcceptEvent;
-import com.kamilpm.zero_waste.offer.api.OfferDto;
+import com.kamilpm.zero_waste.offer.dto.AuthenticatedUser;
+import com.kamilpm.zero_waste.offer.dto.ItemCondition;
+import com.kamilpm.zero_waste.offer.dto.ItemDto;
+import com.kamilpm.zero_waste.offer.dto.ItemState;
+import com.kamilpm.zero_waste.offer.dto.OfferDto;
 import com.kamilpm.zero_waste.offer.dto.OfferWithEmailDto;
+import com.kamilpm.zero_waste.offer.dto.SimpleItemDto;
+import com.kamilpm.zero_waste.offer.dto.UserRole;
+import com.kamilpm.zero_waste.offer.dto.UserSummaryWithEmailDto;
 import com.kamilpm.zero_waste.offer.entity.Offer;
 import com.kamilpm.zero_waste.offer.entity.OfferStatus;
 import com.kamilpm.zero_waste.offer.mapper.OfferMapper;
@@ -50,7 +54,7 @@ import lombok.RequiredArgsConstructor;
 public class OfferService {
   private final OfferRepository offerRepository;
   private final ItemOfferApi itemOfferApi;
-  private final AuthApi authApi;
+  private final CurrentUserApi currentUser;
   // private final NotificationService notificationService;
   private final OfferMapper offerMapper;
   private final ApplicationEventPublisher events;
@@ -68,11 +72,11 @@ public class OfferService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void acceptOffer(UUID id) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     Offer offer = getOfferById(id);
     ensurePending(offer);
 
-    SimpleItemDto item = itemOfferApi.findByIdForUpdate(offer.getItemId());
+    SimpleItemDto item = findByIdForUpdate(offer.getItemId());
 
     if (!Objects.equals(item.ownerId(), user.id())) {
       throw new ForbiddenException("You cannot accept your own offer");
@@ -116,11 +120,11 @@ public class OfferService {
 
   @Transactional
   public void rejectOffer(UUID id) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
 
     Offer offer = getOfferById(id);
     UUID buyerId = offer.getBuyerId();
-    SimpleItemDto item = itemOfferApi.findById(id);
+    SimpleItemDto item = findById(id);
     if (!Objects.equals(item.ownerId(), user.id()))
       throw new ForbiddenException("Unable to reject an offer that you are not the owner of item");
     ensurePending(offer);
@@ -138,9 +142,9 @@ public class OfferService {
 
   @Transactional
   public void makeOffer(UUID id) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
 
-    SimpleItemDto item = itemOfferApi.findByIdForUpdate(id);
+    SimpleItemDto item = findByIdForUpdate(id);
 
     if (Objects.equals(user.id(), item.ownerId()))
       throw new ConflictException("You can not make an offer on your own item");
@@ -181,11 +185,11 @@ public class OfferService {
 
   @Transactional
   public void cancelOffer(UUID id) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
 
     Offer offer = getOfferById(id);
 
-    SimpleItemDto item = itemOfferApi.findByIdForUpdate(offer.getItemId());
+    SimpleItemDto item = findByIdForUpdate(offer.getItemId());
     String itemOwnerEmail = userOfferApi.getUserEmail(item.ownerId());
 
     if (!Objects.equals(user.id(), offer.getBuyerId()))
@@ -208,12 +212,12 @@ public class OfferService {
   @Transactional
   public Page<OfferDto> getMyOffers(Pageable pageable, OfferStatus status) {
 
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     Page<Offer> offers = status != null ? offerRepository.findByBuyerIdAndStatus(user.id(), status, pageable)
         : offerRepository.findByBuyerId(user.id(), pageable);
 
-    Map<UUID, ItemDto> itemsById = itemOfferApi.getItemsByIds(
-        offers.getContent().stream().map(offer -> offer.getItemId()).collect(Collectors.toSet()));
+    Set<UUID> itemIds = offers.getContent().stream().map(offer -> offer.getItemId()).collect(Collectors.toSet());
+    Map<UUID, ItemDto> itemsById = getItemsByIds(itemIds);
 
     return offers.map(offer -> offerMapper.toDto(offer, itemsById.get(offer.getItemId()),
         null));
@@ -222,16 +226,16 @@ public class OfferService {
 
   @Transactional
   public Page<OfferWithEmailDto> getReceivedOffers(Pageable pageable, OfferStatus status) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
-    Map<UUID, ItemDto> itemsById = itemOfferApi.getItemsOwnedBy(user.id());
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    Map<UUID, ItemDto> itemsById = getItemsOwnedBy(user.id());
 
     Set<UUID> itemIds = itemsById.keySet();
 
     Page<Offer> offers = status != null ? offerRepository.findByItemIdInAndStatus(itemIds, status, pageable)
         : offerRepository.findByItemIdIn(itemIds, pageable);
 
-    Map<UUID, UserSummaryWithEmailDto> buyerById = userOfferApi
-        .getUsersByIds(offers.getContent().stream().map(offer -> offer.getBuyerId()).collect(Collectors.toSet()));
+    Set<UUID> buyerIds = offers.getContent().stream().map(offer -> offer.getBuyerId()).collect(Collectors.toSet());
+    Map<UUID, UserSummaryWithEmailDto> buyerById = getUsersByIds(buyerIds);
 
     return offers.map(offer -> offerMapper.toWithEmailDto(offer, itemsById.get(offer.getItemId()),
         buyerById.get(offer.getBuyerId())));
@@ -249,5 +253,57 @@ public class OfferService {
   @ApplicationModuleListener
   void on(DeleteItemsEvent event) {
     offerRepository.deleteByItemIdIn(event.itemIds());
+  }
+
+  private AuthenticatedUser getRequiredAuthenticatedUser() {
+    return OwnMapper.map(currentUser.getRequiredAuthenticatedUser(), (user) -> new AuthenticatedUser(
+        user.id(),
+        user.email(),
+        user.nickname(),
+        user.password(),
+        UserRole.valueOf(user.role().name()),
+        user.banActive(),
+        user.bannedUntil(),
+        user.joinedAt()));
+  }
+
+  private Map<UUID, ItemDto> getItemsByIds(Collection<UUID> ids) {
+    return OwnMapper.mapValues(itemOfferApi
+        .getItemsByIds(ids),
+        (item) -> new ItemDto(item.id(), item.title(), item.description(), item.city(),
+            ItemCondition.valueOf(item.condition().name()),
+            ItemState.valueOf(item.state().name()),
+            item.moderationStatus(), null, null, null, null));
+  }
+
+  private Map<UUID, ItemDto> getItemsOwnedBy(UUID id) {
+    return OwnMapper.mapValues(itemOfferApi
+        .getItemsOwnedBy(id),
+        (item) -> new ItemDto(item.id(), item.title(), item.description(), item.city(),
+            ItemCondition.valueOf(item.condition().name()),
+            ItemState.valueOf(item.state().name()),
+            item.moderationStatus(), null, null, null, null));
+  }
+
+  private Map<UUID, UserSummaryWithEmailDto> getUsersByIds(Set<UUID> ids) {
+    return OwnMapper.mapValues(userOfferApi
+        .getUsersByIds(ids),
+        (user) -> new UserSummaryWithEmailDto(user.getId(), user.getNickname(), user.getEmail()));
+  }
+
+  private SimpleItemDto findByIdForUpdate(UUID id) {
+
+    return OwnMapper.map(itemOfferApi.findByIdForUpdate(id), item -> new SimpleItemDto(item.id(), item.title(),
+        item.description(), item.city(), ItemCondition.valueOf(item.condition().name()),
+        ItemState.valueOf(item.state().name()),
+        item.moderationStatus(), item.ownerId()));
+  }
+
+  private SimpleItemDto findById(UUID id) {
+
+    return OwnMapper.map(itemOfferApi.findById(id), item -> new SimpleItemDto(item.id(), item.title(),
+        item.description(), item.city(), ItemCondition.valueOf(item.condition().name()),
+        ItemState.valueOf(item.state().name()),
+        item.moderationStatus(), item.ownerId()));
   }
 }

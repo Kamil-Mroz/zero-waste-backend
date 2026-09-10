@@ -10,8 +10,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.AuthApi;
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
+import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
+import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
+import com.kamilpm.zero_waste.auth.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.auth.dto.CreatePasswordRequest;
 import com.kamilpm.zero_waste.auth.dto.LoginRequest;
 import com.kamilpm.zero_waste.auth.dto.UpdatePasswordRequest;
@@ -27,7 +28,7 @@ public class AuthService {
   private final UserApi userApi;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
-  private final AuthApi authApi;
+  private final CurrentUserApi currentUser;
 
   public Authentication verify(LoginRequest loginRequest) {
 
@@ -43,7 +44,7 @@ public class AuthService {
   }
 
   public void handlePasswordCreation(CreatePasswordRequest passwords) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = currentUser.getRequiredAuthenticatedUser();
     if (user.password() != null) {
       throw new ConflictException("Password already set");
     }
@@ -55,7 +56,7 @@ public class AuthService {
   }
 
   public void handlePasswordUpdate(UpdatePasswordRequest passwords) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = currentUser.getRequiredAuthenticatedUser();
     if (user.password() == null) {
       throw new ConflictException("To update a password you must set one first");
     }

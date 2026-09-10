@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
+import com.kamilpm.zero_waste.auth.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.auth.dto.Connections;
 import com.kamilpm.zero_waste.auth.dto.OAuthFlow;
 import com.kamilpm.zero_waste.auth.dto.OAuthSession;

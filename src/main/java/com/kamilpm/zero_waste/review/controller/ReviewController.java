@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
 import com.kamilpm.zero_waste.common.dto.PageResponse;
-import com.kamilpm.zero_waste.review.api.ReviewResponse;
 import com.kamilpm.zero_waste.review.dto.ReviewDto;
 import com.kamilpm.zero_waste.review.dto.ReviewRequest;
+import com.kamilpm.zero_waste.review.dto.ReviewResponse;
 import com.kamilpm.zero_waste.review.service.ReviewService;
 
 import jakarta.validation.Valid;

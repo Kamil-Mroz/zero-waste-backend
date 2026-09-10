@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.kamilpm.zero_waste.item.api.ItemState;
 import com.kamilpm.zero_waste.item.entity.ItemCondition;
 
 import jakarta.validation.constraints.NotBlank;

@@ -1,7 +1,5 @@
 package com.kamilpm.zero_waste.auth.dto;
 
-import com.kamilpm.zero_waste.auth.api.AuthUser;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

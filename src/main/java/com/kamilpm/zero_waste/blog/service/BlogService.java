@@ -7,22 +7,23 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.AuthApi;
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
+import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
+import com.kamilpm.zero_waste.blog.dto.AuthenticatedUser;
+// import com.kamilpm.zero_waste.auth.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.blog.dto.BlogDto;
 import com.kamilpm.zero_waste.blog.dto.BlogRequest;
+import com.kamilpm.zero_waste.blog.dto.UserRole;
 import com.kamilpm.zero_waste.blog.entity.Blog;
 import com.kamilpm.zero_waste.blog.mapper.BlogMapper;
 import com.kamilpm.zero_waste.blog.repository.BlogRepository;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
+import com.kamilpm.zero_waste.common.utils.OwnMapper;
 import com.kamilpm.zero_waste.moderation.api.RejectReportEvent;
 import com.kamilpm.zero_waste.user.api.UserBlogApi;
-import com.kamilpm.zero_waste.user.api.UserRole;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BlogService {
 
-  private final AuthApi authApi;
+  private final CurrentUserApi currentUser;
   private final BlogRepository blogRepository;
   private final BlogMapper blogMapper;
   private final UserBlogApi userBlogApi;
@@ -39,7 +40,7 @@ public class BlogService {
   // private final ReportService reportService;
 
   public BlogDto createBlog(BlogRequest blog) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     Blog newBlog = Blog.builder()
         .authorId(user.id())
         .content(blog.getContent())
@@ -53,7 +54,7 @@ public class BlogService {
 
   @Transactional
   public BlogDto updateBlog(UUID blogId, BlogRequest blog) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     Blog existingBlog = blogRepository
         .findByIdAndAuthorIdAndModerationStatus(blogId, user.id(), ModerationStatus.VISIBLE)
         .orElseThrow(() -> new EntityNotFoundException("Blog not found"));
@@ -69,14 +70,14 @@ public class BlogService {
     List<Blog> blogs = blogRepository
         .findVisibleBlogsExcludingAuthors(ModerationStatus.VISIBLE,
             excludedAuthorIds);
-    Map<UUID, AuthenticatedUser> authors = userBlogApi
-        .getAuthorsByIds(blogs.stream().map((blog) -> blog.getAuthorId()).toList());
+    List<UUID> authorIdsToExclude = blogs.stream().map((blog) -> blog.getAuthorId()).toList();
+    Map<UUID, AuthenticatedUser> authors = getAuthorsByIds(authorIdsToExclude);
 
     return blogs.stream().map(blog -> blogMapper.toDto(blog, authors.get(blog.getAuthorId()))).toList();
   }
 
   public List<BlogDto> getOwnBlogs() {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     return blogRepository.findByAuthorIdOrderByCreatedAtDesc(user.id()).stream()
         .map(blog -> blogMapper.toDto(blog, user)).toList();
   }
@@ -84,13 +85,13 @@ public class BlogService {
   public BlogDto getBlog(UUID blogId) {
     Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new EntityNotFoundException("Blog not found"));
 
-    AuthenticatedUser author = userBlogApi.getAuthorById(blog.getAuthorId());
+    AuthenticatedUser author = getAuthorById(blog.getAuthorId());
 
     if (Objects.equals(blog.getModerationStatus(), ModerationStatus.VISIBLE)
         && !userBlogApi.isUserDemo(blog.getAuthorId())) {
       return blogMapper.toDto(blog, author);
     }
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     if (Objects.equals(user.role(), UserRole.ADMIN))
       return blogMapper.toDto(blog, author);
 
@@ -102,7 +103,7 @@ public class BlogService {
   }
 
   public void deleteBlog(UUID blogId) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new EntityNotFoundException("Blog not found"));
 
     boolean isAdmin = user.role() == UserRole.ADMIN;
@@ -113,6 +114,43 @@ public class BlogService {
     blogRepository.deleteById(blog.getId());
 
     events.publishEvent(new RejectReportEvent(blogId, isAdmin));
+  }
+
+  private AuthenticatedUser getRequiredAuthenticatedUser() {
+    return OwnMapper.map(currentUser.getRequiredAuthenticatedUser(), (user) -> new AuthenticatedUser(
+        user.id(),
+        user.email(),
+        user.nickname(),
+        user.password(),
+        UserRole.valueOf(user.role().name()),
+        user.banActive(),
+        user.bannedUntil(),
+        user.joinedAt()));
+  }
+
+  private AuthenticatedUser getAuthorById(UUID authorId) {
+    return OwnMapper.map(userBlogApi.getAuthorById(authorId), (user) -> new AuthenticatedUser(
+        user.id(),
+        user.email(),
+        user.nickname(),
+        user.password(),
+        UserRole.valueOf(user.role().name()),
+        user.banActive(),
+        user.bannedUntil(),
+        user.joinedAt()));
+  }
+
+  private Map<UUID, AuthenticatedUser> getAuthorsByIds(List<UUID> ids) {
+    return OwnMapper.mapValues(userBlogApi
+        .getAuthorsByIds(ids),
+        (user) -> new AuthenticatedUser(user.id(),
+            user.email(),
+            user.nickname(),
+            user.password(),
+            UserRole.valueOf(user.role().name()),
+            user.banActive(),
+            user.bannedUntil(),
+            user.joinedAt()));
   }
 
 }

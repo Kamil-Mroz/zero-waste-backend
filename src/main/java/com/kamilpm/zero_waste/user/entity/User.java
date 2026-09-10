@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.kamilpm.zero_waste.user.api.UserRole;
+import com.kamilpm.zero_waste.user.dto.UserRole;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

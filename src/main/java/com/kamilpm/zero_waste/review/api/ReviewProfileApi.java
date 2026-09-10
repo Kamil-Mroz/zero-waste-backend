@@ -3,18 +3,20 @@ package com.kamilpm.zero_waste.review.api;
 import com.kamilpm.zero_waste.review.mapper.ReviewMapper;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
+import com.kamilpm.zero_waste.common.utils.OwnMapper;
+import com.kamilpm.zero_waste.review.dto.ProfileReviewSummary;
+import com.kamilpm.zero_waste.review.dto.RatingBreakdown;
+import com.kamilpm.zero_waste.review.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.review.entity.Review;
 import com.kamilpm.zero_waste.review.interfaces.IRatingBreakdownWithStats;
 import com.kamilpm.zero_waste.review.repository.ReviewRepository;
-import com.kamilpm.zero_waste.user.api.ProfileReviewSummary;
-import com.kamilpm.zero_waste.user.api.RatingBreakdown;
 import com.kamilpm.zero_waste.user.api.UserReviewApi;
 
 import lombok.RequiredArgsConstructor;
@@ -44,15 +46,14 @@ public class ReviewProfileApi {
 
     List<Review> latestReviews = reviewRepository.findTop3ByRevieweeIdAndModerationStatusOrderByCreatedAtDesc(userId,
         ModerationStatus.VISIBLE);
-
-    Map<UUID, UserSummaryDto> usersById = userReviewApi
-        .getUsersById(latestReviews.stream().map(review -> review.getReviewerId()).collect(Collectors.toSet()));
+    Set<UUID> userIds = latestReviews.stream().map(review -> review.getReviewerId()).collect(Collectors.toSet());
+    Map<UUID, UserSummaryDto> usersById = getUsersById(userIds);
 
     return ProfileReviewSummary.builder()
         .averageRating(avg == null ? 0.0 : avg)
         .reviewCount(count)
         .latestReviews(latestReviews.stream()
-            .map(review -> reviewMapper.toResponse(review, usersById.get(review.getReviewerId()).getNickname()))
+            .map(review -> reviewMapper.toResponse(review, usersById.get(review.getReviewerId()).nickname()))
             .toList())
         .ratingBreakdown(RatingBreakdown.builder()
             .oneStar(one)
@@ -62,5 +63,11 @@ public class ReviewProfileApi {
             .fiveStar(five)
             .build())
         .build();
+  }
+
+  private Map<UUID, UserSummaryDto> getUsersById(Set<UUID> ids) {
+    return OwnMapper.mapValues(userReviewApi
+        .getUsersById(ids),
+        (user) -> new UserSummaryDto(user.id(), user.nickname()));
   }
 }

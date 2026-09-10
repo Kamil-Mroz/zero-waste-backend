@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
+import com.kamilpm.zero_waste.offer.dto.SimpleOfferDto;
 import com.kamilpm.zero_waste.offer.entity.OfferStatus;
 import com.kamilpm.zero_waste.offer.mapper.OfferMapper;
 import com.kamilpm.zero_waste.offer.repository.OfferRepository;

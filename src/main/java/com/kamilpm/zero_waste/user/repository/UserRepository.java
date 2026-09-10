@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.kamilpm.zero_waste.user.api.UserRole;
+import com.kamilpm.zero_waste.user.dto.UserRole;
 import com.kamilpm.zero_waste.user.entity.User;
 
 @Repository

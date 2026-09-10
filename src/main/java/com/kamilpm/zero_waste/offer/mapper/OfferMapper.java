@@ -2,12 +2,12 @@ package com.kamilpm.zero_waste.offer.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.kamilpm.zero_waste.user.api.UserSummaryDto;
-import com.kamilpm.zero_waste.common.dto.UserSummaryWithEmailDto;
-import com.kamilpm.zero_waste.item.api.ItemDto;
-import com.kamilpm.zero_waste.offer.api.OfferDto;
-import com.kamilpm.zero_waste.offer.api.SimpleOfferDto;
+import com.kamilpm.zero_waste.offer.dto.ItemDto;
+import com.kamilpm.zero_waste.offer.dto.OfferDto;
 import com.kamilpm.zero_waste.offer.dto.OfferWithEmailDto;
+import com.kamilpm.zero_waste.offer.dto.SimpleOfferDto;
+import com.kamilpm.zero_waste.offer.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.offer.dto.UserSummaryWithEmailDto;
 import com.kamilpm.zero_waste.offer.entity.Offer;
 
 @Component

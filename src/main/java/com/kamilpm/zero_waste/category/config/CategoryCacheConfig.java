@@ -14,7 +14,7 @@ import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import com.kamilpm.zero_waste.category.api.CategoryTreeDto;
+import com.kamilpm.zero_waste.category.dto.CategoryTreeDto;
 
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.json.JsonMapper;

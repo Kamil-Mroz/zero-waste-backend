@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.category.api;
 
+import com.kamilpm.zero_waste.category.dto.CategoryDto;
 import com.kamilpm.zero_waste.category.mapper.CategoryMapper;
 import com.kamilpm.zero_waste.category.repository.CategoryRepository;
 import com.kamilpm.zero_waste.category.service.CategoryService;

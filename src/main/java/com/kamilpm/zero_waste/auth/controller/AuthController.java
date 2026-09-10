@@ -2,13 +2,14 @@ package com.kamilpm.zero_waste.auth.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kamilpm.zero_waste.auth.api.AuthUser;
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
 import com.kamilpm.zero_waste.auth.dto.AuthResponse;
+import com.kamilpm.zero_waste.auth.dto.AuthUser;
+import com.kamilpm.zero_waste.auth.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.auth.dto.CreatePasswordRequest;
 import com.kamilpm.zero_waste.auth.dto.LoginRequest;
 import com.kamilpm.zero_waste.auth.dto.SecurityUser;
 import com.kamilpm.zero_waste.auth.dto.UpdatePasswordRequest;
+import com.kamilpm.zero_waste.auth.dto.UserRole;
 import com.kamilpm.zero_waste.auth.entity.RefreshToken;
 import com.kamilpm.zero_waste.auth.service.AuthCookieService;
 import com.kamilpm.zero_waste.auth.service.AuthService;
@@ -17,6 +18,7 @@ import com.kamilpm.zero_waste.auth.service.RefreshTokenService;
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
 import com.kamilpm.zero_waste.common.exception.TokenException;
 import com.kamilpm.zero_waste.common.exception.UnauthorizedException;
+import com.kamilpm.zero_waste.common.utils.OwnMapper;
 import com.kamilpm.zero_waste.user.api.UserApi;
 
 import jakarta.servlet.http.Cookie;
@@ -77,7 +79,7 @@ public class AuthController {
   public ResponseEntity<AuthResponse> loginDemo(
       HttpServletResponse response) {
 
-    AuthenticatedUser user = userApi.getDemoUser();
+    AuthenticatedUser user = getDemoUser();
 
     AuthResponse authResponse = getAuthResponse(user, response);
 
@@ -93,7 +95,7 @@ public class AuthController {
 
     authCookieService.addRefreshCookie(response, refreshToken);
 
-    AuthUser authUser =  toAuthUser(user);
+    AuthUser authUser = toAuthUser(user);
 
     return AuthResponse.builder()
         .accessToken(accessToken)
@@ -112,7 +114,7 @@ public class AuthController {
 
     UUID userId = token.getUserId();
 
-    AuthenticatedUser user = userApi.findById(userId);
+    AuthenticatedUser user = findById(userId);
 
     if (user.banActive()) {
       refreshTokenService.revokeAllTokens(List.of(user.id()));
@@ -123,7 +125,7 @@ public class AuthController {
 
     String newAccessToken = jwtService.generateToken(user);
 
-    AuthUser authUser =  toAuthUser(user);
+    AuthUser authUser = toAuthUser(user);
 
     AuthResponse authResponse = AuthResponse.builder()
         .accessToken(newAccessToken)
@@ -181,4 +183,15 @@ public class AuthController {
     return ResponseEntity.ok().build();
   }
 
+  private AuthenticatedUser getDemoUser() {
+    return OwnMapper.map(userApi.getDemoUser(),
+        user -> new AuthenticatedUser(user.id(), user.email(), user.nickname(), user.password(),
+            UserRole.valueOf(user.role().name()), user.banActive(), user.bannedUntil(), user.joinedAt()));
+  }
+
+  public AuthenticatedUser findById(UUID userId) {
+    return OwnMapper.map(userApi.findById(userId),
+        user -> new AuthenticatedUser(user.id(), user.email(), user.nickname(), user.password(),
+            UserRole.valueOf(user.role().name()), user.banActive(), user.bannedUntil(), user.joinedAt()));
+  }
 }

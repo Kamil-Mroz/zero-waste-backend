@@ -4,8 +4,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.kamilpm.zero_waste.category.api.CategoryDto;
-import com.kamilpm.zero_waste.category.api.CategoryTreeDto;
+import com.kamilpm.zero_waste.category.dto.CategoryDto;
+import com.kamilpm.zero_waste.category.dto.CategoryTreeDto;
 import com.kamilpm.zero_waste.category.entity.Category;
 
 @Component

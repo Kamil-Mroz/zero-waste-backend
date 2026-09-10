@@ -7,9 +7,11 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
+import com.kamilpm.zero_waste.item.dto.ItemCountBreakDown;
+import com.kamilpm.zero_waste.item.dto.ItemState;
+import com.kamilpm.zero_waste.item.dto.ProfileItemSummary;
 import com.kamilpm.zero_waste.item.entity.Item;
 import com.kamilpm.zero_waste.item.repository.ItemRepository;
-import com.kamilpm.zero_waste.user.api.ProfileItemSummary;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,9 +26,9 @@ public class ItemProfileApi {
         ItemState.AVAILABLE, ModerationStatus.VISIBLE);
 
     ItemCountBreakDown itemCountBreakDown = buildItemCountBreakDown(userId);
-    return ProfileItemSummary.builder()
-        .latestItems(latestItems.stream().map(item -> itemMapper.toDto(item, null, null, null)).toList())
-        .itemCountBreakDown(itemCountBreakDown).build();
+    return new ProfileItemSummary(
+        itemCountBreakDown,
+        latestItems.stream().map(item -> itemMapper.toDto(item, null, null, null)).toList());
   }
 
   private ItemCountBreakDown buildItemCountBreakDown(UUID userId) {
@@ -38,13 +40,10 @@ public class ItemProfileApi {
         case PENDING -> pending = row.getTotalItem();
       }
     }
-    return ItemCountBreakDown.builder()
-        .available(available)
-        .pending(pending)
-        .given(given)
-        .totalItems(available + pending + given)
-        .build();
-
+    return new ItemCountBreakDown(
+        available + pending + given,
+        given,
+        pending,
+        available);
   }
-
 }

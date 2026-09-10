@@ -3,7 +3,6 @@ package com.kamilpm.zero_waste.blog.dto;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.kamilpm.zero_waste.user.api.UserSummaryDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 
 import lombok.AllArgsConstructor;

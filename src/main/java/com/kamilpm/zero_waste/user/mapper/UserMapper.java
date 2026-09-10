@@ -2,9 +2,8 @@ package com.kamilpm.zero_waste.user.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
-
-import com.kamilpm.zero_waste.user.api.UserDto;
+import com.kamilpm.zero_waste.user.dto.AuthenticatedUser;
+import com.kamilpm.zero_waste.user.dto.UserDto;
 import com.kamilpm.zero_waste.user.entity.User;
 
 @Component

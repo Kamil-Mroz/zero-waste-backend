@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kamilpm.zero_waste.common.exception.ApiException;
+import com.kamilpm.zero_waste.image.dto.ImageDto;
 import com.kamilpm.zero_waste.image.entity.Image;
 import com.kamilpm.zero_waste.image.mapper.ImageMapper;
 import com.kamilpm.zero_waste.image.properties.ImageStorageProperties;
@@ -208,7 +209,7 @@ public class ImageItemApi {
     }
   }
 
-  public List<ImageDto> getImagesByIds(List<UUID> ids) {
+  public List<ImageDto> getAllImagesByIds(Collection<UUID> ids) {
     return imageRepository.findAllById(ids).stream().map(imageMapper::toDto).toList();
   }
 

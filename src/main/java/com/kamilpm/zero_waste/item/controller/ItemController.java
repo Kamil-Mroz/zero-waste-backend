@@ -4,10 +4,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
 import com.kamilpm.zero_waste.common.dto.PageResponse;
-import com.kamilpm.zero_waste.item.api.ItemDto;
-import com.kamilpm.zero_waste.item.api.ItemState;
+import com.kamilpm.zero_waste.item.dto.ItemDto;
 import com.kamilpm.zero_waste.item.dto.ItemListDto;
 import com.kamilpm.zero_waste.item.dto.ItemRequest;
+import com.kamilpm.zero_waste.item.dto.ItemState;
 import com.kamilpm.zero_waste.item.dto.UpdateItemRequest;
 import com.kamilpm.zero_waste.item.service.ItemService;
 

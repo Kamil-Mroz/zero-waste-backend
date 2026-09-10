@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.item.service;
 import com.kamilpm.zero_waste.user.api.UserItemApi;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,32 +21,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.kamilpm.zero_waste.auth.api.AuthApi;
-import com.kamilpm.zero_waste.auth.api.AuthenticatedUser;
-import com.kamilpm.zero_waste.category.api.CategoryDto;
+import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
 import com.kamilpm.zero_waste.category.api.CategoryItemApi;
-import com.kamilpm.zero_waste.user.api.UserSummaryDto;
+import com.kamilpm.zero_waste.item.dto.CategoryDto;
+import com.kamilpm.zero_waste.item.dto.ImageDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
+import com.kamilpm.zero_waste.common.utils.OwnMapper;
 import com.kamilpm.zero_waste.common.utils.SqlUtils;
-import com.kamilpm.zero_waste.image.api.ImageDto;
 import com.kamilpm.zero_waste.image.api.ImageItemApi;
 import com.kamilpm.zero_waste.item.api.DeleteItemEvent;
 import com.kamilpm.zero_waste.item.api.DeleteItemsEvent;
-import com.kamilpm.zero_waste.item.api.ItemDto;
-import com.kamilpm.zero_waste.item.api.ItemState;
+import com.kamilpm.zero_waste.item.dto.AuthenticatedUser;
+import com.kamilpm.zero_waste.item.dto.ItemDto;
 import com.kamilpm.zero_waste.item.dto.ItemListDto;
 import com.kamilpm.zero_waste.item.dto.ItemRequest;
+import com.kamilpm.zero_waste.item.dto.ItemState;
 import com.kamilpm.zero_waste.item.dto.UpdateItemRequest;
+import com.kamilpm.zero_waste.item.dto.UserRole;
+import com.kamilpm.zero_waste.item.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.item.entity.Item;
 import com.kamilpm.zero_waste.item.mapper.ItemMapper;
 import com.kamilpm.zero_waste.item.repository.ItemRepository;
 import com.kamilpm.zero_waste.moderation.api.RejectReportEvent;
 import com.kamilpm.zero_waste.offer.api.OfferAcceptEvent;
 import com.kamilpm.zero_waste.offer.api.OfferItemApi;
-import com.kamilpm.zero_waste.user.api.UserRole;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,7 +58,7 @@ public class ItemService {
   private final UserItemApi userItemApi;
   private final CategoryItemApi categoryItemApi;
   private final ItemRepository itemRepository;
-  private final AuthApi authApi;
+  private final CurrentUserApi currentUser;
   private final ImageItemApi imageItemApi;
   private final OfferItemApi offerItemApi;
   private final ItemMapper itemMapper;
@@ -66,7 +68,7 @@ public class ItemService {
 
   @Transactional
   public ItemDto createItem(ItemRequest itemRequest) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
 
     List<MultipartFile> files = itemRequest.getImages() == null ? List.of() : itemRequest.getImages();
 
@@ -78,7 +80,7 @@ public class ItemService {
       throw new ConflictException("Unable to create a given item");
     }
 
-    CategoryDto category = categoryItemApi.getCategoryById(itemRequest.getCategoryId());
+    CategoryDto category = getCategoryById(itemRequest.getCategoryId());
 
     Item item = Item.builder()
         .title(itemRequest.getTitle())
@@ -92,8 +94,8 @@ public class ItemService {
 
     Item savedItem = itemRepository.save(item);
 
-    List<ImageDto> uploadedImages = imageItemApi.uploadItemImages(savedItem.getId(), files);
-    savedItem.setImageIds(new ArrayList<>(uploadedImages.stream().map((image) -> image.getId()).toList()));
+    List<ImageDto> uploadedImages = uploadItemImages(savedItem.getId(), files);
+    savedItem.setImageIds(new ArrayList<>(uploadedImages.stream().map((image) -> image.id()).toList()));
 
     ImageDto thumbnail = null;
 
@@ -104,7 +106,7 @@ public class ItemService {
           ? uploadedImages.get(thumbnailIndex)
           : uploadedImages.get(0);
 
-      savedItem.setThumbnailId(thumbnail.getId());
+      savedItem.setThumbnailId(thumbnail.id());
     }
 
     Item finalItem = itemRepository.save(savedItem);
@@ -118,12 +120,12 @@ public class ItemService {
       throw new ConflictException("Unable to update to a given item");
     }
 
-    CategoryDto category = categoryItemApi.getCategoryById(itemRequest.getCategoryId());
+    CategoryDto category = getCategoryById(itemRequest.getCategoryId());
 
     Item item = itemRepository.findByIdAndModerationStatus(id, ModerationStatus.VISIBLE)
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
 
     if (!Objects.equals(item.getOwnerId(), user.id())) {
       throw new ForbiddenException("Must be the owner of the item to update it");
@@ -170,12 +172,12 @@ public class ItemService {
       imageItemApi.deleteItemImages(item.getId(), new ArrayList<>(removedImageIds));
     }
 
-    List<ImageDto> remainingImages = new ArrayList<>(imageItemApi.getImagesByIds(remainingImageIds));
-    List<ImageDto> uploadedImages = imageItemApi.uploadItemImages(item.getId(), newImages);
+    List<ImageDto> remainingImages = new ArrayList<>(getAllImagesByIds(remainingImageIds));
+    List<ImageDto> uploadedImages = uploadItemImages(item.getId(), newImages);
 
     remainingImages.addAll(uploadedImages);
 
-    remainingImageIds.addAll(uploadedImages.stream().map(image -> image.getId()).toList());
+    remainingImageIds.addAll(uploadedImages.stream().map(image -> image.id()).toList());
     item.setImageIds(remainingImageIds);
 
     ImageDto thumbnail = updateThumbnail(item, itemRequest, remainingImages);
@@ -198,16 +200,16 @@ public class ItemService {
       images.get(thumbnailIndex);
     }
     if (item.getThumbnailId() != null
-        && images.stream().anyMatch((image) -> Objects.equals(image.getId(), item.getThumbnailId()))) {
+        && images.stream().anyMatch((image) -> Objects.equals(image.id(), item.getThumbnailId()))) {
       for (ImageDto image : images) {
-        if (Objects.equals(image.getId(), item.getThumbnailId())) {
+        if (Objects.equals(image.id(), item.getThumbnailId())) {
           return image;
         }
       }
     }
 
     ImageDto image = images.get(0);
-    item.setThumbnailId(image.getId());
+    item.setThumbnailId(image.id());
     return image;
 
   }
@@ -219,16 +221,20 @@ public class ItemService {
     if (categoryId != null) {
       categoryIds = categoryItemApi.getCategoryDescendantsById(categoryId);
     }
-    Optional<AuthenticatedUser> user = authApi.getAuthenticatedUser();
+    Optional<AuthenticatedUser> user = getAuthenticatedUser();
     UUID excludeOwnerId = user.map(owner -> owner.id()).orElse(null);
 
     Page<Item> itemPage = itemRepository.searchItems(excludeOwnerId, ItemState.AVAILABLE, text,
         ModerationStatus.VISIBLE, categoryIds, pageable);
 
-    Map<UUID, CategoryDto> categoriesById = categoryItemApi.getCategoriesByIds(
-        itemPage.getContent().stream().map(item -> item.getCategoryId()).collect(Collectors.toSet()));
-    Map<UUID, ImageDto> imagesById = imageItemApi.getImagesByIds(
-        itemPage.getContent().stream().map(item -> item.getThumbnailId()).collect(Collectors.toSet()));
+    Set<UUID> itemsCategoryIds = itemPage.getContent().stream().map(item -> item.getCategoryId())
+        .collect(Collectors.toSet());
+
+    Map<UUID, CategoryDto> categoriesById = getCategoriesByIds(itemsCategoryIds);
+
+    Set<UUID> itemsImageIds = itemPage.getContent().stream().map(item -> item.getThumbnailId())
+        .collect(Collectors.toSet());
+    Map<UUID, ImageDto> imagesById = getImagesByIds(itemsImageIds);
 
     return itemPage.map((item) -> itemMapper.toListDto(item, categoriesById.get(item.getCategoryId()),
         imagesById.get(item.getThumbnailId())));
@@ -239,21 +245,21 @@ public class ItemService {
     Item item = itemRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
-    CategoryDto category = categoryItemApi.getCategoryById(item.getCategoryId());
-    List<ImageDto> images = imageItemApi.getImagesByItemId(item.getId());
+    CategoryDto category = getCategoryById(item.getCategoryId());
+    List<ImageDto> images = getImagesByItemId(item.getId());
     ImageDto thumbnail = null;
     if (images != null && images.size() > 0 && item.getThumbnailId() != null)
-      thumbnail = images.stream().filter(image -> Objects.equals(image.getId(), item.getThumbnailId())).findFirst()
+      thumbnail = images.stream().filter(image -> Objects.equals(image.id(), item.getThumbnailId())).findFirst()
           .orElse(null);
 
-    UserSummaryDto owner = userItemApi.findByItemOwnerId(item.getOwnerId());
+    UserSummaryDto owner = findByItemOwnerId(item.getOwnerId());
 
     if (Objects.equals(item.getState(), ItemState.AVAILABLE)
         && Objects.equals(item.getModerationStatus(), ModerationStatus.VISIBLE)
         && !userItemApi.isUserDemo(item.getOwnerId()))
       return itemMapper.toDtoWithOwner(item, category, images, thumbnail, owner);
 
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     UUID userId = user.id();
 
     if (Objects.equals(user.role(), UserRole.ADMIN)) {
@@ -281,7 +287,7 @@ public class ItemService {
 
   @Transactional(readOnly = true)
   public Page<ItemListDto> getOwnItems(Pageable pageable, String text, UUID category, List<ItemState> states) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     text = SqlUtils.prepareLikePattern(text);
     if (states == null || states.size() == 0)
       states = List.of(ItemState.AVAILABLE, ItemState.PENDING);
@@ -290,10 +296,13 @@ public class ItemService {
       categoryIds = categoryItemApi.getCategoryDescendantsById(category);
     }
     Page<Item> itemPage = itemRepository.findOwnItems(user.id(), text, categoryIds, states, pageable);
-    Map<UUID, CategoryDto> categoriesById = categoryItemApi.getCategoriesByIds(
-        itemPage.getContent().stream().map(item -> item.getCategoryId()).collect(Collectors.toSet()));
-    Map<UUID, ImageDto> imagesById = imageItemApi.getImagesByIds(
-        itemPage.getContent().stream().map(item -> item.getThumbnailId()).collect(Collectors.toSet()));
+    Set<UUID> itemsCategoryIds = itemPage.getContent().stream().map(item -> item.getCategoryId())
+        .collect(Collectors.toSet());
+    Map<UUID, CategoryDto> categoriesById = getCategoriesByIds(itemsCategoryIds);
+    Set<UUID> itemsImageIds = itemPage.getContent().stream().map(item -> item.getThumbnailId())
+        .collect(Collectors.toSet());
+
+    Map<UUID, ImageDto> imagesById = getImagesByIds(itemsImageIds);
 
     return itemPage.map((item) -> itemMapper.toListDto(item, categoriesById.get(item.getCategoryId()),
         imagesById.get(item.getThumbnailId())));
@@ -302,7 +311,7 @@ public class ItemService {
 
   @Transactional
   public void deleteItem(UUID id) {
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
     Item item = itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Item not found"));
     boolean isAdmin = user.role() == UserRole.ADMIN;
 
@@ -324,7 +333,7 @@ public class ItemService {
     Item item = itemRepository.findByIdAndModerationStatus(id, ModerationStatus.VISIBLE)
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
 
     if (!Objects.equals(item.getOwnerId(), user.id())) {
       throw new ForbiddenException("Must be the owner of the item to update it");
@@ -343,7 +352,7 @@ public class ItemService {
     Item item = itemRepository.findByIdAndModerationStatus(id, ModerationStatus.VISIBLE)
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
-    AuthenticatedUser user = authApi.getRequiredAuthenticatedUser();
+    AuthenticatedUser user = getRequiredAuthenticatedUser();
 
     if (!Objects.equals(item.getOwnerId(), user.id())) {
       throw new ForbiddenException("Must be the owner of the item to update it");
@@ -389,11 +398,14 @@ public class ItemService {
 
     List<Item> items = itemRepository
         .findByOwnerIdAndStateAndModerationStatus(userId, ItemState.AVAILABLE, ModerationStatus.VISIBLE);
+    Set<UUID> itemsCategoryIds = items.stream().map(item -> item.getCategoryId()).collect(Collectors.toSet());
 
-    Map<UUID, CategoryDto> categoriesById = categoryItemApi.getCategoriesByIds(
-        items.stream().map(item -> item.getCategoryId()).collect(Collectors.toSet()));
-    Map<UUID, ImageDto> imagesById = imageItemApi.getImagesByIds(
-        items.stream().map(item -> item.getThumbnailId()).collect(Collectors.toSet()));
+    Map<UUID, CategoryDto> categoriesById = getCategoriesByIds(itemsCategoryIds);
+
+    Set<UUID> itemsImageIds = items.stream().map(item -> item.getThumbnailId()).collect(Collectors.toSet());
+
+    Map<UUID, ImageDto> imagesById = getImagesByIds(
+        itemsImageIds);
 
     return items.stream().map((item) -> itemMapper.toListDto(item, categoriesById.get(item.getCategoryId()),
         imagesById.get(item.getThumbnailId()))).toList();
@@ -406,5 +418,65 @@ public class ItemService {
   @ApplicationModuleListener
   void on(OfferAcceptEvent event) {
     itemRepository.updateItemState(event.itemId(), ItemState.GIVEN);
+  }
+
+  private AuthenticatedUser getRequiredAuthenticatedUser() {
+    return OwnMapper.map(currentUser.getRequiredAuthenticatedUser(), (user) -> new AuthenticatedUser(
+        user.id(),
+        user.email(),
+        user.nickname(),
+        user.password(),
+        UserRole.valueOf(user.role().name()),
+        user.banActive(),
+        user.bannedUntil(),
+        user.joinedAt()));
+  }
+
+  private Optional<AuthenticatedUser> getAuthenticatedUser() {
+    return OwnMapper.mapOptional(currentUser.getAuthenticatedUser(), (user) -> new AuthenticatedUser(
+        user.id(),
+        user.email(),
+        user.nickname(),
+        user.password(),
+        UserRole.valueOf(user.role().name()),
+        user.banActive(),
+        user.bannedUntil(),
+        user.joinedAt()));
+  }
+
+  private UserSummaryDto findByItemOwnerId(UUID id) {
+    return OwnMapper.map(userItemApi.findByItemOwnerId(id),
+        (user) -> new UserSummaryDto(user.id(), user.nickname()));
+  }
+
+  private CategoryDto getCategoryById(UUID id) {
+    return OwnMapper.map(categoryItemApi.getCategoryById(id),
+        (category) -> new CategoryDto(category.getId(), category.getName(), category.getParentId()));
+  }
+
+  private List<ImageDto> getAllImagesByIds(List<UUID> ids) {
+    return OwnMapper.mapList(imageItemApi.getAllImagesByIds(ids),
+        image -> new ImageDto(image.id(), image.originalName(), image.url()));
+
+  }
+
+  private Map<UUID, CategoryDto> getCategoriesByIds(Collection<UUID> ids) {
+    return OwnMapper.mapValues(categoryItemApi.getCategoriesByIds(ids),
+        category -> new CategoryDto(category.getId(), category.getName(), category.getParentId()));
+  }
+
+  private Map<UUID, ImageDto> getImagesByIds(Collection<UUID> ids) {
+    return OwnMapper.mapValues(imageItemApi.getImagesByIds(ids),
+        img -> new ImageDto(img.id(), img.originalName(), img.url()));
+  }
+
+  private List<ImageDto> uploadItemImages(UUID itemId, List<MultipartFile> files) {
+    return OwnMapper.mapList(imageItemApi.uploadItemImages(itemId, files),
+        img -> new ImageDto(img.id(), img.originalName(), img.url()));
+  }
+
+  private List<ImageDto> getImagesByItemId(UUID id) {
+    return OwnMapper.mapList(imageItemApi.getImagesByItemId(id),
+        img -> new ImageDto(img.id(), img.originalName(), img.url()));
   }
 }
