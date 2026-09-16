@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.kamilpm.zero_waste.notification.api.NotificationType;
+import com.kamilpm.zero_waste.common.dto.NotificationType;
 import com.kamilpm.zero_waste.notification.entity.Notification;
 
 import jakarta.transaction.Transactional;

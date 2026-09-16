@@ -6,6 +6,9 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.kamilpm.zero_waste.common.dto.OfferStatus;
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -57,4 +60,9 @@ public class Offer {
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
+
+  @Column(name = "buyer_visibility", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private UserVisibility buyerVisibility;
+
 }

@@ -3,8 +3,12 @@ package com.kamilpm.zero_waste.item.dto;
 import java.util.List;
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.common.dto.CategoryData;
+import com.kamilpm.zero_waste.common.dto.ImageData;
+import com.kamilpm.zero_waste.common.dto.ItemCondition;
+import com.kamilpm.zero_waste.common.dto.ItemState;
+import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
-import com.kamilpm.zero_waste.item.entity.ItemCondition;
 
 public record ItemDto(
     UUID id,
@@ -14,8 +18,8 @@ public record ItemDto(
     ItemCondition condition,
     ItemState state,
     ModerationStatus moderationStatus,
-    CategoryDto category,
+    CategoryData category,
     UserSummaryDto owner,
-    List<ImageDto> images,
-    ImageDto thumbnail) {
+    List<ImageData> images,
+    ImageData thumbnail) {
 }

@@ -2,10 +2,13 @@ package com.kamilpm.zero_waste.blog.entity;
 
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModeratableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -42,4 +45,8 @@ public class Blog extends ModeratableEntity {
 
   @Column(name = "author_id", nullable = true)
   private UUID authorId;
+
+  @Column(name = "author_visibility", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private UserVisibility authorVisibility;
 }

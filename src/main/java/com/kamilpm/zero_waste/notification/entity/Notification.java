@@ -2,9 +2,9 @@ package com.kamilpm.zero_waste.notification.entity;
 
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.common.dto.NotificationReferenceType;
+import com.kamilpm.zero_waste.common.dto.NotificationType;
 import com.kamilpm.zero_waste.common.entity.BaseEntity;
-import com.kamilpm.zero_waste.notification.api.NotificationReferenceType;
-import com.kamilpm.zero_waste.notification.api.NotificationType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

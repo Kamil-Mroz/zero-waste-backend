@@ -1,11 +1,10 @@
 @ApplicationModule(allowedDependencies = {
-    "user :: api",
-    "auth :: api",
-    "image :: api",
     "common :: exceptions",
     "common :: entity",
     "common :: annotations",
-    "moderation :: api",
+    "common :: interfaces",
+    "common :: dtos",
+    "common :: events",
 })
 package com.kamilpm.zero_waste.blog;
 

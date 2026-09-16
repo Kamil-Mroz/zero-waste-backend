@@ -1,7 +1,8 @@
 @ApplicationModule(allowedDependencies = {
-    "auth :: api",
     "common :: exceptions",
+    "common :: dtos",
     "common :: annotations",
+    "common :: interfaces",
 })
 package com.kamilpm.zero_waste.ratelimit;
 

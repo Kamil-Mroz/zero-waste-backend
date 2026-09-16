@@ -1,6 +1,7 @@
 @ApplicationModule(allowedDependencies = {
-    "auth :: api",
     "common :: exceptions",
+    "common :: interfaces",
+    "common :: dtos",
 })
 package com.kamilpm.zero_waste.image;
 

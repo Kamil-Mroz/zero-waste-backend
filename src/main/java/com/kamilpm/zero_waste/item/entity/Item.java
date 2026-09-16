@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.common.dto.ItemCondition;
+import com.kamilpm.zero_waste.common.dto.ItemState;
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModeratableEntity;
-import com.kamilpm.zero_waste.item.dto.ItemState;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -56,6 +58,10 @@ public class Item extends ModeratableEntity {
   @Column(name = "state", nullable = false)
   @Enumerated(EnumType.STRING)
   private ItemState state;
+
+  @Column(name = "owner_visibility", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private UserVisibility ownerVisibility;
 
   @Column(name = "category_id", nullable = false)
   private UUID categoryId;

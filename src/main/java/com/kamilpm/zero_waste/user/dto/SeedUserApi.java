@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.kamilpm.zero_waste.common.dto.UserRole;
 import com.kamilpm.zero_waste.user.entity.User;
 import com.kamilpm.zero_waste.user.repository.UserRepository;
 

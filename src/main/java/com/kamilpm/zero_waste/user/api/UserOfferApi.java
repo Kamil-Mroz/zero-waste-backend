@@ -8,10 +8,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.user.dto.UserSummaryWithEmailDto;
-import com.kamilpm.zero_waste.notification.api.NotificationRecipient;
-import com.kamilpm.zero_waste.user.dto.UserRole;
-import com.kamilpm.zero_waste.user.dto.UserSummaryMapper;
+import com.kamilpm.zero_waste.common.dto.NotificationRecipient;
+import com.kamilpm.zero_waste.common.dto.UserRole;
+import com.kamilpm.zero_waste.common.dto.UserSummaryWithEmailDto;
+import com.kamilpm.zero_waste.user.mapper.UserMapper;
 import com.kamilpm.zero_waste.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserOfferApi {
   private final UserRepository userRepository;
-  private final UserSummaryMapper userSummaryMapper;
+  private final UserMapper userMapper;
 
   public String getUserEmail(UUID userId) {
     return userRepository.findById(userId).map(user -> user.getEmail())
@@ -30,7 +30,9 @@ public class UserOfferApi {
 
   public List<NotificationRecipient> getUsersEmail(List<UUID> userIds) {
     return userRepository.findAllById(userIds).stream()
-        .map(user -> new NotificationRecipient(user.getId(), user.getEmail())).toList();
+        .map(user -> new NotificationRecipient(user.getId(),
+            user.getEmail()))
+        .toList();
   }
 
   public boolean isUserDemo(UUID userId) {
@@ -39,7 +41,7 @@ public class UserOfferApi {
 
   public Map<UUID, UserSummaryWithEmailDto> getUsersByIds(Collection<UUID> ids) {
     return userRepository.findAllById(ids).stream()
-        .collect(Collectors.toMap((user) -> user.getId(), userSummaryMapper::toWithEmailDto));
+        .collect(Collectors.toMap((user) -> user.getId(), userMapper::toUserSummaryWithEmailDto));
   }
 
 }

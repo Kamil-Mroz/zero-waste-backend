@@ -7,7 +7,7 @@ import com.kamilpm.zero_waste.common.annotation.RateLimit;
 import com.kamilpm.zero_waste.common.dto.CursorDirection;
 import com.kamilpm.zero_waste.common.dto.CursorRequest;
 import com.kamilpm.zero_waste.common.dto.CursorResponse;
-import com.kamilpm.zero_waste.notification.api.NotificationType;
+import com.kamilpm.zero_waste.common.dto.NotificationType;
 import com.kamilpm.zero_waste.notification.dto.NotificationDto;
 import com.kamilpm.zero_waste.notification.service.NotificationService;
 

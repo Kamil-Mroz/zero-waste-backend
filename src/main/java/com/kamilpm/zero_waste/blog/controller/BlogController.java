@@ -57,7 +57,6 @@ public class BlogController {
     return ResponseEntity.ok(blog);
   }
 
-  // @PreAuthorize("hasAnyRole('ADMIN', 'WRITER', 'DEMO')")
   @GetMapping("/own")
   public ResponseEntity<List<BlogDto>> getOwnBlogs() {
     List<BlogDto> blogs = blogService.getOwnBlogs();

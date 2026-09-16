@@ -9,9 +9,13 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import com.kamilpm.zero_waste.common.dto.OfferStatus;
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.offer.entity.Offer;
-import com.kamilpm.zero_waste.offer.entity.OfferStatus;
 
 public interface OfferRepository extends JpaRepository<Offer, UUID> {
 
@@ -50,4 +54,8 @@ public interface OfferRepository extends JpaRepository<Offer, UUID> {
   void deleteAllByItemId(UUID id);
 
   void deleteAllByItemIdIn(Collection<UUID> id);
+
+  @Modifying
+  @Query("Update Offer o set o.buyerVisibility = :visibility WHERE o.buyerId IN :ownerIds")
+  void updateBuyerVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility);
 }

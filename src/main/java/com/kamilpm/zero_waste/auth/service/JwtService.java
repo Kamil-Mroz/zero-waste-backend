@@ -10,7 +10,7 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.dto.AuthenticatedUser;
+import com.kamilpm.zero_waste.common.dto.CurrentUser;
 import com.kamilpm.zero_waste.common.exception.TokenException;
 
 import io.jsonwebtoken.Claims;
@@ -28,11 +28,11 @@ public class JwtService {
   @Value("${jwt.expiration}")
   private long jwtExpiration;
 
-  public String generateToken(AuthenticatedUser user) {
+  public String generateToken(CurrentUser user) {
     return generateToken(new HashMap<>(), user);
   }
 
-  public String generateToken(Map<String, Object> extraClaims, AuthenticatedUser user) {
+  public String generateToken(Map<String, Object> extraClaims, CurrentUser user) {
 
     return Jwts.builder()
         .claims()

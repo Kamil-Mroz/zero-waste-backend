@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -22,6 +23,7 @@ import tools.jackson.databind.json.JsonMapper;
 @Configuration
 public class CategoryCacheConfig {
   @Bean
+  @Qualifier(value = "categoryCacheManager")
   public RedisCacheManager categoryCacheManager(RedisConnectionFactory factory) {
 
     RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()

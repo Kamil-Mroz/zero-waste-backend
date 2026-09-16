@@ -1,22 +1,22 @@
 package com.kamilpm.zero_waste.auth.api;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import com.kamilpm.zero_waste.auth.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.auth.dto.SecurityUser;
+import com.kamilpm.zero_waste.common.dto.CurrentUser;
 import com.kamilpm.zero_waste.common.exception.UnauthorizedException;
+import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class CurrentUserApi {
-  public Optional<AuthenticatedUser> getAuthenticatedUser() {
+public class CurrentUserApi implements CurrentUserProvider {
+  public Optional<CurrentUser> getAuthenticatedUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     if (authentication == null || !authentication.isAuthenticated()
@@ -27,19 +27,15 @@ public class CurrentUserApi {
     if (!(principal instanceof SecurityUser securityUser)) {
       return Optional.empty();
     }
-    return Optional.of(toAuthenticatedUser(securityUser));
+    return Optional.of(toCurrentUser(securityUser));
   }
 
-  public AuthenticatedUser getRequiredAuthenticatedUser() {
+  public CurrentUser getRequiredAuthenticatedUser() {
     return getAuthenticatedUser().orElseThrow(() -> new UnauthorizedException("You are not authenticated"));
   }
 
-  public <T> T mapAuthenticatedUser(Function<AuthenticatedUser, T> mapper) {
-    return mapper.apply(getRequiredAuthenticatedUser());
-  }
-
-  private AuthenticatedUser toAuthenticatedUser(SecurityUser user) {
-    return new AuthenticatedUser(user.getId(), user.getEmail(),
+  private CurrentUser toCurrentUser(SecurityUser user) {
+    return new CurrentUser(user.getId(), user.getEmail(),
         user.getNickname(), user.getPassword(), user.getRole(),
         user.isBanActive(), user.getBannedUntil(), user.getJoinedAt());
 

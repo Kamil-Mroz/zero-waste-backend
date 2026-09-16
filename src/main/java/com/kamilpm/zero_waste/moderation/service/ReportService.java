@@ -1,42 +1,40 @@
 package com.kamilpm.zero_waste.moderation.service;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
-import com.kamilpm.zero_waste.moderation.dto.AuthenticatedUser;
-import com.kamilpm.zero_waste.blog.api.BlogReportApi;
+import com.kamilpm.zero_waste.common.dto.CurrentUser;
+import com.kamilpm.zero_waste.common.dto.NotificationReferenceType;
+import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.common.events.RejectReportEvent;
+import com.kamilpm.zero_waste.common.events.SendReportNotificationEvent;
 import com.kamilpm.zero_waste.common.exception.BadRequestException;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
-import com.kamilpm.zero_waste.common.utils.OwnMapper;
-import com.kamilpm.zero_waste.item.api.ItemReportApi;
-import com.kamilpm.zero_waste.moderation.api.RejectReportEvent;
+import com.kamilpm.zero_waste.common.interfaces.BlogProvider;
+import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
+import com.kamilpm.zero_waste.common.interfaces.ItemProvider;
+import com.kamilpm.zero_waste.common.interfaces.ReviewProvider;
+import com.kamilpm.zero_waste.common.interfaces.UserProvider;
 import com.kamilpm.zero_waste.moderation.dto.ReportDto;
 import com.kamilpm.zero_waste.moderation.dto.ReportRequest;
 import com.kamilpm.zero_waste.moderation.dto.ReportSubjectType;
 import com.kamilpm.zero_waste.moderation.dto.ResolveReportRequest;
-import com.kamilpm.zero_waste.moderation.dto.UserRole;
 import com.kamilpm.zero_waste.moderation.entity.Report;
 import com.kamilpm.zero_waste.moderation.entity.ReportStatus;
 import com.kamilpm.zero_waste.moderation.mapper.ReportMapper;
 import com.kamilpm.zero_waste.moderation.repository.ReportRepository;
-import com.kamilpm.zero_waste.notification.api.NotificationReferenceType;
-import com.kamilpm.zero_waste.notification.api.SendReportNotificationEvent;
-import com.kamilpm.zero_waste.review.api.ReviewReportApi;
-import com.kamilpm.zero_waste.user.api.UserReportApi;
-import com.kamilpm.zero_waste.moderation.dto.UserSummaryDto;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -44,20 +42,18 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ReportService {
-  private final CurrentUserApi currentUser;
   private final ReportRepository reportRepository;
   private final ReportMapper reportMapper;
-  private final ReviewReportApi reviewReportApi;
-  private final ItemReportApi itemReportApi;
-  private final UserReportApi userReportApi;
-  private final BlogReportApi blogReportApi;
+  private final CurrentUserProvider currentUser;
+  private final ReviewProvider reviewReportApi;
+  private final ItemProvider itemReportApi;
+  private final UserProvider userReportApi;
+  private final BlogProvider blogReportApi;
   private final ApplicationEventPublisher events;
-  // private final RefreshTokenRepository refreshTokenRepository;
-  // private final UserBanRepository userBanRepository;
 
   @Transactional
   public void createReport(ReportRequest reportRequest) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
     validateSubjectExists(user, reportRequest.subjectType(), reportRequest.subjectId());
 
     if (reportRepository.existsByReporterIdAndSubjectId(user.id(),
@@ -80,7 +76,7 @@ public class ReportService {
         NotificationReferenceType.valueOf(report.getSubjectType().name()), savedReport.getComment()));
   }
 
-  private void validateSubjectExists(AuthenticatedUser user, ReportSubjectType type, UUID subjectId) {
+  private void validateSubjectExists(CurrentUser user, ReportSubjectType type, UUID subjectId) {
     switch (type) {
       case USER -> userReportApi.userExists(subjectId, user.id());
       case BLOG -> blogReportApi.blogExists(subjectId, user.id());
@@ -93,10 +89,10 @@ public class ReportService {
   public List<ReportDto> getReports() {
     List<Report> reports = reportRepository.findAllByOrderByCreatedAtDesc();
     Set<UUID> userIds = reports.stream()
-        .flatMap(report -> List.of(report.getReporterId(), report.getResolvedBy()).stream())
+        .flatMap(report -> Stream.of(report.getReporterId(), report.getResolvedBy())).filter(Objects::nonNull)
         .collect(Collectors.toSet());
 
-    Map<UUID, UserSummaryDto> usersById = getUsersByIds(userIds);
+    Map<UUID, UserSummaryDto> usersById = userReportApi.getUserSummaryByIds(userIds);
 
     return reports.stream()
         .map((report) -> reportMapper.toDto(report,
@@ -107,7 +103,7 @@ public class ReportService {
 
   @Transactional
   public void rejectReport(UUID reportId, String adminNote) {
-    AuthenticatedUser admin = getRequiredAuthenticatedUser();
+    CurrentUser admin = currentUser.getRequiredAuthenticatedUser();
 
     Report report = reportRepository.findById(reportId)
         .orElseThrow(() -> new EntityNotFoundException("Report not found"));
@@ -147,7 +143,7 @@ public class ReportService {
   @Transactional
   public void resolveReport(UUID reportId, ResolveReportRequest resolveRequest) {
 
-    AuthenticatedUser admin = getRequiredAuthenticatedUser();
+    CurrentUser admin = currentUser.getRequiredAuthenticatedUser();
 
     Report report = reportRepository.findById(reportId)
         .orElseThrow(() -> new EntityNotFoundException("Report not found"));
@@ -224,21 +220,4 @@ public class ReportService {
     rejectAllBySubjectId(event.subjectId(), event.isAdmin());
   }
 
-  private AuthenticatedUser getRequiredAuthenticatedUser() {
-    return OwnMapper.map(currentUser.getRequiredAuthenticatedUser(), (user) -> new AuthenticatedUser(
-        user.id(),
-        user.email(),
-        user.nickname(),
-        user.password(),
-        UserRole.valueOf(user.role().name()),
-        user.banActive(),
-        user.bannedUntil(),
-        user.joinedAt()));
-  }
-
-  private Map<UUID, UserSummaryDto> getUsersByIds(Collection<UUID> ids) {
-    return OwnMapper.mapValues(userReportApi.getUsersByIds(ids),
-        user -> new UserSummaryDto(user.id(), user.nickname()));
-
-  }
 }

@@ -9,6 +9,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.kamilpm.zero_waste.common.dto.UserAuthenticationData;
+import com.kamilpm.zero_waste.common.dto.UserRole;
+
 import lombok.Getter;
 
 @Getter
@@ -22,7 +25,7 @@ public class SecurityUser implements UserDetails {
   private final Instant bannedUntil;
   private final Instant joinedAt;
 
-  public SecurityUser(AuthenticatedUser user) {
+  public SecurityUser(UserAuthenticationData user) {
     this.id = user.id();
     this.email = user.email();
     this.nickname = user.nickname();

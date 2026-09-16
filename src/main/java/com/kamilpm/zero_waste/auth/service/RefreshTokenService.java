@@ -9,10 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.RevokeRefreshTokenEvent;
-import com.kamilpm.zero_waste.auth.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.auth.entity.RefreshToken;
 import com.kamilpm.zero_waste.auth.repository.RefreshTokenRepository;
+import com.kamilpm.zero_waste.common.dto.CurrentUser;
+import com.kamilpm.zero_waste.common.events.RevokeRefreshTokenEvent;
 import com.kamilpm.zero_waste.common.exception.TokenException;
 
 import jakarta.transaction.Transactional;
@@ -32,7 +32,7 @@ public class RefreshTokenService {
   }
 
   @Transactional
-  public RefreshToken generateRefreshToken(AuthenticatedUser user) {
+  public RefreshToken generateRefreshToken(CurrentUser user) {
     RefreshToken token = new RefreshToken();
     token.setUserId(user.id());
     token.setToken(UUID.randomUUID().toString());

@@ -20,7 +20,7 @@ import com.kamilpm.zero_waste.category.mapper.CategoryMapper;
 import com.kamilpm.zero_waste.category.repository.CategoryRepository;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
-import com.kamilpm.zero_waste.item.api.ItemCategoryApi;
+import com.kamilpm.zero_waste.common.interfaces.ItemProvider;
 
 import io.jsonwebtoken.lang.Collections;
 import jakarta.transaction.Transactional;
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CategoryService {
   private final CategoryRepository categoryRepository;
-  private final ItemCategoryApi itemCategoryApi;
+  private final ItemProvider itemCategoryApi;
   private final CategoryMapper categoryMapper;
 
   public List<Category> getAllCategories() {
@@ -113,17 +113,6 @@ public class CategoryService {
     Category category = categoryRepository.findById(categoryId)
         .orElseThrow(() -> new EntityNotFoundException("Category not found by id" + categoryId));
 
-    // boolean isSameName = Objects.equals(category.getName(),
-    // categoryRequest.getName());
-    // UUID currentParentId = category.getParent() != null ?
-    // category.getParent().getId() : null;
-    // boolean isSameParent = Objects.equals(currentParentId,
-    // categoryRequest.getCategoryId());
-
-    // if (isSameName && isSameParent) {
-    // return category;
-    // }
-
     if (categoryRequest.getCategoryId() != null) {
       parent = categoryRepository.findById(categoryRequest.getCategoryId())
           .orElseThrow(() -> new EntityNotFoundException(
@@ -167,53 +156,6 @@ public class CategoryService {
 
     categoryRepository.deleteById(categoryId);
 
-  }
-
-  @Cacheable(value = "categoryDescendants", key = "#categoryId", cacheManager = "categoryCacheManager")
-  public Set<UUID> getCategoryDescendantsById(UUID categoryId) {
-
-    // return getCategoryDescendantsCache().get(categoryId)
-    List<Category> categories = categoryRepository.findAll();
-    return buildDescendantMap(categories).getOrDefault(categoryId, Collections.emptySet());
-  }
-
-  private Map<UUID, Set<UUID>> buildDescendantMap(List<Category> categories) {
-
-    Map<UUID, List<UUID>> children = new HashMap<>();
-
-    for (Category c : categories) {
-      if (c.getParent() != null) {
-        children
-            .computeIfAbsent(c.getParent().getId(), k -> new ArrayList<>())
-            .add(c.getId());
-      }
-    }
-
-    Map<UUID, Set<UUID>> result = new HashMap<>();
-
-    for (Category c : categories) {
-      Set<UUID> desc = new HashSet<>();
-      collect(c.getId(), children, desc);
-      desc.add(c.getId());
-      result.put(c.getId(), desc);
-    }
-
-    return result;
-  }
-
-  private void collect(UUID id,
-      Map<UUID, List<UUID>> children,
-      Set<UUID> result) {
-
-    List<UUID> kids = children.get(id);
-    if (kids == null)
-      return;
-
-    for (UUID child : kids) {
-      if (result.add(child)) {
-        collect(child, children, result);
-      }
-    }
   }
 
 }

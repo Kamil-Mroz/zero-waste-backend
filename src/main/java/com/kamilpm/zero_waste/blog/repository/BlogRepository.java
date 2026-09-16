@@ -6,10 +6,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.kamilpm.zero_waste.blog.entity.Blog;
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 
 @Repository
@@ -38,4 +41,7 @@ public interface BlogRepository extends JpaRepository<Blog, UUID> {
 
   boolean existsByIdAndAuthorId(UUID blogId, UUID userId);
 
+  @Modifying
+  @Query("Update Blog b set b.authorVisibility = :visibility WHERE b.authorId IN :ownerIds")
+  void updateAuthorVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility);
 }

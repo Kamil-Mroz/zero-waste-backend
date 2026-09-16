@@ -2,10 +2,13 @@ package com.kamilpm.zero_waste.review.entity;
 
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModeratableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,5 +48,9 @@ public class Review extends ModeratableEntity {
 
   @Column(name = "reviewee_id", nullable = false)
   private UUID revieweeId;
+
+  @Column(name = "reviewer_visibility", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private UserVisibility reviewerVisibility;
 
 }

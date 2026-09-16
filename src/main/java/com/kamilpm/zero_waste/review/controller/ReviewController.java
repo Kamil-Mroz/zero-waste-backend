@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
 import com.kamilpm.zero_waste.common.dto.PageResponse;
+import com.kamilpm.zero_waste.common.dto.ReviewData;
 import com.kamilpm.zero_waste.review.dto.ReviewDto;
 import com.kamilpm.zero_waste.review.dto.ReviewRequest;
-import com.kamilpm.zero_waste.review.dto.ReviewResponse;
 import com.kamilpm.zero_waste.review.service.ReviewService;
 
 import jakarta.validation.Valid;
@@ -43,11 +43,11 @@ public class ReviewController {
   }
 
   @GetMapping("/received")
-  public ResponseEntity<PageResponse<ReviewResponse>> getReceivedReviews(
+  public ResponseEntity<PageResponse<ReviewData>> getReceivedReviews(
       @RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "size", defaultValue = "20") int size) {
-    Page<ReviewResponse> reviews = reviewService.getReceivedReviews(PageRequest.of(page, size));
-    return ResponseEntity.ok(PageResponse.<ReviewResponse>builder()
+    Page<ReviewData> reviews = reviewService.getReceivedReviews(PageRequest.of(page, size));
+    return ResponseEntity.ok(PageResponse.<ReviewData>builder()
         .content(reviews.getContent())
         .page(reviews.getNumber())
         .size(reviews.getSize())
@@ -57,11 +57,11 @@ public class ReviewController {
   }
 
   @GetMapping("/given")
-  public ResponseEntity<PageResponse<ReviewResponse>> getGivenReview(
+  public ResponseEntity<PageResponse<ReviewData>> getGivenReview(
       @RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "size", defaultValue = "20") int size) {
-    Page<ReviewResponse> reviews = reviewService.getGivenReviews(PageRequest.of(page, size));
-    return ResponseEntity.ok(PageResponse.<ReviewResponse>builder()
+    Page<ReviewData> reviews = reviewService.getGivenReviews(PageRequest.of(page, size));
+    return ResponseEntity.ok(PageResponse.<ReviewData>builder()
         .content(reviews.getContent())
         .page(reviews.getNumber())
         .size(reviews.getSize())
@@ -71,12 +71,12 @@ public class ReviewController {
   }
 
   @GetMapping("/user/{id}")
-  public ResponseEntity<PageResponse<ReviewResponse>> getUserReviews(
+  public ResponseEntity<PageResponse<ReviewData>> getUserReviews(
       @PathVariable("id") UUID userId,
       @RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "size", defaultValue = "20") int size) {
-    Page<ReviewResponse> reviews = reviewService.getUserReviews(userId, PageRequest.of(page, size));
-    return ResponseEntity.ok(PageResponse.<ReviewResponse>builder()
+    Page<ReviewData> reviews = reviewService.getUserReviews(userId, PageRequest.of(page, size));
+    return ResponseEntity.ok(PageResponse.<ReviewData>builder()
         .content(reviews.getContent())
         .page(reviews.getNumber())
         .size(reviews.getSize())
@@ -86,7 +86,7 @@ public class ReviewController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<ReviewResponse> getReview(@PathVariable UUID id) {
+  public ResponseEntity<ReviewData> getReview(@PathVariable UUID id) {
     return ResponseEntity.ok(reviewService.getReview(id));
   }
 

@@ -3,6 +3,7 @@ package com.kamilpm.zero_waste.moderation.dto;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.moderation.entity.ReportReason;
 import com.kamilpm.zero_waste.moderation.entity.ReportStatus;
 

@@ -22,13 +22,14 @@ public class ProfileController {
   private final ProfileService profileService;
 
   @GetMapping("/{id}")
-  public ResponseEntity<PublicUserProfileResponse> getProfile(@PathVariable("id")  UUID id) {
-    return ResponseEntity.ok(profileService.getProfile(id));
+  public ResponseEntity<PublicUserProfileResponse>
+  getProfile(@PathVariable("id") UUID id) {
+  return ResponseEntity.ok(profileService.getProfile(id));
   }
 
   @GetMapping
   public ResponseEntity<OwnProfileResponse> getOwnProfile() {
 
-    return ResponseEntity.ok(profileService.getOwnProfile());
+  return ResponseEntity.ok(profileService.getOwnProfile());
   }
 }

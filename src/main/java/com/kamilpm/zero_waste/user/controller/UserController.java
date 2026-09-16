@@ -6,12 +6,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
 import com.kamilpm.zero_waste.common.dto.PageResponse;
+import com.kamilpm.zero_waste.common.dto.UserRole;
 import com.kamilpm.zero_waste.user.dto.BanRequest;
 import com.kamilpm.zero_waste.user.dto.CreateUserRequest;
 import com.kamilpm.zero_waste.user.dto.UnbanRequest;
 import com.kamilpm.zero_waste.user.dto.UpdateUserRequest;
 import com.kamilpm.zero_waste.user.dto.UserDto;
-import com.kamilpm.zero_waste.user.dto.UserRole;
 import com.kamilpm.zero_waste.user.service.UserService;
 
 import jakarta.validation.Valid;
@@ -72,7 +72,6 @@ public class UserController {
   public ResponseEntity<UserDto> updateUser(@PathVariable UUID id,
       @Valid @RequestBody UpdateUserRequest updateUserRequest) {
     UserDto user = userService.updateUser(id, updateUserRequest);
-
     return ResponseEntity.ok(user);
   }
 
@@ -80,7 +79,6 @@ public class UserController {
   @PostMapping("/ban")
   public ResponseEntity<Void> banUser(@Valid @RequestBody BanRequest banRequest) {
     userService.banUsers(banRequest);
-
     return ResponseEntity.noContent().build();
   }
 
@@ -88,7 +86,6 @@ public class UserController {
   @PostMapping("/unban")
   public ResponseEntity<Void> unbanUser(@Valid @RequestBody UnbanRequest unbanRequest) {
     userService.unbanUsers(unbanRequest);
-
     return ResponseEntity.noContent().build();
   }
 

@@ -1,8 +1,8 @@
 @ApplicationModule(allowedDependencies = {
-    "auth :: api",
-    "item :: api",
     "common :: exceptions",
+    "common :: dtos",
     "common :: annotations",
+    "common :: interfaces",
 })
 package com.kamilpm.zero_waste.category;
 

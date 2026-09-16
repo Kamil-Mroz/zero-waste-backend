@@ -42,7 +42,6 @@ public class ReportController {
 
   @GetMapping
   public ResponseEntity<List<ReportDto>> getReports() {
-
     return ResponseEntity.ok(
         reportService.getReports());
   }

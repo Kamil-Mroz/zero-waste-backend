@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kamilpm.zero_waste.auth.dto.AuthenticatedUser;
 import com.kamilpm.zero_waste.auth.dto.Connections;
 import com.kamilpm.zero_waste.auth.dto.OAuthFlow;
 import com.kamilpm.zero_waste.auth.dto.OAuthSession;
@@ -26,6 +25,7 @@ import com.kamilpm.zero_waste.auth.service.AuthCookieService;
 import com.kamilpm.zero_waste.auth.service.OAuthService;
 import com.kamilpm.zero_waste.auth.service.RefreshTokenService;
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
+import com.kamilpm.zero_waste.common.dto.CurrentUser;
 import com.kamilpm.zero_waste.common.exception.ApiException;
 import com.kamilpm.zero_waste.common.exception.OAuthAuthenticationException;
 
@@ -60,7 +60,7 @@ public class OAuthController {
 
       switch (session.flow()) {
         case LOGIN -> {
-          AuthenticatedUser user = oauthService.processLogin(info);
+          CurrentUser user = oauthService.processLogin(info);
           String refreshToken = refreshTokenService.generateRefreshToken(user).getToken();
           authCookieService.addRefreshCookie(response, refreshToken);
           response.sendRedirect(properties.frontendUrl() + "/profile");

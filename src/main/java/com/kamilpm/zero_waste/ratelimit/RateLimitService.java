@@ -7,8 +7,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
 import com.kamilpm.zero_waste.common.exception.RateLimitException;
+import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
 
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class RateLimitService {
-  private final CurrentUserApi currentUser;
+  private final CurrentUserProvider currentUser;
 
   private final ProxyManager<byte[]> proxyManager;
 

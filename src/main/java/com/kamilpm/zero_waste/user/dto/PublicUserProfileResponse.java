@@ -3,6 +3,9 @@ package com.kamilpm.zero_waste.user.dto;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.kamilpm.zero_waste.common.dto.ProfileItemSummary;
+import com.kamilpm.zero_waste.common.dto.ProfileReviewSummary;
+
 import lombok.Builder;
 
 @Builder

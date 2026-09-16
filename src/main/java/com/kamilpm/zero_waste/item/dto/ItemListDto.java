@@ -2,7 +2,11 @@ package com.kamilpm.zero_waste.item.dto;
 
 import java.util.UUID;
 
-import com.kamilpm.zero_waste.item.entity.ItemCondition;
+import com.kamilpm.zero_waste.common.dto.CategoryData;
+import com.kamilpm.zero_waste.common.dto.ImageData;
+import com.kamilpm.zero_waste.common.dto.ItemCondition;
+import com.kamilpm.zero_waste.common.dto.ItemState;
+import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 
 public record ItemListDto(
     UUID id,
@@ -10,8 +14,8 @@ public record ItemListDto(
     String city,
     ItemCondition condition,
     ItemState state,
-    CategoryDto category,
+    CategoryData category,
     UserSummaryDto owner,
-    ImageDto thumbnail) {
+    ImageData thumbnail) {
 
 }

@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.review.entity.Review;
 import com.kamilpm.zero_waste.review.interfaces.IRatingBreakdownWithStats;
@@ -92,4 +93,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
       """)
   boolean isReviewerOrReviewee(@Param("reviewId") UUID reviewId, @Param("userId") UUID userId);
 
+  @Modifying
+  @Query("Update Review r set r.reviewerVisibility = :visibility WHERE r.reviewerId IN :ownerIds")
+  void updateReviewerVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility);
 }

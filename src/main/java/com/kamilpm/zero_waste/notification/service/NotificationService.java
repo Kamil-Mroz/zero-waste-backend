@@ -9,23 +9,22 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
+import com.kamilpm.zero_waste.common.dto.CurrentUser;
 import com.kamilpm.zero_waste.common.dto.CursorDirection;
 import com.kamilpm.zero_waste.common.dto.CursorRequest;
 import com.kamilpm.zero_waste.common.dto.CursorResponse;
+import com.kamilpm.zero_waste.common.dto.NotificationRecipient;
+import com.kamilpm.zero_waste.common.dto.NotificationReferenceType;
+import com.kamilpm.zero_waste.common.dto.NotificationType;
+import com.kamilpm.zero_waste.common.events.SendBanNotificationEvent;
+import com.kamilpm.zero_waste.common.events.SendBansNotificationEvent;
+import com.kamilpm.zero_waste.common.events.SendNotificationEvent;
+import com.kamilpm.zero_waste.common.events.SendNotificationsEvent;
+import com.kamilpm.zero_waste.common.events.SendReportNotificationEvent;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
-import com.kamilpm.zero_waste.common.utils.OwnMapper;
-import com.kamilpm.zero_waste.notification.api.NotificationRecipient;
-import com.kamilpm.zero_waste.notification.api.NotificationReferenceType;
-import com.kamilpm.zero_waste.notification.api.NotificationType;
-import com.kamilpm.zero_waste.notification.api.SendBanNotificationEvent;
-import com.kamilpm.zero_waste.notification.api.SendNotificationEvent;
-import com.kamilpm.zero_waste.notification.api.SendNotificationsEvent;
-import com.kamilpm.zero_waste.notification.api.SendReportNotificationEvent;
-import com.kamilpm.zero_waste.notification.dto.AuthenticatedUser;
+import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
 import com.kamilpm.zero_waste.notification.dto.NotificationDto;
 import com.kamilpm.zero_waste.notification.dto.NotificationResponse;
-import com.kamilpm.zero_waste.notification.dto.UserRole;
 import com.kamilpm.zero_waste.notification.entity.Notification;
 import com.kamilpm.zero_waste.notification.mapper.NotificationMapper;
 import com.kamilpm.zero_waste.notification.repository.NotificationRepository;
@@ -38,9 +37,9 @@ import lombok.RequiredArgsConstructor;
 public class NotificationService {
 
   private final NotificationRepository notificationRepository;
-  private final SimpMessagingTemplate simpMessagingTemplate;
   private final NotificationMapper notificationMapper;
-  private final CurrentUserApi currentUser;
+  private final CurrentUserProvider currentUser;
+  private final SimpMessagingTemplate simpMessagingTemplate;
 
   private void sendNotification(UUID recipientId, String recipientEmail, NotificationType type, String title,
       String message, UUID referenceId,
@@ -74,7 +73,7 @@ public class NotificationService {
 
   public long getUnreadCount() {
 
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
     return notificationRepository.countByReadFalseAndRecipientId(user.id());
   }
 
@@ -146,7 +145,7 @@ public class NotificationService {
 
   @Transactional
   public NotificationDto getNotification(UUID notificationId) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
     Notification notification = notificationRepository.findByIdAndRecipientId(notificationId, user.id())
         .orElseThrow(() -> new EntityNotFoundException("Notification not found"));
     return notificationMapper.toDto(notification);
@@ -184,15 +183,13 @@ public class NotificationService {
         new SendReportNotificationEvent(event.subjectType(), event.comment()));
   }
 
-  private AuthenticatedUser getRequiredAuthenticatedUser() {
-    return OwnMapper.map(currentUser.getRequiredAuthenticatedUser(), (user) -> new AuthenticatedUser(
-        user.id(),
-        user.email(),
-        user.nickname(),
-        user.password(),
-        UserRole.valueOf(user.role().name()),
-        user.banActive(),
-        user.bannedUntil(),
-        user.joinedAt()));
+  @ApplicationModuleListener
+  void on(SendBansNotificationEvent event) {
+    for (String userEmail : event.usersEmail()) {
+      simpMessagingTemplate.convertAndSendToUser(userEmail,
+          "/queue/ban", Map.of("message", "You have been banned"));
+    }
+
   }
+
 }

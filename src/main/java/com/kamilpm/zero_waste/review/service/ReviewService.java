@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.review.service;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -14,32 +13,30 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
+import com.kamilpm.zero_waste.common.dto.CurrentUser;
+import com.kamilpm.zero_waste.common.dto.OfferData;
+import com.kamilpm.zero_waste.common.dto.ReviewData;
+import com.kamilpm.zero_waste.common.dto.SimpleItemData;
+import com.kamilpm.zero_waste.common.dto.SimpleOfferData;
+import com.kamilpm.zero_waste.common.dto.UserRole;
+import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
+import com.kamilpm.zero_waste.common.events.BanEvent;
+import com.kamilpm.zero_waste.common.events.DeleteOffersEvent;
+import com.kamilpm.zero_waste.common.events.RejectReportEvent;
+import com.kamilpm.zero_waste.common.events.UnbanEvent;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
-import com.kamilpm.zero_waste.common.utils.OwnMapper;
-import com.kamilpm.zero_waste.item.api.ItemReviewApi;
-import com.kamilpm.zero_waste.moderation.api.RejectReportEvent;
-import com.kamilpm.zero_waste.offer.api.DeleteOffersEvent;
-import com.kamilpm.zero_waste.offer.api.OfferReviewApi;
-import com.kamilpm.zero_waste.review.dto.OfferStatus;
-import com.kamilpm.zero_waste.review.dto.AuthenticatedUser;
-import com.kamilpm.zero_waste.review.dto.ItemCondition;
-import com.kamilpm.zero_waste.review.dto.ItemDto;
-import com.kamilpm.zero_waste.review.dto.ItemState;
-import com.kamilpm.zero_waste.review.dto.OfferDto;
+import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
+import com.kamilpm.zero_waste.common.interfaces.ItemProvider;
+import com.kamilpm.zero_waste.common.interfaces.OfferProvider;
+import com.kamilpm.zero_waste.common.interfaces.UserProvider;
 import com.kamilpm.zero_waste.review.dto.ReviewDto;
 import com.kamilpm.zero_waste.review.dto.ReviewRequest;
-import com.kamilpm.zero_waste.review.dto.ReviewResponse;
-import com.kamilpm.zero_waste.review.dto.SimpleItemDto;
-import com.kamilpm.zero_waste.review.dto.SimpleOfferDto;
-import com.kamilpm.zero_waste.review.dto.UserRole;
-import com.kamilpm.zero_waste.review.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.review.entity.Review;
 import com.kamilpm.zero_waste.review.mapper.ReviewMapper;
 import com.kamilpm.zero_waste.review.repository.ReviewRepository;
-import com.kamilpm.zero_waste.user.api.UserReviewApi;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,24 +44,26 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewService {
   private final ReviewRepository reviewRepository;
-  private final CurrentUserApi currentUser;
   private final ReviewMapper reviewMapper;
+  private final CurrentUserProvider currentUser;
+  private final OfferProvider offerReviewApi;
+  private final ItemProvider itemReviewApi;
+  private final UserProvider userReviewApi;
   private final ApplicationEventPublisher events;
-  private final OfferReviewApi offerReviewApi;
-  private final ItemReviewApi itemReviewApi;
-  private final UserReviewApi userReviewApi;
 
   @Transactional
   public ReviewDto createReview(ReviewRequest reviewRequest) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
 
-    SimpleOfferDto offer = getOfferById(reviewRequest.getOfferId());
-    SimpleItemDto item = getItemById(offer.itemId());
+    SimpleOfferData offer = offerReviewApi.getOfferById(reviewRequest.getOfferId());
+    SimpleItemData item = itemReviewApi.getItemById(offer.itemId());
 
     if (reviewRepository.existsByOfferId(offer.id()))
       throw new ForbiddenException("You have already review this offer");
 
-    UserSummaryDto itemOwner = getUserById(item.ownerId());
+    UserSummaryDto itemOwner = userReviewApi.findUserSummaryById(item.ownerId());
+    SimpleItemData itemWithOwner = new SimpleItemData(item.id(), item.title(), item.description(), item.city(),
+        item.condition(), item.state(), item.moderationStatus(), item.ownerId(), itemOwner);
 
     Review newReview = Review.builder()
         .comment(reviewRequest.getComment())
@@ -72,59 +71,58 @@ public class ReviewService {
         .rating(reviewRequest.getRating())
         .revieweeId(item.ownerId())
         .reviewerId(user.id())
+        .reviewerVisibility(UserVisibility.VISIBLE)
         .build();
 
     Review savedReview = reviewRepository.save(newReview);
 
     return reviewMapper.toDto(savedReview,
-        new OfferDto(offer.id(),
-            new ItemDto(item.id(), item.title(), item.description(), item.city(), item.condition(), item.state(),
-                item.moderationStatus(), null, itemOwner, null, null),
+        new OfferData(offer.id(), itemWithOwner,
             new UserSummaryDto(user.id(), user.nickname()), offer.status()));
 
   }
 
   @Transactional(readOnly = true)
-  public Page<ReviewResponse> getReceivedReviews(Pageable pageable) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+  public Page<ReviewData> getReceivedReviews(Pageable pageable) {
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
 
     Page<Review> reviews = reviewRepository
         .findByRevieweeIdAndModerationStatusOrderByCreatedAtDesc(user.id(), ModerationStatus.VISIBLE, pageable);
     Set<UUID> reviewerIds = reviews.getContent().stream().map(review -> review.getReviewerId())
         .collect(Collectors.toSet());
-    Map<UUID, UserSummaryDto> usersById = getUsersById(reviewerIds);
+    Map<UUID, UserSummaryDto> usersById = userReviewApi.getUserSummaryByIds(reviewerIds);
 
     return reviews.map(review -> reviewMapper.toResponse(review, usersById.get(review.getReviewerId()).nickname()));
   }
 
   @Transactional(readOnly = true)
-  public Page<ReviewResponse> getGivenReviews(Pageable pageable) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+  public Page<ReviewData> getGivenReviews(Pageable pageable) {
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
     return reviewRepository.findByReviewerId(user.id(), pageable)
         .map(review -> reviewMapper.toResponse(review, user.nickname()));
   }
 
   @Transactional(readOnly = true)
-  public Page<ReviewResponse> getUserReviews(UUID userId, Pageable pageable) {
+  public Page<ReviewData> getUserReviews(UUID userId, Pageable pageable) {
 
     Page<Review> reviews = reviewRepository
         .findByRevieweeIdAndModerationStatusOrderByCreatedAtDesc(userId, ModerationStatus.VISIBLE, pageable);
     Set<UUID> reviewerIds = reviews.getContent().stream().map(review -> review.getReviewerId())
         .collect(Collectors.toSet());
-    Map<UUID, UserSummaryDto> usersById = getUsersById(reviewerIds);
+    Map<UUID, UserSummaryDto> usersById = userReviewApi.getUserSummaryByIds(reviewerIds);
 
     return reviews.map(review -> reviewMapper.toResponse(review, usersById.get(review.getReviewerId()).nickname()));
   }
 
-  public ReviewResponse getReview(UUID id) {
+  public ReviewData getReview(UUID id) {
     Review review = reviewRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Review not found"));
-    UserSummaryDto reviewer = getUserById(review.getReviewerId());
+    UserSummaryDto reviewer = userReviewApi.findUserSummaryById(review.getReviewerId());
 
     if (Objects.equals(review.getModerationStatus(), ModerationStatus.VISIBLE)) {
       return reviewMapper.toResponse(review, reviewer.nickname());
     }
 
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
 
     if (Objects.equals(review.getReviewerId(), user.id())) {
       return reviewMapper.toResponse(review, reviewer.nickname());
@@ -138,7 +136,7 @@ public class ReviewService {
   }
 
   public void deleteReview(UUID id) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
 
     Review review = reviewRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Review not found"));
 
@@ -159,41 +157,14 @@ public class ReviewService {
     reviewRepository.deleteByOfferIdIn(event.offerIds());
   }
 
-  private AuthenticatedUser getRequiredAuthenticatedUser() {
-    return OwnMapper.map(currentUser.getRequiredAuthenticatedUser(), (user) -> new AuthenticatedUser(
-        user.id(),
-        user.email(),
-        user.nickname(),
-        user.password(),
-        UserRole.valueOf(user.role().name()),
-        user.banActive(),
-        user.bannedUntil(),
-        user.joinedAt()));
+  @ApplicationModuleListener
+  void on(BanEvent event) {
+    reviewRepository.updateReviewerVisibility(event.ids(), UserVisibility.BANNED);
   }
 
-  private SimpleOfferDto getOfferById(UUID id) {
-    return OwnMapper.map(offerReviewApi.getOfferById(id), (offer) -> new SimpleOfferDto(
-        offer.id(), offer.itemId(), offer.buyerId(), OfferStatus.valueOf(offer.status().name())));
+  @ApplicationModuleListener
+  void on(UnbanEvent event) {
+    reviewRepository.updateReviewerVisibility(event.ids(), UserVisibility.VISIBLE);
   }
 
-  private SimpleItemDto getItemById(UUID id) {
-    return OwnMapper.map(
-        itemReviewApi.getItemById(id), (item) -> new SimpleItemDto(item.id(), item.title(), item.description(),
-            item.city(), ItemCondition.valueOf(item.condition().name()), ItemState.valueOf(item.state().name()),
-            item.moderationStatus(),
-            item.ownerId()));
-  }
-
-  private UserSummaryDto getUserById(UUID id) {
-    return OwnMapper.map(
-        userReviewApi.getUserById(id), (user) -> new UserSummaryDto(user.id(), user.nickname()));
-  }
-
-  private Map<UUID, UserSummaryDto> getUsersById(Collection<UUID> ids) {
-    return OwnMapper.mapValues(
-        userReviewApi
-            .getUsersById(ids),
-
-        (user) -> new UserSummaryDto(user.id(), user.nickname()));
-  }
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.kamilpm.zero_waste.category.dto.CategoryDto;
 import com.kamilpm.zero_waste.category.dto.CategoryTreeDto;
 import com.kamilpm.zero_waste.category.entity.Category;
+import com.kamilpm.zero_waste.common.dto.CategoryData;
 
 @Component
 public class CategoryMapper {
@@ -23,6 +24,14 @@ public class CategoryMapper {
     categoryDto.name(category.getName());
 
     return categoryDto.build();
+  }
+
+  public CategoryData toDataDto(Category category) {
+    if (category == null) {
+      return null;
+    }
+
+    return new CategoryData(category.getId(), category.getName(), categoryParentId(category));
   }
 
   public CategoryTreeDto toTreeDto(Category category) {

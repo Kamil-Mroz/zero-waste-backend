@@ -20,8 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kamilpm.zero_waste.common.dto.ImageData;
 import com.kamilpm.zero_waste.common.exception.ApiException;
-import com.kamilpm.zero_waste.image.dto.ImageDto;
+import com.kamilpm.zero_waste.common.interfaces.ImageProvider;
 import com.kamilpm.zero_waste.image.entity.Image;
 import com.kamilpm.zero_waste.image.mapper.ImageMapper;
 import com.kamilpm.zero_waste.image.properties.ImageStorageProperties;
@@ -33,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ImageItemApi {
+public class ImageItemApi implements ImageProvider {
 
   private final ImageStorageProperties properties;
   private final ImageRepository imageRepository;
@@ -47,7 +48,7 @@ public class ImageItemApi {
   }
 
   @Transactional
-  public List<ImageDto> uploadItemImages(UUID itemId, List<MultipartFile> files) {
+  public List<ImageData> uploadItemImages(UUID itemId, List<MultipartFile> files) {
 
     if (files == null)
       return List.of();
@@ -85,7 +86,7 @@ public class ImageItemApi {
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
-    return imageRepository.saveAll(images).stream().map(imageMapper::toDto).toList();
+    return imageRepository.saveAll(images).stream().map(imageMapper::toDataDto).toList();
   }
 
   private void validateImage(byte[] bytes, MultipartFile file) {
@@ -189,7 +190,7 @@ public class ImageItemApi {
     imageRepository.deleteAll(images);
   }
 
-  public void deleteImagesFromDisk(List<Image> images) {
+  private void deleteImagesFromDisk(List<Image> images) {
 
     for (Image image : images) {
       try {
@@ -209,18 +210,18 @@ public class ImageItemApi {
     }
   }
 
-  public List<ImageDto> getAllImagesByIds(Collection<UUID> ids) {
-    return imageRepository.findAllById(ids).stream().map(imageMapper::toDto).toList();
+  public List<ImageData> getAllImagesByIds(Collection<UUID> ids) {
+    return imageRepository.findAllById(ids).stream().map(imageMapper::toDataDto).toList();
   }
 
-  public List<ImageDto> getImagesByItemId(UUID id) {
-    return imageRepository.findAllByItemId(id).stream().map(imageMapper::toDto).toList();
+  public List<ImageData> getImagesByItemId(UUID id) {
+    return imageRepository.findAllByItemId(id).stream().map(imageMapper::toDataDto).toList();
 
   }
 
-  public Map<UUID, ImageDto> getImagesByIds(Collection<UUID> ids) {
+  public Map<UUID, ImageData> getImagesByIds(Collection<UUID> ids) {
     return imageRepository.findAllById(ids).stream()
-        .collect(Collectors.toMap((image) -> image.getId(), imageMapper::toDto));
+        .collect(Collectors.toMap((image) -> image.getId(), imageMapper::toDataDto));
   }
 
 }

@@ -2,18 +2,18 @@ package com.kamilpm.zero_waste.offer.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.kamilpm.zero_waste.offer.dto.ItemDto;
+import com.kamilpm.zero_waste.common.dto.SimpleItemData;
+import com.kamilpm.zero_waste.common.dto.SimpleOfferData;
+import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.common.dto.UserSummaryWithEmailDto;
 import com.kamilpm.zero_waste.offer.dto.OfferDto;
 import com.kamilpm.zero_waste.offer.dto.OfferWithEmailDto;
-import com.kamilpm.zero_waste.offer.dto.SimpleOfferDto;
-import com.kamilpm.zero_waste.offer.dto.UserSummaryDto;
-import com.kamilpm.zero_waste.offer.dto.UserSummaryWithEmailDto;
 import com.kamilpm.zero_waste.offer.entity.Offer;
 
 @Component
 public class OfferMapper {
 
-  public OfferDto toDto(Offer offer, ItemDto item, UserSummaryDto buyer) {
+  public OfferDto toDto(Offer offer, SimpleItemData item, UserSummaryDto buyer) {
     if (offer == null) {
       return null;
     }
@@ -21,18 +21,18 @@ public class OfferMapper {
 
   }
 
-  public OfferWithEmailDto toWithEmailDto(Offer offer, ItemDto item, UserSummaryWithEmailDto buyer) {
+  public OfferWithEmailDto toWithEmailDto(Offer offer, SimpleItemData item, UserSummaryWithEmailDto buyer) {
     if (offer == null) {
       return null;
     }
     return new OfferWithEmailDto(offer.getId(), item, buyer, offer.getStatus());
   };
 
-  public SimpleOfferDto toSimpleDto(Offer offer) {
+  public SimpleOfferData toSimpleDto(Offer offer) {
     if (offer == null)
       return null;
 
-    return new SimpleOfferDto(offer.getId(), offer.getItemId(), offer.getBuyerId(), offer.getStatus());
+    return new SimpleOfferData(offer.getId(), offer.getItemId(), offer.getBuyerId(), offer.getStatus());
 
   }
 

@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.offer.service;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,37 +14,35 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
+import com.kamilpm.zero_waste.common.dto.CurrentUser;
+import com.kamilpm.zero_waste.common.dto.ItemState;
+import com.kamilpm.zero_waste.common.dto.NotificationRecipient;
+import com.kamilpm.zero_waste.common.dto.NotificationReferenceType;
+import com.kamilpm.zero_waste.common.dto.NotificationType;
+import com.kamilpm.zero_waste.common.dto.OfferStatus;
+import com.kamilpm.zero_waste.common.dto.SimpleItemData;
+import com.kamilpm.zero_waste.common.dto.UserSummaryWithEmailDto;
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
+import com.kamilpm.zero_waste.common.events.BanEvent;
+import com.kamilpm.zero_waste.common.events.DeleteItemEvent;
+import com.kamilpm.zero_waste.common.events.DeleteItemsEvent;
+import com.kamilpm.zero_waste.common.events.DeleteOffersEvent;
+import com.kamilpm.zero_waste.common.events.OfferAcceptEvent;
+import com.kamilpm.zero_waste.common.events.SendNotificationEvent;
+import com.kamilpm.zero_waste.common.events.SendNotificationsEvent;
+import com.kamilpm.zero_waste.common.events.UnbanEvent;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
-import com.kamilpm.zero_waste.common.utils.OwnMapper;
-import com.kamilpm.zero_waste.item.api.DeleteItemEvent;
-import com.kamilpm.zero_waste.item.api.DeleteItemsEvent;
-import com.kamilpm.zero_waste.item.api.ItemOfferApi;
-import com.kamilpm.zero_waste.notification.api.NotificationRecipient;
-import com.kamilpm.zero_waste.notification.api.NotificationReferenceType;
-import com.kamilpm.zero_waste.notification.api.NotificationType;
-import com.kamilpm.zero_waste.notification.api.SendNotificationEvent;
-import com.kamilpm.zero_waste.notification.api.SendNotificationsEvent;
-import com.kamilpm.zero_waste.offer.api.DeleteOffersEvent;
-import com.kamilpm.zero_waste.offer.api.OfferAcceptEvent;
-import com.kamilpm.zero_waste.offer.dto.AuthenticatedUser;
-import com.kamilpm.zero_waste.offer.dto.ItemCondition;
-import com.kamilpm.zero_waste.offer.dto.ItemDto;
-import com.kamilpm.zero_waste.offer.dto.ItemState;
+import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
+import com.kamilpm.zero_waste.common.interfaces.ItemProvider;
+import com.kamilpm.zero_waste.common.interfaces.UserProvider;
 import com.kamilpm.zero_waste.offer.dto.OfferDto;
 import com.kamilpm.zero_waste.offer.dto.OfferWithEmailDto;
-import com.kamilpm.zero_waste.offer.dto.SimpleItemDto;
-import com.kamilpm.zero_waste.offer.dto.UserRole;
-import com.kamilpm.zero_waste.offer.dto.UserSummaryWithEmailDto;
 import com.kamilpm.zero_waste.offer.entity.Offer;
-import com.kamilpm.zero_waste.offer.entity.OfferStatus;
 import com.kamilpm.zero_waste.offer.mapper.OfferMapper;
 import com.kamilpm.zero_waste.offer.repository.OfferRepository;
-import com.kamilpm.zero_waste.user.api.UserOfferApi;
 
 import lombok.RequiredArgsConstructor;
 
@@ -53,12 +50,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OfferService {
   private final OfferRepository offerRepository;
-  private final ItemOfferApi itemOfferApi;
-  private final CurrentUserApi currentUser;
-  // private final NotificationService notificationService;
   private final OfferMapper offerMapper;
+  private final ItemProvider itemOfferApi;
+  private final CurrentUserProvider currentUser;
+  private final UserProvider userOfferApi;
   private final ApplicationEventPublisher events;
-  private final UserOfferApi userOfferApi;
 
   public Offer getOfferById(UUID id) {
     Offer offer = offerRepository.findDetailsById(id).orElseThrow(() -> new EntityNotFoundException("Offer not found"));
@@ -72,11 +68,11 @@ public class OfferService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void acceptOffer(UUID id) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
     Offer offer = getOfferById(id);
     ensurePending(offer);
 
-    SimpleItemDto item = findByIdForUpdate(offer.getItemId());
+    SimpleItemData item = itemOfferApi.findByIdForUpdate(offer.getItemId());
 
     if (!Objects.equals(item.ownerId(), user.id())) {
       throw new ForbiddenException("You cannot accept your own offer");
@@ -107,24 +103,28 @@ public class OfferService {
 
     events
         .publishEvent(
-            new SendNotificationEvent(offer.getBuyerId(), buyerEmail, NotificationType.OFFER_ACCEPTED, "Offer accepted",
-                "Your request was accepted.", offer.getId(), NotificationReferenceType.OFFER));
+            new SendNotificationEvent(offer.getBuyerId(), buyerEmail,
+                NotificationType.OFFER_ACCEPTED, "Offer accepted",
+                "Your request was accepted.", offer.getId(),
+                NotificationReferenceType.OFFER));
 
     List<NotificationRecipient> rejectedBuyers = userOfferApi
         .getUsersEmail(rejectedOffers.stream().map(o -> o.getBuyerId()).toList());
 
     events.publishEvent(
-        new SendNotificationsEvent(rejectedBuyers, NotificationType.OFFER_REJECTED, "Offer rejected",
-            "Your request was declined.", offer.getId(), NotificationReferenceType.OFFER));
+        new SendNotificationsEvent(rejectedBuyers, NotificationType.OFFER_REJECTED,
+            "Offer rejected",
+            "Your request was declined.", offer.getId(),
+            NotificationReferenceType.OFFER));
   }
 
   @Transactional
   public void rejectOffer(UUID id) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
 
     Offer offer = getOfferById(id);
     UUID buyerId = offer.getBuyerId();
-    SimpleItemDto item = findById(id);
+    SimpleItemData item = itemOfferApi.findById(id);
     if (!Objects.equals(item.ownerId(), user.id()))
       throw new ForbiddenException("Unable to reject an offer that you are not the owner of item");
     ensurePending(offer);
@@ -135,16 +135,18 @@ public class OfferService {
     offerRepository.save(offer);
 
     events.publishEvent(
-        new SendNotificationEvent(buyerId, buyerEmail, NotificationType.OFFER_REJECTED, "Offer rejected",
-            "Your request was declined.", offer.getId(), NotificationReferenceType.OFFER));
+        new SendNotificationEvent(buyerId, buyerEmail,
+            NotificationType.OFFER_REJECTED, "Offer rejected",
+            "Your request was declined.", offer.getId(),
+            NotificationReferenceType.OFFER));
 
   }
 
   @Transactional
   public void makeOffer(UUID id) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
 
-    SimpleItemDto item = findByIdForUpdate(id);
+    SimpleItemData item = itemOfferApi.findByIdForUpdate(id);
 
     if (Objects.equals(user.id(), item.ownerId()))
       throw new ConflictException("You can not make an offer on your own item");
@@ -166,6 +168,7 @@ public class OfferService {
     Offer offer = Offer.builder()
         .buyerId(user.id())
         .itemId(item.id())
+        .buyerVisibility(UserVisibility.VISIBLE)
         .status(OfferStatus.PENDING)
         .build();
     offerRepository.save(offer);
@@ -185,11 +188,11 @@ public class OfferService {
 
   @Transactional
   public void cancelOffer(UUID id) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
 
     Offer offer = getOfferById(id);
 
-    SimpleItemDto item = findByIdForUpdate(offer.getItemId());
+    SimpleItemData item = itemOfferApi.findByIdForUpdate(offer.getItemId());
     String itemOwnerEmail = userOfferApi.getUserEmail(item.ownerId());
 
     if (!Objects.equals(user.id(), offer.getBuyerId()))
@@ -201,6 +204,7 @@ public class OfferService {
     offerRepository.save(offer);
 
     events.publishEvent(
+
         new SendNotificationEvent(item.ownerId(), itemOwnerEmail,
             NotificationType.OFFER_CANCELLED,
             "Offer cancelled",
@@ -212,12 +216,12 @@ public class OfferService {
   @Transactional
   public Page<OfferDto> getMyOffers(Pageable pageable, OfferStatus status) {
 
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
     Page<Offer> offers = status != null ? offerRepository.findByBuyerIdAndStatus(user.id(), status, pageable)
         : offerRepository.findByBuyerId(user.id(), pageable);
 
     Set<UUID> itemIds = offers.getContent().stream().map(offer -> offer.getItemId()).collect(Collectors.toSet());
-    Map<UUID, ItemDto> itemsById = getItemsByIds(itemIds);
+    Map<UUID, SimpleItemData> itemsById = itemOfferApi.getItemsByIds(itemIds);
 
     return offers.map(offer -> offerMapper.toDto(offer, itemsById.get(offer.getItemId()),
         null));
@@ -226,8 +230,8 @@ public class OfferService {
 
   @Transactional
   public Page<OfferWithEmailDto> getReceivedOffers(Pageable pageable, OfferStatus status) {
-    AuthenticatedUser user = getRequiredAuthenticatedUser();
-    Map<UUID, ItemDto> itemsById = getItemsOwnedBy(user.id());
+    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
+    Map<UUID, SimpleItemData> itemsById = itemOfferApi.getItemsOwnedBy(user.id());
 
     Set<UUID> itemIds = itemsById.keySet();
 
@@ -235,7 +239,7 @@ public class OfferService {
         : offerRepository.findByItemIdIn(itemIds, pageable);
 
     Set<UUID> buyerIds = offers.getContent().stream().map(offer -> offer.getBuyerId()).collect(Collectors.toSet());
-    Map<UUID, UserSummaryWithEmailDto> buyerById = getUsersByIds(buyerIds);
+    Map<UUID, UserSummaryWithEmailDto> buyerById = userOfferApi.getUserSummaryWithEmailByIds(buyerIds);
 
     return offers.map(offer -> offerMapper.toWithEmailDto(offer, itemsById.get(offer.getItemId()),
         buyerById.get(offer.getBuyerId())));
@@ -255,55 +259,13 @@ public class OfferService {
     offerRepository.deleteByItemIdIn(event.itemIds());
   }
 
-  private AuthenticatedUser getRequiredAuthenticatedUser() {
-    return OwnMapper.map(currentUser.getRequiredAuthenticatedUser(), (user) -> new AuthenticatedUser(
-        user.id(),
-        user.email(),
-        user.nickname(),
-        user.password(),
-        UserRole.valueOf(user.role().name()),
-        user.banActive(),
-        user.bannedUntil(),
-        user.joinedAt()));
+  @ApplicationModuleListener
+  void on(BanEvent event) {
+    offerRepository.updateBuyerVisibility(event.ids(), UserVisibility.BANNED);
   }
 
-  private Map<UUID, ItemDto> getItemsByIds(Collection<UUID> ids) {
-    return OwnMapper.mapValues(itemOfferApi
-        .getItemsByIds(ids),
-        (item) -> new ItemDto(item.id(), item.title(), item.description(), item.city(),
-            ItemCondition.valueOf(item.condition().name()),
-            ItemState.valueOf(item.state().name()),
-            item.moderationStatus(), null, null, null, null));
-  }
-
-  private Map<UUID, ItemDto> getItemsOwnedBy(UUID id) {
-    return OwnMapper.mapValues(itemOfferApi
-        .getItemsOwnedBy(id),
-        (item) -> new ItemDto(item.id(), item.title(), item.description(), item.city(),
-            ItemCondition.valueOf(item.condition().name()),
-            ItemState.valueOf(item.state().name()),
-            item.moderationStatus(), null, null, null, null));
-  }
-
-  private Map<UUID, UserSummaryWithEmailDto> getUsersByIds(Set<UUID> ids) {
-    return OwnMapper.mapValues(userOfferApi
-        .getUsersByIds(ids),
-        (user) -> new UserSummaryWithEmailDto(user.getId(), user.getNickname(), user.getEmail()));
-  }
-
-  private SimpleItemDto findByIdForUpdate(UUID id) {
-
-    return OwnMapper.map(itemOfferApi.findByIdForUpdate(id), item -> new SimpleItemDto(item.id(), item.title(),
-        item.description(), item.city(), ItemCondition.valueOf(item.condition().name()),
-        ItemState.valueOf(item.state().name()),
-        item.moderationStatus(), item.ownerId()));
-  }
-
-  private SimpleItemDto findById(UUID id) {
-
-    return OwnMapper.map(itemOfferApi.findById(id), item -> new SimpleItemDto(item.id(), item.title(),
-        item.description(), item.city(), ItemCondition.valueOf(item.condition().name()),
-        ItemState.valueOf(item.state().name()),
-        item.moderationStatus(), item.ownerId()));
+  @ApplicationModuleListener
+  void on(UnbanEvent event) {
+    offerRepository.updateBuyerVisibility(event.ids(), UserVisibility.VISIBLE);
   }
 }

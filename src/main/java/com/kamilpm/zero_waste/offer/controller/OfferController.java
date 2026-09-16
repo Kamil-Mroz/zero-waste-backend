@@ -4,10 +4,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
+import com.kamilpm.zero_waste.common.dto.OfferStatus;
 import com.kamilpm.zero_waste.common.dto.PageResponse;
 import com.kamilpm.zero_waste.offer.dto.OfferDto;
 import com.kamilpm.zero_waste.offer.dto.OfferWithEmailDto;
-import com.kamilpm.zero_waste.offer.entity.OfferStatus;
 import com.kamilpm.zero_waste.offer.service.OfferService;
 
 import lombok.RequiredArgsConstructor;

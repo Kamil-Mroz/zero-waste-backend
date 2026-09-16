@@ -14,8 +14,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.kamilpm.zero_waste.common.dto.ItemState;
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
-import com.kamilpm.zero_waste.item.dto.ItemState;
 import com.kamilpm.zero_waste.item.entity.Item;
 import com.kamilpm.zero_waste.item.interfaces.IItemCount;
 
@@ -91,4 +92,9 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   @Modifying
   @Query("Update Item i set i.state = :itemState WHERE i.id = :itemId")
   void updateItemState(@Param("itemId") UUID itemId, @Param("itemState") ItemState itemState);
+
+  @Modifying
+  @Query("Update Item i set i.ownerVisibility = :visibility WHERE i.ownerId IN :ownerIds")
+  void updateOwnerVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility);
+
 }

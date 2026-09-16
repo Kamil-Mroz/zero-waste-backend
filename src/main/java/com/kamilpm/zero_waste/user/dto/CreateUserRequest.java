@@ -1,6 +1,7 @@
 package com.kamilpm.zero_waste.user.dto;
 
 import com.kamilpm.zero_waste.common.annotation.StrongPassword;
+import com.kamilpm.zero_waste.common.dto.UserRole;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
