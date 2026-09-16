@@ -3,7 +3,6 @@ package com.kamilpm.zero_waste.blog.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -69,10 +68,9 @@ public class BlogService {
   }
 
   public List<BlogDto> getBlogs() {
-    Set<UUID> excludedAuthorIds = userBlogApi.findExcludedAuthorIdsForPublicContent();
     List<Blog> blogs = blogRepository
-        .findVisibleBlogsExcludingAuthors(ModerationStatus.VISIBLE,
-            excludedAuthorIds);
+        .findVisibleBlogs(ModerationStatus.VISIBLE,
+            UserVisibility.VISIBLE);
     List<UUID> authorIdsToExclude = blogs.stream().map((blog) -> blog.getAuthorId()).toList();
     Map<UUID, UserSummaryDto> authors = userBlogApi.getUserSummaryByIds(authorIdsToExclude);
 
@@ -91,7 +89,8 @@ public class BlogService {
     UserSummaryDto author = userBlogApi.findUserSummaryById(blog.getAuthorId());
 
     if (Objects.equals(blog.getModerationStatus(), ModerationStatus.VISIBLE)
-        && !userBlogApi.isUserDemo(blog.getAuthorId())) {
+        && !userBlogApi.isUserDemo(blog.getAuthorId())
+        && Objects.equals(blog.getAuthorVisibility(), UserVisibility.VISIBLE)) {
       return blogMapper.toDto(blog, author);
     }
     CurrentUser user = currentUser.getRequiredAuthenticatedUser();

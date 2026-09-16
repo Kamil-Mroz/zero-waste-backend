@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,13 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kamilpm.zero_waste.common.dto.CurrentUser;
 import com.kamilpm.zero_waste.common.dto.UserRole;
 import com.kamilpm.zero_waste.common.events.BanEvent;
+import com.kamilpm.zero_waste.common.events.DeleteUsersEvent;
 import com.kamilpm.zero_waste.common.events.RevokeRefreshTokenEvent;
 import com.kamilpm.zero_waste.common.events.SendBansNotificationEvent;
 import com.kamilpm.zero_waste.common.events.UnbanEvent;
+import com.kamilpm.zero_waste.common.events.UserReadyToDeleteEvent;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
 import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
+import com.kamilpm.zero_waste.common.interfaces.ItemProvider;
 import com.kamilpm.zero_waste.common.utils.SqlUtils;
 import com.kamilpm.zero_waste.user.dto.BanRequest;
 import com.kamilpm.zero_waste.user.dto.CreateUserRequest;
@@ -48,6 +51,7 @@ public class UserService {
   private final UserBanRepository userBanRepository;
   private final UserMapper userMapper;
   private final ApplicationEventPublisher events;
+  private final ItemProvider itemApi;
 
   @Transactional(readOnly = true)
   public Page<UserDto> getUsersWithoutCurrentUser(String text, List<UserRole> roles, Pageable pageable) {
@@ -82,9 +86,9 @@ public class UserService {
   @Transactional(readOnly = true)
   public UserDto getUser(final UUID id) {
     User user = findUser(id);
-    if (user.isBanActive()) {
-      throw new EntityNotFoundException("User not found");
-    }
+    // if (user.isBanActive()) {
+    // throw new EntityNotFoundException("User not found");
+    // }
 
     return userMapper.toDto(user);
   }
@@ -123,10 +127,11 @@ public class UserService {
 
     CurrentUser admin = currentUser.getRequiredAuthenticatedUser();
 
-    if (ids.stream().anyMatch((id) -> Objects.equals(admin.id(), id))) {
-      throw new ForbiddenException("You can not delete your account");
-    }
-    deleteUsersByIds(ids);
+    // if (ids.stream().anyMatch((id) -> Objects.equals(admin.id(), id))) {
+    // throw new ForbiddenException("You can not delete your account");
+    // }
+
+    deleteUsersByIds(ids.stream().filter((id) -> !Objects.equals(id, admin.id())).toList());
 
   }
 
@@ -186,15 +191,15 @@ public class UserService {
       if (Objects.equals(admin.id(), userBan.getUserId()))
         continue;
       userBan.setRevokedAt(now);
-      unBannedUserIds.add(userBan.getId());
+      unBannedUserIds.add(userBan.getUserId());
       userBan.setRevokedBy(admin.id());
       userBan.setRevokedReason(unbanRequest.getRevokedReason());
-      events.publishEvent(new UnbanEvent(unBannedUserIds));
-
     }
 
     userRepository.revokeBan(unbanRequest.getIds());
     userBanRepository.saveAll(userBans);
+
+    events.publishEvent(new UnbanEvent(unBannedUserIds));
 
   }
 
@@ -208,16 +213,7 @@ public class UserService {
 
   private void deleteUsersByIds(List<UUID> ids) {
 
-    // refreshTokenRepository.deleteAllByUserIds(ids);
-    // oAuthService.deleteAllByUserIds(ids);
-    // reviewService.deleteAllByUserIds(ids);
-    // offerService.deleteAllByUserIds(ids);
-    // itemService.deleteItemsByUserIds(ids);
-    // notificationService.deleteAllByUserIds(ids);
-    // blogService.deleteAllByUserIds(ids);
-
-    userBanRepository.deleteAllByUserIds(ids);
-
+    itemApi.deleteItemsByOwnerIds(ids);
     userRepository.deleteAllById(ids);
 
   }

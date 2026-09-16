@@ -13,9 +13,11 @@ public interface ImageProvider {
 
   public List<ImageData> uploadItemImages(UUID itemId, List<MultipartFile> files);
 
-  public void deleteItemImages(UUID itemId, List<UUID> imageIds);
+  // public void deleteItemImages(UUID itemId, List<UUID> imageIds);
 
-  public void deleteImagesByItems(Collection<UUID> itemIds);
+  // public void deleteImagesByItems(Collection<UUID> itemIds);
+
+  void deleteImages(Collection<UUID> ids);
 
   public List<ImageData> getAllImagesByIds(Collection<UUID> ids);
 

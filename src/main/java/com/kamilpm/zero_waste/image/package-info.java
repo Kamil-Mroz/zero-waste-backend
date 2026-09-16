@@ -2,6 +2,7 @@
     "common :: exceptions",
     "common :: interfaces",
     "common :: dtos",
+    "common :: events",
 })
 package com.kamilpm.zero_waste.image;
 

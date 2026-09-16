@@ -18,9 +18,9 @@ import com.kamilpm.zero_waste.common.dto.ProfileItemSummary;
 import com.kamilpm.zero_waste.common.dto.SimpleItemData;
 import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
-import com.kamilpm.zero_waste.common.events.DeleteItemEvent;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
+import com.kamilpm.zero_waste.common.interfaces.ImageProvider;
 import com.kamilpm.zero_waste.common.interfaces.ItemProvider;
 import com.kamilpm.zero_waste.common.interfaces.UserProvider;
 import com.kamilpm.zero_waste.item.entity.Item;
@@ -39,6 +39,7 @@ public class ItemApi implements ItemProvider {
   private final UserProvider userApi;
   private final ApplicationEventPublisher events;
   private final ItemService itemService;
+  private final ImageProvider imageItemApi;
 
   public SimpleItemData getItemById(UUID itemId) {
 
@@ -140,7 +141,6 @@ public class ItemApi implements ItemProvider {
   @Transactional
   public void deleteItemById(UUID itemId) {
     itemService.deleteItemCompletely(itemRepository.findById(itemId).orElse(null));
-    events.publishEvent(new DeleteItemEvent(itemId));
   }
 
   public void hideItem(UUID adminId, UUID subjectId) {
@@ -152,4 +152,12 @@ public class ItemApi implements ItemProvider {
     itemRepository.save(item);
   }
 
+  public void deleteItemsByOwnerIds(Collection<UUID> ids) {
+    List<UUID> imageIds = itemRepository.findImageIdsByOwnerIds(ids);
+
+    imageItemApi.deleteImages(imageIds);
+
+    itemRepository.deleteAllByOwnerIds(ids);
+
+  }
 }

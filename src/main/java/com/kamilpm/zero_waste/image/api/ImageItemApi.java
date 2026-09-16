@@ -17,10 +17,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kamilpm.zero_waste.common.dto.ImageData;
+import com.kamilpm.zero_waste.common.events.DeleteImagesEvent;
 import com.kamilpm.zero_waste.common.exception.ApiException;
 import com.kamilpm.zero_waste.common.interfaces.ImageProvider;
 import com.kamilpm.zero_waste.image.entity.Image;
@@ -47,6 +49,7 @@ public class ImageItemApi implements ImageProvider {
     Files.createDirectories(rootPath);
   }
 
+  @Override
   @Transactional
   public List<ImageData> uploadItemImages(UUID itemId, List<MultipartFile> files) {
 
@@ -163,33 +166,6 @@ public class ImageItemApi implements ImageProvider {
 
   }
 
-  @Transactional
-  public void deleteItemImages(UUID itemId, List<UUID> imageIds) {
-
-    if (imageIds == null || imageIds.isEmpty()) {
-      return;
-    }
-    List<Image> images = imageRepository.findByItemIdAndIdIn(itemId, imageIds);
-
-    deleteImagesFromDisk(images);
-
-    imageRepository.deleteImagesByItem(itemId, imageIds);
-  }
-
-  @Transactional
-  public void deleteImagesByItems(Collection<UUID> itemIds) {
-
-    if (itemIds == null || itemIds.isEmpty()) {
-      return;
-    }
-
-    List<Image> images = imageRepository.findByItemIdIn(itemIds);
-
-    deleteImagesFromDisk(images);
-
-    imageRepository.deleteAll(images);
-  }
-
   private void deleteImagesFromDisk(List<Image> images) {
 
     for (Image image : images) {
@@ -210,18 +186,36 @@ public class ImageItemApi implements ImageProvider {
     }
   }
 
+  @Override
   public List<ImageData> getAllImagesByIds(Collection<UUID> ids) {
     return imageRepository.findAllById(ids).stream().map(imageMapper::toDataDto).toList();
   }
 
+  @Override
   public List<ImageData> getImagesByItemId(UUID id) {
     return imageRepository.findAllByItemId(id).stream().map(imageMapper::toDataDto).toList();
 
   }
 
+  @Override
   public Map<UUID, ImageData> getImagesByIds(Collection<UUID> ids) {
     return imageRepository.findAllById(ids).stream()
         .collect(Collectors.toMap((image) -> image.getId(), imageMapper::toDataDto));
+  }
+
+  @Override
+  public void deleteImages(Collection<UUID> ids) {
+    List<Image> images = imageRepository.findAllById(ids);
+    imageRepository.deleteAllById(ids);
+    deleteImagesFromDisk(images);
+    imageRepository.flush();
+  }
+
+  @ApplicationModuleListener
+  void on(DeleteImagesEvent event) {
+    List<Image> images = imageRepository.findAllById(event.ids());
+    deleteImagesFromDisk(images);
+    imageRepository.deleteAllById(event.ids());
   }
 
 }

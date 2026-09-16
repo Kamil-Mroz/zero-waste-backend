@@ -1,6 +1,5 @@
 package com.kamilpm.zero_waste.blog.repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,10 +21,11 @@ public interface BlogRepository extends JpaRepository<Blog, UUID> {
       SELECT b
       FROM Blog b
       where b.moderationStatus = :status
-        AND b.authorId NOT IN :excludedAuthorIds
+        AND b.authorVisibility = :visibility
       ORDER BY b.createdAt DESC
       """)
-  List<Blog> findVisibleBlogsExcludingAuthors(ModerationStatus status, Collection<UUID> excludedAuthorIds);
+  List<Blog> findVisibleBlogs(@Param("status") ModerationStatus status,
+      @Param("visibility") UserVisibility visibility);
 
   Optional<Blog> findById(UUID id);
 

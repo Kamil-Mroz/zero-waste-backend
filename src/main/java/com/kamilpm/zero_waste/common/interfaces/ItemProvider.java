@@ -34,4 +34,6 @@ public interface ItemProvider {
   public void deleteItemById(UUID itemId);
 
   public void hideItem(UUID adminId, UUID subjectId);
+
+  public void deleteItemsByOwnerIds(Collection<UUID> ids);
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.kamilpm.zero_waste.common.dto.ProfileReviewSummary;
 import com.kamilpm.zero_waste.common.dto.RatingBreakdown;
 import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
@@ -72,7 +73,7 @@ public class ReviewApi implements ReviewProvider {
     long one = 0, two = 0, three = 0, four = 0, five = 0, count = 0;
     Double avg = 0.0;
 
-    for (IRatingBreakdownWithStats row : reviewRepository.getRatingBreakdownWithStats(userId)) {
+    for (IRatingBreakdownWithStats row : reviewRepository.getRatingBreakdownWithStats(userId, UserVisibility.VISIBLE)) {
       count = row.getTotalCount();
       avg = row.getAvgRating();
       switch (row.getRating()) {
@@ -84,8 +85,9 @@ public class ReviewApi implements ReviewProvider {
       }
     }
 
-    List<Review> latestReviews = reviewRepository.findTop3ByRevieweeIdAndModerationStatusOrderByCreatedAtDesc(userId,
-        ModerationStatus.VISIBLE);
+    List<Review> latestReviews = reviewRepository
+        .findTop3ByRevieweeIdAndModerationStatusAndReviewerVisibilityOrderByCreatedAtDesc(userId,
+            ModerationStatus.VISIBLE, UserVisibility.VISIBLE);
     Set<UUID> userIds = latestReviews.stream().map(review -> review.getReviewerId()).collect(Collectors.toSet());
     Map<UUID, UserSummaryDto> usersById = userApi.getUserSummaryByIds(userIds);
 

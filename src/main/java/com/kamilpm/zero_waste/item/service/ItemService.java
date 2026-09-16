@@ -27,11 +27,12 @@ import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.events.BanEvent;
-import com.kamilpm.zero_waste.common.events.DeleteItemEvent;
-import com.kamilpm.zero_waste.common.events.DeleteItemsEvent;
+import com.kamilpm.zero_waste.common.events.DeleteImagesEvent;
+import com.kamilpm.zero_waste.common.events.DeleteUsersEvent;
 import com.kamilpm.zero_waste.common.events.OfferAcceptEvent;
 import com.kamilpm.zero_waste.common.events.RejectReportEvent;
 import com.kamilpm.zero_waste.common.events.UnbanEvent;
+import com.kamilpm.zero_waste.common.events.UserReadyToDeleteEvent;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
@@ -167,10 +168,6 @@ public class ItemService {
       item.setThumbnailId(null);
     }
 
-    if (!removedImageIds.isEmpty()) {
-      imageItemApi.deleteItemImages(item.getId(), new ArrayList<>(removedImageIds));
-    }
-
     List<ImageData> remainingImages = new ArrayList<>(imageItemApi.getAllImagesByIds(remainingImageIds));
     List<ImageData> uploadedImages = imageItemApi.uploadItemImages(item.getId(), newImages);
 
@@ -181,6 +178,11 @@ public class ItemService {
 
     ImageData thumbnail = updateThumbnail(item, itemRequest, remainingImages);
     Item updatedItem = itemRepository.save(item);
+
+    if (!removedImageIds.isEmpty()) {
+      events.publishEvent(new DeleteImagesEvent(removedImageIds));
+    }
+
     return itemMapper.toDto(updatedItem, category, remainingImages, thumbnail);
   }
 
@@ -224,7 +226,7 @@ public class ItemService {
     UUID excludeOwnerId = user.map(owner -> owner.id()).orElse(null);
 
     Page<Item> itemPage = itemRepository.searchItems(excludeOwnerId, ItemState.AVAILABLE, text,
-        ModerationStatus.VISIBLE, categoryIds, pageable);
+        ModerationStatus.VISIBLE, categoryIds, UserVisibility.VISIBLE, pageable);
 
     Set<UUID> itemsCategoryIds = itemPage.getContent().stream().map(item -> item.getCategoryId())
         .collect(Collectors.toSet());
@@ -255,7 +257,7 @@ public class ItemService {
 
     if (Objects.equals(item.getState(), ItemState.AVAILABLE)
         && Objects.equals(item.getModerationStatus(), ModerationStatus.VISIBLE)
-        && !userApi.isUserDemo(item.getOwnerId()))
+        && !userApi.isUserDemo(item.getOwnerId()) && Objects.equals(item.getOwnerVisibility(), UserVisibility.VISIBLE))
       return itemMapper.toDtoWithOwner(item, category, images, thumbnail, owner);
 
     CurrentUser user = currentUser.getRequiredAuthenticatedUser();
@@ -370,21 +372,9 @@ public class ItemService {
     if (item == null) {
       return;
     }
-    UUID itemId = item.getId();
-    imageItemApi.deleteItemImages(itemId, item.getImageIds());
+
+    imageItemApi.deleteImages(item.getImageIds());
     itemRepository.delete(item);
-
-    events.publishEvent(new DeleteItemEvent(itemId));
-
-  }
-
-  @Transactional
-  public void deleteItemsByUserIds(List<UUID> userIds) {
-    List<Item> items = itemRepository.findByOwnerIdIn(userIds);
-    Set<UUID> itemIds = items.stream().map(item -> item.getId()).collect(Collectors.toSet());
-    imageItemApi.deleteImagesByItems(itemIds);
-    itemRepository.deleteAll(items);
-    events.publishEvent(new DeleteItemsEvent(itemIds));
   }
 
   @Transactional(readOnly = true)
@@ -396,7 +386,8 @@ public class ItemService {
   public List<ItemListDto> getUserItems(UUID userId) {
 
     List<Item> items = itemRepository
-        .findByOwnerIdAndStateAndModerationStatus(userId, ItemState.AVAILABLE, ModerationStatus.VISIBLE);
+        .findByOwnerIdAndStateAndModerationStatusAndOwnerVisibility(userId, ItemState.AVAILABLE,
+            ModerationStatus.VISIBLE, UserVisibility.VISIBLE);
     Set<UUID> itemsCategoryIds = items.stream().map(item -> item.getCategoryId()).collect(Collectors.toSet());
 
     Map<UUID, CategoryData> categoriesById = categoryItemApi.getCategoriesByIds(itemsCategoryIds);
@@ -421,12 +412,12 @@ public class ItemService {
 
   @ApplicationModuleListener
   void on(BanEvent event) {
-    itemRepository.updateOwnerVisibility(event.ids(), UserVisibility.BANNED);
+    itemRepository.updateOwnerVisibility(event.ids(), UserVisibility.BANNED, ItemState.GIVEN);
   }
 
   @ApplicationModuleListener
   void on(UnbanEvent event) {
-    itemRepository.updateOwnerVisibility(event.ids(), UserVisibility.VISIBLE);
+    itemRepository.updateOwnerVisibility(event.ids(), UserVisibility.VISIBLE, ItemState.GIVEN);
   }
 
 }

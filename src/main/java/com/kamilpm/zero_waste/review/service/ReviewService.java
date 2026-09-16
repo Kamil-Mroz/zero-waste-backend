@@ -87,7 +87,8 @@ public class ReviewService {
     CurrentUser user = currentUser.getRequiredAuthenticatedUser();
 
     Page<Review> reviews = reviewRepository
-        .findByRevieweeIdAndModerationStatusOrderByCreatedAtDesc(user.id(), ModerationStatus.VISIBLE, pageable);
+        .findByRevieweeIdAndModerationStatusAndReviewerVisibilityOrderByCreatedAtDesc(user.id(),
+            ModerationStatus.VISIBLE, UserVisibility.VISIBLE, pageable);
     Set<UUID> reviewerIds = reviews.getContent().stream().map(review -> review.getReviewerId())
         .collect(Collectors.toSet());
     Map<UUID, UserSummaryDto> usersById = userReviewApi.getUserSummaryByIds(reviewerIds);
@@ -98,7 +99,7 @@ public class ReviewService {
   @Transactional(readOnly = true)
   public Page<ReviewData> getGivenReviews(Pageable pageable) {
     CurrentUser user = currentUser.getRequiredAuthenticatedUser();
-    return reviewRepository.findByReviewerId(user.id(), pageable)
+    return reviewRepository.findByReviewerIdAndReviewerVisibility(user.id(), UserVisibility.VISIBLE, pageable)
         .map(review -> reviewMapper.toResponse(review, user.nickname()));
   }
 
@@ -106,7 +107,8 @@ public class ReviewService {
   public Page<ReviewData> getUserReviews(UUID userId, Pageable pageable) {
 
     Page<Review> reviews = reviewRepository
-        .findByRevieweeIdAndModerationStatusOrderByCreatedAtDesc(userId, ModerationStatus.VISIBLE, pageable);
+        .findByRevieweeIdAndModerationStatusAndReviewerVisibilityOrderByCreatedAtDesc(userId, ModerationStatus.VISIBLE,
+            UserVisibility.VISIBLE, pageable);
     Set<UUID> reviewerIds = reviews.getContent().stream().map(review -> review.getReviewerId())
         .collect(Collectors.toSet());
     Map<UUID, UserSummaryDto> usersById = userReviewApi.getUserSummaryByIds(reviewerIds);

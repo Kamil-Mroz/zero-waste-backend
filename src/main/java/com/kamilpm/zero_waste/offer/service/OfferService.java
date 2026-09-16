@@ -25,9 +25,6 @@ import com.kamilpm.zero_waste.common.dto.UserSummaryWithEmailDto;
 import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.events.BanEvent;
-import com.kamilpm.zero_waste.common.events.DeleteItemEvent;
-import com.kamilpm.zero_waste.common.events.DeleteItemsEvent;
-import com.kamilpm.zero_waste.common.events.DeleteOffersEvent;
 import com.kamilpm.zero_waste.common.events.OfferAcceptEvent;
 import com.kamilpm.zero_waste.common.events.SendNotificationEvent;
 import com.kamilpm.zero_waste.common.events.SendNotificationsEvent;
@@ -56,7 +53,7 @@ public class OfferService {
   private final UserProvider userOfferApi;
   private final ApplicationEventPublisher events;
 
-  public Offer getOfferById(UUID id) {
+  private Offer getOfferById(UUID id) {
     Offer offer = offerRepository.findDetailsById(id).orElseThrow(() -> new EntityNotFoundException("Offer not found"));
     return offer;
   }
@@ -235,8 +232,9 @@ public class OfferService {
 
     Set<UUID> itemIds = itemsById.keySet();
 
-    Page<Offer> offers = status != null ? offerRepository.findByItemIdInAndStatus(itemIds, status, pageable)
-        : offerRepository.findByItemIdIn(itemIds, pageable);
+    Page<Offer> offers = status != null
+        ? offerRepository.findByItemIdInAndStatusAndBuyerVisibility(itemIds, status, UserVisibility.VISIBLE, pageable)
+        : offerRepository.findByItemIdInAndBuyerVisibility(itemIds,UserVisibility.VISIBLE, pageable);
 
     Set<UUID> buyerIds = offers.getContent().stream().map(offer -> offer.getBuyerId()).collect(Collectors.toSet());
     Map<UUID, UserSummaryWithEmailDto> buyerById = userOfferApi.getUserSummaryWithEmailByIds(buyerIds);
@@ -247,25 +245,12 @@ public class OfferService {
   }
 
   @ApplicationModuleListener
-  void on(DeleteItemEvent event) {
-    Set<UUID> offerIds = offerRepository.findByItemId(event.itemId()).stream().map(offer -> offer.getId())
-        .collect(Collectors.toSet());
-    offerRepository.deleteAllById(offerIds);
-    events.publishEvent(new DeleteOffersEvent(offerIds));
-  }
-
-  @ApplicationModuleListener
-  void on(DeleteItemsEvent event) {
-    offerRepository.deleteByItemIdIn(event.itemIds());
-  }
-
-  @ApplicationModuleListener
   void on(BanEvent event) {
-    offerRepository.updateBuyerVisibility(event.ids(), UserVisibility.BANNED);
+    offerRepository.updateBuyerVisibility(event.ids(), UserVisibility.BANNED, OfferStatus.PENDING);
   }
 
   @ApplicationModuleListener
   void on(UnbanEvent event) {
-    offerRepository.updateBuyerVisibility(event.ids(), UserVisibility.VISIBLE);
+    offerRepository.updateBuyerVisibility(event.ids(), UserVisibility.VISIBLE, OfferStatus.PENDING);
   }
 }

@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.item.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -31,6 +33,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
       AND (:ownerId IS NULL OR i.ownerId != :ownerId)
       AND i.moderationStatus = :moderationStatus
       AND (:categoryIds IS NULL OR i.categoryId IN :categoryIds)
+      AND i.ownerVisibility = :visibility
       AND (:text IS NULL
         OR LOWER(i.title) LIKE :text ESCAPE '\\'
         OR LOWER(i.city) LIKE :text ESCAPE '\\'
@@ -39,6 +42,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
         """)
   Page<Item> searchItems(@Param("ownerId") UUID ownerId, @Param("state") ItemState state, @Param("text") String text,
       @Param("moderationStatus") ModerationStatus moderationStatus, @Param("categoryIds") Set<UUID> categoryIds,
+      @Param("visibility") UserVisibility visibility,
       Pageable pageable);
 
   @Query("""
@@ -73,7 +77,8 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   List<Item> findTop3ByOwnerIdAndStateAndModerationStatusOrderByCreatedAtDesc(UUID ownerId, ItemState itemState,
       ModerationStatus status);
 
-  List<Item> findByOwnerIdAndStateAndModerationStatus(UUID id, ItemState state, ModerationStatus moderationStatus);
+  List<Item> findByOwnerIdAndStateAndModerationStatusAndOwnerVisibility(UUID id, ItemState state,
+      ModerationStatus moderationStatus, UserVisibility visibility);
 
   List<Item> findByOwnerIdAndModerationStatus(UUID ownerId, ModerationStatus moderationStatus);
 
@@ -94,7 +99,19 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   void updateItemState(@Param("itemId") UUID itemId, @Param("itemState") ItemState itemState);
 
   @Modifying
-  @Query("Update Item i set i.ownerVisibility = :visibility WHERE i.ownerId IN :ownerIds")
-  void updateOwnerVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility);
+  @Query("Update Item i set i.ownerVisibility = :visibility WHERE i.ownerId  IN :ownerIds AND i.state != :state")
+  void updateOwnerVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility,
+      @Param("state") ItemState state);
 
+  @NativeQuery(value = """
+      SELECT ii.image_id
+      FROM item_images ii
+      JOIN items i ON i.id = ii.item_id
+      WHERE i.owner_id IN :ownerIds
+      """)
+  List<UUID> findImageIdsByOwnerIds(@Param("ownerIds") Collection<UUID> ownerIds);
+
+  @Modifying
+  @Query("DELETE FROM Item i WHERE i.ownerId IN :ownerIds")
+  void deleteAllByOwnerIds(@Param("ownerIds") Collection<UUID> ownerIds);
 }

@@ -24,19 +24,22 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
   boolean existsByOfferId(UUID offerId);
 
-  Page<Review> findByRevieweeIdAndModerationStatusOrderByCreatedAtDesc(UUID revieweeId, ModerationStatus status,
+  Page<Review> findByRevieweeIdAndModerationStatusAndReviewerVisibilityOrderByCreatedAtDesc(UUID revieweeId,
+      ModerationStatus status, UserVisibility visibility,
       Pageable pageable);
 
-  Page<Review> findByReviewerId(UUID reviewerId, Pageable pageable);
+  Page<Review> findByReviewerIdAndReviewerVisibility(UUID reviewerId, UserVisibility visibility, Pageable pageable);
 
-  List<Review> findTop3ByRevieweeIdAndModerationStatusOrderByCreatedAtDesc(UUID revieweeId, ModerationStatus status);
+  List<Review> findTop3ByRevieweeIdAndModerationStatusAndReviewerVisibilityOrderByCreatedAtDesc(UUID revieweeId,
+      ModerationStatus status, UserVisibility visibility);
 
   @Query("""
         SELECT AVG(r.rating)
         FROM Review r
         WHERE r.revieweeId = :userId
+        AND r.reviewerVisibility = :visibility
       """)
-  Double getAverageRating(@Param("userId") UUID userId);
+  Double getAverageRating(@Param("userId") UUID userId, @Param("visibility") UserVisibility visibility);
 
   long countByRevieweeId(UUID userId);
 
@@ -46,10 +49,12 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
           COUNT(r) as count
         FROM Review r
         WHERE r.revieweeId = :userId
+        AND r.reviewerVisibility = :visibility
         GROUP BY r.rating
         ORDER BY r.rating DESC
       """)
-  List<IRatingCountProjection> getRatingBreakdown(@Param("userId") UUID userId);
+  List<IRatingCountProjection> getRatingBreakdown(@Param("userId") UUID userId,
+      @Param("visibility") UserVisibility visibility);
 
   @Query("""
         SELECT
@@ -59,10 +64,12 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
           COUNT(*) as totalCount
         FROM Review r
         WHERE r.revieweeId = :userId
+        AND r.reviewerVisibility = :visibility
         GROUP BY r.rating
         ORDER BY r.rating DESC
       """)
-  List<IRatingBreakdownWithStats> getRatingBreakdownWithStats(@Param("userId") UUID userId);
+  List<IRatingBreakdownWithStats> getRatingBreakdownWithStats(@Param("userId") UUID userId,
+      @Param("visibility") UserVisibility visibility);
 
   void deleteByReviewerIdIn(List<UUID> ids);
 
