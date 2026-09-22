@@ -6,8 +6,4 @@ public interface IRatingBreakdownWithStats {
 
   Long getCount();
 
-  Double getAvgRating();
-
-  Long getTotalCount();
-
 }

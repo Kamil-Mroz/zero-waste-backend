@@ -21,6 +21,7 @@ import com.kamilpm.zero_waste.common.dto.NotificationReferenceType;
 import com.kamilpm.zero_waste.common.dto.NotificationType;
 import com.kamilpm.zero_waste.common.dto.OfferStatus;
 import com.kamilpm.zero_waste.common.dto.SimpleItemData;
+import com.kamilpm.zero_waste.common.dto.UserRole;
 import com.kamilpm.zero_waste.common.dto.UserSummaryWithEmailDto;
 import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
@@ -29,6 +30,7 @@ import com.kamilpm.zero_waste.common.events.OfferAcceptEvent;
 import com.kamilpm.zero_waste.common.events.SendNotificationEvent;
 import com.kamilpm.zero_waste.common.events.SendNotificationsEvent;
 import com.kamilpm.zero_waste.common.events.UnbanEvent;
+import com.kamilpm.zero_waste.common.events.UserRoleChangeEvent;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
@@ -252,5 +254,18 @@ public class OfferService {
   @ApplicationModuleListener
   void on(UnbanEvent event) {
     offerRepository.updateBuyerVisibility(event.ids(), UserVisibility.VISIBLE, OfferStatus.PENDING);
+  }
+
+  @ApplicationModuleListener
+  void on(UserRoleChangeEvent event) {
+
+    if (event.newRole() == UserRole.DEMO) {
+      offerRepository.updateBuyerVisibility(event.userId(), UserVisibility.HIDDEN, OfferStatus.PENDING);
+    }
+
+    if (event.oldRole() == UserRole.DEMO
+        && event.newRole() != UserRole.DEMO) {
+      offerRepository.updateBuyerVisibility(event.userId(), UserVisibility.VISIBLE, OfferStatus.PENDING);
+    }
   }
 }

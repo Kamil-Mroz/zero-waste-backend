@@ -17,7 +17,6 @@ import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.review.entity.Review;
 import com.kamilpm.zero_waste.review.interfaces.IRatingBreakdownWithStats;
-import com.kamilpm.zero_waste.review.interfaces.IRatingCountProjection;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
@@ -33,35 +32,12 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
   List<Review> findTop3ByRevieweeIdAndModerationStatusAndReviewerVisibilityOrderByCreatedAtDesc(UUID revieweeId,
       ModerationStatus status, UserVisibility visibility);
 
-  @Query("""
-        SELECT AVG(r.rating)
-        FROM Review r
-        WHERE r.revieweeId = :userId
-        AND r.reviewerVisibility = :visibility
-      """)
-  Double getAverageRating(@Param("userId") UUID userId, @Param("visibility") UserVisibility visibility);
-
   long countByRevieweeId(UUID userId);
 
   @Query("""
         SELECT
           r.rating as rating,
           COUNT(r) as count
-        FROM Review r
-        WHERE r.revieweeId = :userId
-        AND r.reviewerVisibility = :visibility
-        GROUP BY r.rating
-        ORDER BY r.rating DESC
-      """)
-  List<IRatingCountProjection> getRatingBreakdown(@Param("userId") UUID userId,
-      @Param("visibility") UserVisibility visibility);
-
-  @Query("""
-        SELECT
-          r.rating as rating,
-          COUNT(r) as count,
-          AVG(r.rating) as avgRating,
-          COUNT(*) as totalCount
         FROM Review r
         WHERE r.revieweeId = :userId
         AND r.reviewerVisibility = :visibility
@@ -79,7 +55,6 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
   @Modifying
   @Query("DELETE FROM Review r WHERE r.offerId = :offerId")
-
   void deleteByOfferId(@Param("offerId") UUID offerId);
 
   boolean existsByIdAndReviewerIdNotAndRevieweeId(UUID subjectId, UUID reviewerId, UUID revieweeId);
@@ -100,11 +75,11 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
       """)
   boolean isReviewerOrReviewee(@Param("reviewId") UUID reviewId, @Param("userId") UUID userId);
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("Update Review r set r.reviewerVisibility = :visibility WHERE r.reviewerId IN :ownerIds")
   void updateReviewerVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility);
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("Update Review r set r.reviewerVisibility = :visibility WHERE r.reviewerId = :ownerId")
   void updateReviewerVisibility(@Param("ownerId") UUID ownerId, @Param("visibility") UserVisibility visibility);
 }

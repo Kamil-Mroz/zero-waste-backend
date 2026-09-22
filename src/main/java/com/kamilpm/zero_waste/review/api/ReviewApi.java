@@ -70,12 +70,11 @@ public class ReviewApi implements ReviewProvider {
   }
 
   public ProfileReviewSummary buildReviewSummary(UUID userId) {
-    long one = 0, two = 0, three = 0, four = 0, five = 0, count = 0;
-    Double avg = 0.0;
+    long one = 0, two = 0, three = 0, four = 0, five = 0, count = 0, totalRating = 0;
 
     for (IRatingBreakdownWithStats row : reviewRepository.getRatingBreakdownWithStats(userId, UserVisibility.VISIBLE)) {
-      count = row.getTotalCount();
-      avg = row.getAvgRating();
+      count += row.getCount();
+      totalRating += row.getRating() * row.getCount();
       switch (row.getRating()) {
         case 1 -> one = row.getCount();
         case 2 -> two = row.getCount();
@@ -92,7 +91,7 @@ public class ReviewApi implements ReviewProvider {
     Map<UUID, UserSummaryDto> usersById = userApi.getUserSummaryByIds(userIds);
 
     return ProfileReviewSummary.builder()
-        .averageRating(avg == null ? 0.0 : avg)
+        .averageRating(count == 0 ? 0.0 : (double) totalRating / count)
         .reviewCount(count)
         .latestReviews(latestReviews.stream()
             .map(review -> reviewMapper.toResponse(review, usersById.get(review.getReviewerId()).nickname()))
