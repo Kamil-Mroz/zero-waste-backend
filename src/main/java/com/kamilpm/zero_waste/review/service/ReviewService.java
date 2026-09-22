@@ -26,6 +26,7 @@ import com.kamilpm.zero_waste.common.events.BanEvent;
 import com.kamilpm.zero_waste.common.events.DeleteOffersEvent;
 import com.kamilpm.zero_waste.common.events.RejectReportEvent;
 import com.kamilpm.zero_waste.common.events.UnbanEvent;
+import com.kamilpm.zero_waste.common.events.UserRoleChangeEvent;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
 import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
@@ -99,7 +100,7 @@ public class ReviewService {
   @Transactional(readOnly = true)
   public Page<ReviewData> getGivenReviews(Pageable pageable) {
     CurrentUser user = currentUser.getRequiredAuthenticatedUser();
-    return reviewRepository.findByReviewerIdAndReviewerVisibility(user.id(), UserVisibility.VISIBLE, pageable)
+    return reviewRepository.findByReviewerId(user.id(), pageable)
         .map(review -> reviewMapper.toResponse(review, user.nickname()));
   }
 
@@ -167,6 +168,19 @@ public class ReviewService {
   @ApplicationModuleListener
   void on(UnbanEvent event) {
     reviewRepository.updateReviewerVisibility(event.ids(), UserVisibility.VISIBLE);
+  }
+
+  @ApplicationModuleListener
+  void on(UserRoleChangeEvent event) {
+
+    if (event.newRole() == UserRole.DEMO) {
+      reviewRepository.updateReviewerVisibility(event.userId(), UserVisibility.HIDDEN);
+    }
+
+    if (event.oldRole() == UserRole.DEMO
+        && event.newRole() != UserRole.DEMO) {
+      reviewRepository.updateReviewerVisibility(event.userId(), UserVisibility.VISIBLE);
+    }
   }
 
 }

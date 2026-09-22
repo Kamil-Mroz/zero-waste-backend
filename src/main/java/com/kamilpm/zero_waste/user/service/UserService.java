@@ -19,6 +19,7 @@ import com.kamilpm.zero_waste.common.events.BanEvent;
 import com.kamilpm.zero_waste.common.events.RevokeRefreshTokenEvent;
 import com.kamilpm.zero_waste.common.events.SendBansNotificationEvent;
 import com.kamilpm.zero_waste.common.events.UnbanEvent;
+import com.kamilpm.zero_waste.common.events.UserRoleChangeEvent;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
@@ -109,6 +110,8 @@ public class UserService {
 
     final User user = findUser(id);
 
+    UserRole oldRole = user.getRole();
+
     user.setNickname(userRequest.getNickname());
     user.setEmail(userRequest.getEmail());
     user.setRole(userRequest.getRole());
@@ -116,6 +119,12 @@ public class UserService {
       user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
     }
     User updatedUser = userRepository.save(user);
+
+    if (!Objects.equals(oldRole, updatedUser.getRole())) {
+      events.publishEvent(new UserRoleChangeEvent(updatedUser.getId(), oldRole, updatedUser.getRole()));
+
+    }
+
     return userMapper.toDto(updatedUser);
   }
 
