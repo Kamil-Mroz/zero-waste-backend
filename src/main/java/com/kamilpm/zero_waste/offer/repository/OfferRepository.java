@@ -31,9 +31,6 @@ public interface OfferRepository extends JpaRepository<Offer, UUID> {
 
   Optional<Offer> findDetailsById(UUID id);
 
-  // Page<Offer> findByItem_Owner_IdAndStatus(UUID ownerId, OfferStatus status,
-  // Pageable pageable);
-
   Page<Offer> findByBuyerIdAndStatus(UUID buyerId, OfferStatus status, Pageable pageable);
 
   Page<Offer> findByItemIdInAndStatusAndBuyerVisibility(Set<UUID> itemIds, OfferStatus status,
@@ -43,11 +40,8 @@ public interface OfferRepository extends JpaRepository<Offer, UUID> {
 
   List<Offer> findByItemIdIn(Collection<UUID> itemIds);
 
-  // Page<Offer> findByItem_Owner_Id(UUID ownerId, Pageable pageable);
-
   Page<Offer> findByBuyerId(UUID buyerId, Pageable pageable);
 
-  // void deleteByItem_Owner_IdIn(List<UUID> ids);
   void deleteByItemIdIn(Collection<UUID> ids);
 
   void deleteByBuyerIdIn(List<UUID> ids);
@@ -56,8 +50,13 @@ public interface OfferRepository extends JpaRepository<Offer, UUID> {
 
   void deleteAllByItemIdIn(Collection<UUID> id);
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("Update Offer o set o.buyerVisibility = :visibility WHERE o.buyerId IN :ownerIds AND o.status = :status")
   void updateBuyerVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility,
+      @Param("status") OfferStatus status);
+
+  @Modifying(clearAutomatically = true)
+  @Query("Update Offer o set o.buyerVisibility = :visibility WHERE o.buyerId = :ownerId AND o.status = :status")
+  void updateBuyerVisibility(@Param("ownerId") UUID ownerId, @Param("visibility") UserVisibility visibility,
       @Param("status") OfferStatus status);
 }
