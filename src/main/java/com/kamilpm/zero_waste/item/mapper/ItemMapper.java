@@ -31,7 +31,17 @@ public class ItemMapper {
       return null;
 
     return new ItemListDto(item.getId(), item.getTitle(), item.getCity(), item.getCondition(), item.getState(),
+        item.getModerationStatus(),
         category, null, thumbnail);
+  };
+
+  public ItemListDto toListDto(Item item, CategoryData category, ImageData thumbnail, UserSummaryDto user) {
+    if (item == null)
+      return null;
+
+    return new ItemListDto(item.getId(), item.getTitle(), item.getCity(), item.getCondition(), item.getState(),
+        item.getModerationStatus(),
+        category, user, thumbnail);
   };
 
   public ItemDto toDtoWithOwner(Item item, CategoryData category, List<ImageData> images, ImageData thumbnail,
