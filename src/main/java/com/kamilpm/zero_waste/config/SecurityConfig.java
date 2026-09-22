@@ -84,6 +84,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/items/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/images/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v{version}/profiles/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v{version}/reviews/user/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/v{version}/users/account").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v{version}/reports").authenticated()
