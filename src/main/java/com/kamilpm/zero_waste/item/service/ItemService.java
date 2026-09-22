@@ -111,47 +111,153 @@ public class ItemService {
     return itemMapper.toDto(finalItem, category, uploadedImages, thumbnail);
   }
 
+  // @Transactional
+  // public ItemDto updateItem(UUID id, UpdateItemRequest itemRequest) {
+
+  // if (Objects.equals(itemRequest.getState(), ItemState.GIVEN)) {
+  // throw new ConflictException("Unable to update to a given item");
+  // }
+
+  // CategoryData category =
+  // categoryItemApi.getCategoryById(itemRequest.getCategoryId());
+
+  // Item item = itemRepository.findByIdAndModerationStatus(id,
+  // ModerationStatus.VISIBLE)
+  // .orElseThrow(() -> new EntityNotFoundException("Item not found"));
+
+  // CurrentUser user = currentUser.getRequiredAuthenticatedUser();
+
+  // if (!Objects.equals(item.getOwnerId(), user.id())) {
+  // throw new ForbiddenException("Must be the owner of the item to update it");
+  // }
+
+  // if (Objects.equals(ItemState.GIVEN, item.getState())) {
+  // throw new ForbiddenException("Can not update a given item");
+  // }
+  // Set<UUID> removedImageIds = itemRequest.getRemovedImageIds() == null
+  // ? Set.of()
+  // : itemRequest.getRemovedImageIds();
+
+  // List<MultipartFile> newImages = itemRequest.getImages() == null ? List.of() :
+  // itemRequest.getImages();
+
+  // List<UUID> existingImageIds = new ArrayList<>(item.getImageIds());
+
+  // Set<UUID> existingImageIdSet = new HashSet<>(existingImageIds);
+
+  // if (!existingImageIdSet.containsAll(removedImageIds)) {
+  // throw new ForbiddenException("Some images do not belong to this item");
+  // }
+
+  // int finalImageCount = existingImageIds.size() - removedImageIds.size() +
+  // newImages.size();
+
+  // if (finalImageCount > 5) {
+  // throw new ConflictException("Max image count is 5", "images");
+  // }
+
+  // item.setTitle(itemRequest.getTitle());
+  // item.setDescription(itemRequest.getDescription());
+  // item.setCondition(itemRequest.getCondition());
+  // item.setCity(itemRequest.getCity());
+  // item.setCategoryId(itemRequest.getCategoryId());
+  // item.setState(itemRequest.getState());
+
+  // List<UUID> remainingImageIds = existingImageIds.stream().filter(imageId ->
+  // !removedImageIds.contains(imageId))
+  // .collect(Collectors.toCollection(ArrayList::new));
+
+  // if (item.getThumbnailId() != null &&
+  // removedImageIds.contains(item.getThumbnailId())) {
+  // item.setThumbnailId(null);
+  // }
+
+  // List<ImageData> remainingImages = new
+  // ArrayList<>(imageItemApi.getAllImagesByIds(remainingImageIds));
+  // List<ImageData> uploadedImages = imageItemApi.uploadItemImages(item.getId(),
+  // newImages);
+
+  // remainingImages.addAll(uploadedImages);
+
+  // remainingImageIds.addAll(uploadedImages.stream().map(image ->
+  // image.id()).toList());
+  // item.setImageIds(remainingImageIds);
+
+  // ImageData thumbnail = updateThumbnail(item, itemRequest, remainingImages);
+  // Item updatedItem = itemRepository.save(item);
+
+  // if (!removedImageIds.isEmpty()) {
+  // events.publishEvent(new DeleteImagesEvent(removedImageIds));
+  // }
+
+  // return itemMapper.toDto(updatedItem, category, remainingImages, thumbnail);
+  // }
+
+  // private ImageData updateThumbnail(Item item, UpdateItemRequest request,
+  // List<ImageData> images) {
+  // if (images.isEmpty()) {
+  // item.setThumbnailId(null);
+  // return null;
+
+  // }
+  // Integer thumbnailIndex = request.getThumbnailIndex();
+
+  // if (thumbnailIndex != null
+  // && thumbnailIndex >= 0
+  // && thumbnailIndex < images.size()) {
+  // ImageData selectedThumbnail = images.get(thumbnailIndex);
+  // item.setThumbnailId(selectedThumbnail.id());
+  // return selectedThumbnail;
+  // }
+
+  // if (item.getThumbnailId() != null) {
+  // Optional<ImageData> existingThumbnail = images.stream()
+  // .filter(image -> Objects.equals(image.id(),
+  // item.getThumbnailId())).findFirst();
+  // if (existingThumbnail.isPresent()) {
+  // return existingThumbnail.get();
+  // }
+  // }
+
+  // ImageData image = images.get(0);
+  // item.setThumbnailId(image.id());
+  // return image;
+  // }
+
   @Transactional
   public ItemDto updateItem(UUID id, UpdateItemRequest itemRequest) {
-
     if (Objects.equals(itemRequest.getState(), ItemState.GIVEN)) {
       throw new ConflictException("Unable to update to a given item");
     }
-
     CategoryData category = categoryItemApi.getCategoryById(itemRequest.getCategoryId());
-
     Item item = itemRepository.findByIdAndModerationStatus(id, ModerationStatus.VISIBLE)
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
-
     CurrentUser user = currentUser.getRequiredAuthenticatedUser();
-
     if (!Objects.equals(item.getOwnerId(), user.id())) {
       throw new ForbiddenException("Must be the owner of the item to update it");
     }
-
     if (Objects.equals(ItemState.GIVEN, item.getState())) {
       throw new ForbiddenException("Can not update a given item");
     }
-    Set<UUID> removedImageIds = itemRequest.getRemovedImageIds() == null
-        ? Set.of()
-        : itemRequest.getRemovedImageIds();
 
+    if (itemRequest.getThumbnailExistingImageId() != null && itemRequest.getThumbnailIndex() != null) {
+      throw new ConflictException("Only one thumbnail selection can be provided");
+    }
+
+    Set<UUID> removedImageIds = itemRequest.getRemovedImageIds() == null ? Set.of() : itemRequest.getRemovedImageIds();
     List<MultipartFile> newImages = itemRequest.getImages() == null ? List.of() : itemRequest.getImages();
 
     List<UUID> existingImageIds = new ArrayList<>(item.getImageIds());
-
     Set<UUID> existingImageIdSet = new HashSet<>(existingImageIds);
-
-    if (!existingImageIdSet.containsAll(removedImageIds)) {
+    if (!existingImageIdSet
+        .containsAll(removedImageIds)) {
       throw new ForbiddenException("Some images do not belong to this item");
     }
-
-    int finalImageCount = existingImageIds.size() - removedImageIds.size() + newImages.size();
-
+    int finalImageCount = existingImageIds.size() - removedImageIds.size()
+        + newImages.size();
     if (finalImageCount > 5) {
       throw new ConflictException("Max image count is 5", "images");
     }
-
     item.setTitle(itemRequest.getTitle());
     item.setDescription(itemRequest.getDescription());
     item.setCondition(itemRequest.getCondition());
@@ -159,58 +265,76 @@ public class ItemService {
     item.setCategoryId(itemRequest.getCategoryId());
     item.setState(itemRequest.getState());
 
-    List<UUID> remainingImageIds = existingImageIds.stream().filter(imageId -> !removedImageIds.contains(imageId))
-        .collect(Collectors.toCollection(ArrayList::new));
+    List<UUID> remainingImageIds = existingImageIds.stream()
+        .filter(imageId -> !removedImageIds.contains(imageId)).collect(Collectors.toCollection(ArrayList::new));
 
-    if (item.getThumbnailId() != null && removedImageIds.contains(item.getThumbnailId())) {
+    if (item.getThumbnailId() != null
+        && removedImageIds.contains(item.getThumbnailId())) {
       item.setThumbnailId(null);
     }
-
-    List<ImageData> remainingImages = new ArrayList<>(imageItemApi.getAllImagesByIds(remainingImageIds));
-    List<ImageData> uploadedImages = imageItemApi.uploadItemImages(item.getId(), newImages);
-
-    remainingImages.addAll(uploadedImages);
-
-    remainingImageIds.addAll(uploadedImages.stream().map(image -> image.id()).toList());
+    List<ImageData> existingImages = new ArrayList<>(imageItemApi.getAllImagesByIds(remainingImageIds));
+    List<ImageData> uploadedImages = imageItemApi.uploadItemImages(item.getId(),
+        newImages);
+    List<UUID> uploadedImageIds = uploadedImages.stream()
+        .map(ImageData::id).toList();
+    remainingImageIds.addAll(uploadedImageIds);
     item.setImageIds(remainingImageIds);
-
-    ImageData thumbnail = updateThumbnail(item, itemRequest, remainingImages);
+    List<ImageData> allImages = new ArrayList<>(existingImages);
+    allImages.addAll(uploadedImages);
+    ImageData thumbnail = updateThumbnail(item, itemRequest, existingImages,
+        uploadedImages);
     Item updatedItem = itemRepository.save(item);
-
     if (!removedImageIds.isEmpty()) {
       events.publishEvent(new DeleteImagesEvent(removedImageIds));
     }
-
-    return itemMapper.toDto(updatedItem, category, remainingImages, thumbnail);
+    return itemMapper.toDto(updatedItem, category, allImages, thumbnail);
   }
 
-  private ImageData updateThumbnail(Item item, UpdateItemRequest request,
-      List<ImageData> images) {
-    if (images.isEmpty()) {
+  private ImageData updateThumbnail(Item item, UpdateItemRequest request, List<ImageData> existingImages,
+      List<ImageData> uploadedImages) {
+    if (existingImages.isEmpty() && uploadedImages.isEmpty()) {
       item.setThumbnailId(null);
       return null;
-
     }
-    Integer thumbnailIndex = request.getThumbnailIndex();
-
-    if (thumbnailIndex != null
-        && thumbnailIndex >= 0
-        && thumbnailIndex < images.size()) {
-      images.get(thumbnailIndex);
+    if (request.getThumbnailExistingImageId() != null) {
+      UUID thumbnailExistingImageId = request.getThumbnailExistingImageId();
+      ImageData selectedThumbnail = existingImages.stream()
+          .filter(image -> Objects.equals(image.id(), thumbnailExistingImageId)).findFirst()
+          .orElseThrow(() -> new ForbiddenException("Selected thumbnail does not belong to this item"));
+      item.setThumbnailId(selectedThumbnail.id());
+      return selectedThumbnail;
     }
-    if (item.getThumbnailId() != null
-        && images.stream().anyMatch((image) -> Objects.equals(image.id(), item.getThumbnailId()))) {
-      for (ImageData image : images) {
-        if (Objects.equals(image.id(), item.getThumbnailId())) {
-          return image;
-        }
+
+    if (request.getThumbnailIndex() != null) {
+      int thumbnailIndex = request.getThumbnailIndex();
+      if (thumbnailIndex < 0 || thumbnailIndex >= uploadedImages.size()) {
+        throw new ConflictException("Invalid thumbnail index", "thumbnailIndex");
+      }
+      ImageData selectedThumbnail = uploadedImages.get(thumbnailIndex);
+      item.setThumbnailId(selectedThumbnail.id());
+      return selectedThumbnail;
+    }
+
+    if (item.getThumbnailId() != null) {
+      Optional<ImageData> existingThumbnail = existingImages.stream()
+          .filter(image -> Objects.equals(image.id(), item.getThumbnailId())).findFirst();
+      if (existingThumbnail.isPresent()) {
+        return existingThumbnail.get();
+      }
+      Optional<ImageData> uploadedThumbnail = uploadedImages.stream()
+          .filter(image -> Objects.equals(image.id(), item.getThumbnailId())).findFirst();
+      if (uploadedThumbnail.isPresent()) {
+        return uploadedThumbnail.get();
       }
     }
-
-    ImageData image = images.get(0);
-    item.setThumbnailId(image.id());
-    return image;
-
+    ImageData fallbackThumbnail;
+    if (!existingImages.isEmpty()) {
+      fallbackThumbnail = existingImages.get(0);
+    } else {
+      fallbackThumbnail = uploadedImages.get(0);
+    }
+    item.setThumbnailId(fallbackThumbnail.id());
+    return fallbackThumbnail;
   }
 
   @Transactional(readOnly = true)
@@ -304,7 +428,7 @@ public class ItemService {
     Map<UUID, ImageData> imagesById = imageItemApi.getImagesByIds(itemsImageIds);
 
     return itemPage.map((item) -> itemMapper.toListDto(item, categoriesById.get(item.getCategoryId()),
-        imagesById.get(item.getThumbnailId())));
+        imagesById.get(item.getThumbnailId()), new UserSummaryDto(user.id(), user.nickname())));
 
   }
 

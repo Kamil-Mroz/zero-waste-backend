@@ -121,7 +121,7 @@ public class OfferService {
 
     Offer offer = getOfferById(id);
     UUID buyerId = offer.getBuyerId();
-    SimpleItemData item = itemOfferApi.findById(id);
+    SimpleItemData item = itemOfferApi.findById(offer.getItemId());
     if (!Objects.equals(item.ownerId(), user.id()))
       throw new ForbiddenException("Unable to reject an offer that you are not the owner of item");
     ensurePending(offer);
@@ -234,7 +234,7 @@ public class OfferService {
 
     Page<Offer> offers = status != null
         ? offerRepository.findByItemIdInAndStatusAndBuyerVisibility(itemIds, status, UserVisibility.VISIBLE, pageable)
-        : offerRepository.findByItemIdInAndBuyerVisibility(itemIds,UserVisibility.VISIBLE, pageable);
+        : offerRepository.findByItemIdInAndBuyerVisibility(itemIds, UserVisibility.VISIBLE, pageable);
 
     Set<UUID> buyerIds = offers.getContent().stream().map(offer -> offer.getBuyerId()).collect(Collectors.toSet());
     Map<UUID, UserSummaryWithEmailDto> buyerById = userOfferApi.getUserSummaryWithEmailByIds(buyerIds);

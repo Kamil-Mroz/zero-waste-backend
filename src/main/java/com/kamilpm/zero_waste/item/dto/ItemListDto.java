@@ -7,6 +7,7 @@ import com.kamilpm.zero_waste.common.dto.ImageData;
 import com.kamilpm.zero_waste.common.dto.ItemCondition;
 import com.kamilpm.zero_waste.common.dto.ItemState;
 import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
+import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 
 public record ItemListDto(
     UUID id,
@@ -14,6 +15,7 @@ public record ItemListDto(
     String city,
     ItemCondition condition,
     ItemState state,
+    ModerationStatus moderationStatus,
     CategoryData category,
     UserSummaryDto owner,
     ImageData thumbnail) {
