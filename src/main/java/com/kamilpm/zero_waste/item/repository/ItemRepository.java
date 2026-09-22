@@ -98,6 +98,11 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
   void updateOwnerVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility,
       @Param("state") ItemState state);
 
+  @Modifying(clearAutomatically = true)
+  @Query("Update Item i set i.ownerVisibility = :visibility WHERE i.ownerId  = :ownerId AND i.state != :state")
+  void updateOwnerVisibility(@Param("ownerId") UUID ownerId, @Param("visibility") UserVisibility visibility,
+      @Param("state") ItemState state);
+
   @NativeQuery(value = """
       SELECT ii.image_id
       FROM item_images ii

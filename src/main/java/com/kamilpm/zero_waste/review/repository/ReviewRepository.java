@@ -28,7 +28,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
       ModerationStatus status, UserVisibility visibility,
       Pageable pageable);
 
-  Page<Review> findByReviewerIdAndReviewerVisibility(UUID reviewerId, UserVisibility visibility, Pageable pageable);
+  Page<Review> findByReviewerId(UUID reviewerId, Pageable pageable);
 
   List<Review> findTop3ByRevieweeIdAndModerationStatusAndReviewerVisibilityOrderByCreatedAtDesc(UUID revieweeId,
       ModerationStatus status, UserVisibility visibility);
@@ -103,4 +103,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
   @Modifying
   @Query("Update Review r set r.reviewerVisibility = :visibility WHERE r.reviewerId IN :ownerIds")
   void updateReviewerVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility);
+
+  @Modifying
+  @Query("Update Review r set r.reviewerVisibility = :visibility WHERE r.reviewerId = :ownerId")
+  void updateReviewerVisibility(@Param("ownerId") UUID ownerId, @Param("visibility") UserVisibility visibility);
 }

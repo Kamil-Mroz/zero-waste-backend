@@ -31,6 +31,7 @@ import com.kamilpm.zero_waste.common.events.DeleteImagesEvent;
 import com.kamilpm.zero_waste.common.events.OfferAcceptEvent;
 import com.kamilpm.zero_waste.common.events.RejectReportEvent;
 import com.kamilpm.zero_waste.common.events.UnbanEvent;
+import com.kamilpm.zero_waste.common.events.UserRoleChangeEvent;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
@@ -534,6 +535,23 @@ public class ItemService {
   @ApplicationModuleListener
   void on(UnbanEvent event) {
     itemRepository.updateOwnerVisibility(event.ids(), UserVisibility.VISIBLE, ItemState.GIVEN);
+  }
+
+  @ApplicationModuleListener
+  void on(UserRoleChangeEvent event) {
+
+    if (event.newRole() == UserRole.DEMO) {
+      itemRepository.updateOwnerVisibility(
+          event.userId(),
+          UserVisibility.HIDDEN, ItemState.GIVEN);
+    }
+
+    if (event.oldRole() == UserRole.DEMO
+        && event.newRole() != UserRole.DEMO) {
+      itemRepository.updateOwnerVisibility(
+          event.userId(),
+          UserVisibility.VISIBLE, ItemState.GIVEN);
+    }
   }
 
 }
