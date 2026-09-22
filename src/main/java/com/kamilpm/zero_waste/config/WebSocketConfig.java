@@ -1,7 +1,5 @@
 package com.kamilpm.zero_waste.config;
 
-import com.kamilpm.zero_waste.security.WebSocketAuthInterceptor;
-
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
@@ -18,6 +16,8 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+import com.kamilpm.zero_waste.security.WebSocketAuthInterceptor;
 
 @Configuration
 @EnableWebSocketMessageBroker

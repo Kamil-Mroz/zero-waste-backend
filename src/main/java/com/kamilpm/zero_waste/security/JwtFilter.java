@@ -9,8 +9,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.kamilpm.zero_waste.service.JwtService;
-import com.kamilpm.zero_waste.service.impl.MyUserDetailsService;
+import com.kamilpm.zero_waste.auth.api.AuthApi;
+import com.kamilpm.zero_waste.auth.api.JwtApi;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,8 +22,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
-  private final JwtService jwtService;
-  private final MyUserDetailsService myUserDetailsService;
+  private final JwtApi jwtApi;
+  private final AuthApi authApi;
 
   @Override
   protected void doFilterInternal(
@@ -35,13 +35,13 @@ public class JwtFilter extends OncePerRequestFilter {
     try {
       String token = getJWTfromRequest(request);
 
-      if (token != null && jwtService.isTokenValid(token)) {
+      if (token != null && jwtApi.isTokenValid(token)) {
 
-        String email = jwtService.getEmailFromToken(token);
+        String email = jwtApi.getEmailFromToken(token);
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-          UserDetails userDetails = myUserDetailsService.loadUserByUsername(email);
+          UserDetails userDetails = authApi.loadUserByUsername(email);
 
           UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails,
               null, userDetails.getAuthorities());

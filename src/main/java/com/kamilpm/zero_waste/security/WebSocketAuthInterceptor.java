@@ -13,11 +13,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.kamilpm.zero_waste.exception.ForbiddenException;
-import com.kamilpm.zero_waste.exception.TokenException;
-import com.kamilpm.zero_waste.exception.UnauthorizedException;
-import com.kamilpm.zero_waste.service.JwtService;
-import com.kamilpm.zero_waste.service.impl.MyUserDetailsService;
+import com.kamilpm.zero_waste.auth.api.AuthApi;
+import com.kamilpm.zero_waste.auth.api.JwtApi;
+import com.kamilpm.zero_waste.common.exception.ForbiddenException;
+import com.kamilpm.zero_waste.common.exception.TokenException;
+import com.kamilpm.zero_waste.common.exception.UnauthorizedException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,8 +25,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
-  private final JwtService jwtService;
-  private final MyUserDetailsService myUserDetailsService;
+  private final JwtApi jwtApi;
+  private final AuthApi authApi;
 
   @Override
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -55,14 +55,14 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
     }
 
     String token = authHeader.substring(7);
-    if (!jwtService.isTokenValid(token)) {
+    if (!jwtApi.isTokenValid(token)) {
       throw new TokenException("Invalid token");
 
     }
 
-    String email = jwtService.getEmailFromToken(token);
+    String email = jwtApi.getEmailFromToken(token);
 
-    UserDetails userDetails = myUserDetailsService.loadUserByUsername(email);
+    UserDetails userDetails = authApi.loadUserByUsername(email);
     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
         userDetails.getAuthorities());
     accessor.setUser(authentication);

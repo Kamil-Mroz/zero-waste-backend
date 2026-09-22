@@ -1,0 +1,15 @@
+package com.kamilpm.zero_waste.common.dto;
+
+import java.time.Instant;
+import java.util.UUID;
+
+public record CurrentUser(UUID id,
+    String email,
+    String nickname,
+    String password,
+    UserRole role,
+    boolean banActive,
+    Instant bannedUntil,
+    Instant joinedAt) {
+
+}

@@ -1,0 +1,44 @@
+package com.kamilpm.zero_waste.auth.entity;
+
+import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name = "oauth_accounts", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_oauth_provider_user", columnNames = { "provider", "provider_id" })
+})
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class OAuthAccount {
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
+
+  @Column(name = "user_id", nullable = false)
+  private UUID userId;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private OAuthProvider provider;
+
+  @Column(name = "provider_id", nullable = false)
+  private String providerId;
+
+}
