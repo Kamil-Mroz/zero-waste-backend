@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -76,10 +75,6 @@ public class UserApi implements UserProvider {
     events.publishEvent(new UnbanEvent(List.of(user.getId())));
   }
 
-  @Override
-  public Set<UUID> findExcludedUserIdsForPublicContent() {
-    return userRepository.findIdsByBanActiveTrueOrRole(UserRole.DEMO);
-  }
 
   @Override
   public void savePassword(UUID userId, String passwordHash) {
@@ -162,10 +157,6 @@ public class UserApi implements UserProvider {
         .toList();
   }
 
-  @Override
-  public Set<UUID> findExcludedAuthorIdsForPublicContent() {
-    return userRepository.findIdsByBanActiveTrueAndRoleWriterOrRoleDemo();
-  }
 
   public void userExists(UUID subjectId, UUID userId) {
     User reportedUser = userRepository.findById(subjectId)

@@ -62,14 +62,9 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
 
   boolean existsByCategoryId(UUID id);
 
-  @Query("SELECT DISTINCT i FROM Item i WHERE i.id = ?1")
-  Optional<Item> findByIdWithOwnerAndCategoryAndImages(UUID id);
-
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT i FROM Item i WHERE i.id = :id")
   Optional<Item> findByIdForUpdate(@Param("id") UUID id);
-
-  int countByOwnerId(UUID userId);
 
   @Query("select i.state as itemState, COUNT(i.state) as totalItem from Item as i where i.ownerId = :userId group by i.state")
   List<IItemCount> countTotalItemsByOwnerIdAndState(@Param("userId") UUID userId);
@@ -94,11 +89,11 @@ public interface ItemRepository extends JpaRepository<Item, UUID> {
 
   boolean existsByIdAndOwnerIdNotAndState(UUID id, UUID userId, ItemState state);
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("Update Item i set i.state = :itemState WHERE i.id = :itemId")
   void updateItemState(@Param("itemId") UUID itemId, @Param("itemState") ItemState itemState);
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("Update Item i set i.ownerVisibility = :visibility WHERE i.ownerId  IN :ownerIds AND i.state != :state")
   void updateOwnerVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility,
       @Param("state") ItemState state);

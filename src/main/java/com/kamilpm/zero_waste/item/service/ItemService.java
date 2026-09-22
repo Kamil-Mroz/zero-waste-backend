@@ -28,11 +28,9 @@ import com.kamilpm.zero_waste.common.dto.UserVisibility;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 import com.kamilpm.zero_waste.common.events.BanEvent;
 import com.kamilpm.zero_waste.common.events.DeleteImagesEvent;
-import com.kamilpm.zero_waste.common.events.DeleteUsersEvent;
 import com.kamilpm.zero_waste.common.events.OfferAcceptEvent;
 import com.kamilpm.zero_waste.common.events.RejectReportEvent;
 import com.kamilpm.zero_waste.common.events.UnbanEvent;
-import com.kamilpm.zero_waste.common.events.UserReadyToDeleteEvent;
 import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.exception.ForbiddenException;
@@ -378,13 +376,7 @@ public class ItemService {
   }
 
   @Transactional(readOnly = true)
-  public int getUserItemCount(UUID userId) {
-    return itemRepository.countByOwnerId(userId);
-  }
-
-  @Transactional(readOnly = true)
   public List<ItemListDto> getUserItems(UUID userId) {
-
     List<Item> items = itemRepository
         .findByOwnerIdAndStateAndModerationStatusAndOwnerVisibility(userId, ItemState.AVAILABLE,
             ModerationStatus.VISIBLE, UserVisibility.VISIBLE);

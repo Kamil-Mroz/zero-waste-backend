@@ -10,12 +10,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.kamilpm.zero_waste.common.dto.NotificationType;
 import com.kamilpm.zero_waste.notification.entity.Notification;
 
 import jakarta.transaction.Transactional;
 
+@Repository
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
 
   long countByReadFalseAndRecipientId(UUID userId);

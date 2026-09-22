@@ -17,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.kamilpm.zero_waste.auth.api.CurrentUserApi;
 import com.kamilpm.zero_waste.auth.dto.AuthResponse;
 import com.kamilpm.zero_waste.auth.dto.AuthUser;
 import com.kamilpm.zero_waste.auth.dto.CreatePasswordRequest;

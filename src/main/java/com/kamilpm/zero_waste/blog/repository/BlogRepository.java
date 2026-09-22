@@ -41,7 +41,7 @@ public interface BlogRepository extends JpaRepository<Blog, UUID> {
 
   boolean existsByIdAndAuthorId(UUID blogId, UUID userId);
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("Update Blog b set b.authorVisibility = :visibility WHERE b.authorId IN :ownerIds")
   void updateAuthorVisibility(@Param("ownerIds") List<UUID> ownerIds, @Param("visibility") UserVisibility visibility);
 }

@@ -2,7 +2,6 @@ package com.kamilpm.zero_waste.user.repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -23,33 +22,17 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   boolean existsByEmail(String email);
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("update User u set u.banActive = false, u.bannedUntil = null where u.id IN :ids")
   void revokeBan(@Param("ids") List<UUID> ids);
 
-  @Modifying
+  @Modifying(clearAutomatically = true)
   @Query("update User u set u.password = :passwordHash where u.id = :id")
   void updatePassword(@Param("id") UUID id, @Param("passwordHash") String passwordHash);
 
   boolean existsByEmailAndIdNot(String email, UUID id);
 
   boolean existsByIdAndIdNot(UUID subjectId, UUID userId);
-
-  @Query("""
-          SELECT u.id
-          FROM User u
-          WHERE u.banActive = true
-            OR u.role = :role
-      """)
-  Set<UUID> findIdsByBanActiveTrueOrRole(@Param("role") UserRole role);
-
-  @Query("""
-          SELECT u.id
-          FROM User u
-          WHERE (u.banActive = true AND u.role = 'WRITER')
-            OR u.role = 'DEMO'
-      """)
-  Set<UUID> findIdsByBanActiveTrueAndRoleWriterOrRoleDemo();
 
   @Query("""
       SELECT DISTINCT u

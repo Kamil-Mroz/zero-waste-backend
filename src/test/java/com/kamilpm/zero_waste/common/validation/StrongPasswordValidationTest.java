@@ -1,7 +1,5 @@
 package com.kamilpm.zero_waste.common.validation;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -10,6 +8,8 @@ import com.kamilpm.zero_waste.auth.dto.CreatePasswordRequest;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StrongPasswordValidationTest {
 
@@ -26,7 +26,7 @@ public class StrongPasswordValidationTest {
     var newPassword = new CreatePasswordRequest("SecurePassword123!", "SecurePassword123!");
     var violations = validator.validate(newPassword);
 
-    assertEquals(true, violations.isEmpty());
+    assertThat(violations.isEmpty()).isTrue();
   }
 
   @Test
@@ -34,9 +34,10 @@ public class StrongPasswordValidationTest {
     var newPassword = new CreatePasswordRequest("SecurePassword123", " SecurePassword123");
     var violations = validator.validate(newPassword);
 
-    assertEquals(2, violations.size());
-    assertEquals("Password requires at least one: [a-z], [A-z], [0-9], [@$!%*?&]",
-        violations.iterator().next().getMessage());
+    assertThat(violations.size()).isEqualTo(2);
+    assertThat(
+        violations.iterator().next().getMessage())
+        .isEqualTo("Password requires at least one: [a-z], [A-z], [0-9], [@$!%*?&]");
   }
 
   @Test
@@ -44,9 +45,10 @@ public class StrongPasswordValidationTest {
     var newPassword = new CreatePasswordRequest("SecurePassword!", " SecurePassword!");
     var violations = validator.validate(newPassword);
 
-    assertEquals(2, violations.size());
-    assertEquals("Password requires at least one: [a-z], [A-z], [0-9], [@$!%*?&]",
-        violations.iterator().next().getMessage());
+    assertThat(violations.size()).isEqualTo(2);
+    assertThat(
+        violations.iterator().next().getMessage())
+        .isEqualTo("Password requires at least one: [a-z], [A-z], [0-9], [@$!%*?&]");
   }
 
   @Test
@@ -54,9 +56,10 @@ public class StrongPasswordValidationTest {
     var newPassword = new CreatePasswordRequest("securepassword123!", " securepassword123!");
     var violations = validator.validate(newPassword);
 
-    assertEquals(2, violations.size());
-    assertEquals("Password requires at least one: [a-z], [A-z], [0-9], [@$!%*?&]",
-        violations.iterator().next().getMessage());
+    assertThat(violations.size()).isEqualTo(2);
+    assertThat(
+        violations.iterator().next().getMessage())
+        .isEqualTo("Password requires at least one: [a-z], [A-z], [0-9], [@$!%*?&]");
   }
 
   @Test
@@ -64,9 +67,10 @@ public class StrongPasswordValidationTest {
     var newPassword = new CreatePasswordRequest("SECUREPASSWORD123!", " SECUREPASSWORD123!");
     var violations = validator.validate(newPassword);
 
-    assertEquals(2, violations.size());
-    assertEquals("Password requires at least one: [a-z], [A-z], [0-9], [@$!%*?&]",
-        violations.iterator().next().getMessage());
+    assertThat(violations.size()).isEqualTo(2);
+    assertThat(
+        violations.iterator().next().getMessage())
+        .isEqualTo("Password requires at least one: [a-z], [A-z], [0-9], [@$!%*?&]");
   }
 
 }
