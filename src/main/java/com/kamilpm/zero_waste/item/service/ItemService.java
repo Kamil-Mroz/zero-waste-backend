@@ -16,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.kamilpm.zero_waste.common.dto.CategoryData;
 import com.kamilpm.zero_waste.common.dto.CurrentUser;
@@ -66,21 +65,21 @@ public class ItemService {
 
   @Transactional
   public ItemDto createItem(ItemRequest itemRequest) {
-    CurrentUser user = currentUser.getRequiredAuthenticatedUser();
+    var user = currentUser.getRequiredAuthenticatedUser();
 
-    List<MultipartFile> files = itemRequest.getImages() == null ? List.of() : itemRequest.getImages();
+    List<UUID> uploadIds = itemRequest.getImageUploadIds() == null ? List.of() : itemRequest.getImageUploadIds();
 
-    if (files.size() > 5) {
+    if (uploadIds.size() > 5) {
       throw new ConflictException("Max image count is 5", "images");
     }
 
-    if (Objects.equals(itemRequest.getState(), ItemState.GIVEN)) {
+    if (uploadIds.stream().distinct().count() != uploadIds.size()) {
       throw new ConflictException("Unable to create a given item");
     }
 
-    CategoryData category = categoryItemApi.getCategoryById(itemRequest.getCategoryId());
+    var category = categoryItemApi.getCategoryById(itemRequest.getCategoryId());
 
-    Item item = Item.builder()
+    var item = Item.builder()
         .title(itemRequest.getTitle())
         .description(itemRequest.getDescription())
         .condition(itemRequest.getCondition())
@@ -91,9 +90,10 @@ public class ItemService {
         .ownerId(user.id())
         .build();
 
-    Item savedItem = itemRepository.save(item);
+    var savedItem = itemRepository.save(item);
 
-    List<ImageData> uploadedImages = imageItemApi.uploadItemImages(savedItem.getId(), files);
+    List<ImageData> uploadedImages = imageItemApi.attachUploadedImages(savedItem.getId(), uploadIds);
+
     savedItem.setImageIds(new ArrayList<>(uploadedImages.stream().map((image) -> image.id()).toList()));
 
     ImageData thumbnail = null;
@@ -112,119 +112,6 @@ public class ItemService {
     return itemMapper.toDto(finalItem, category, uploadedImages, thumbnail);
   }
 
-  // @Transactional
-  // public ItemDto updateItem(UUID id, UpdateItemRequest itemRequest) {
-
-  // if (Objects.equals(itemRequest.getState(), ItemState.GIVEN)) {
-  // throw new ConflictException("Unable to update to a given item");
-  // }
-
-  // CategoryData category =
-  // categoryItemApi.getCategoryById(itemRequest.getCategoryId());
-
-  // Item item = itemRepository.findByIdAndModerationStatus(id,
-  // ModerationStatus.VISIBLE)
-  // .orElseThrow(() -> new EntityNotFoundException("Item not found"));
-
-  // CurrentUser user = currentUser.getRequiredAuthenticatedUser();
-
-  // if (!Objects.equals(item.getOwnerId(), user.id())) {
-  // throw new ForbiddenException("Must be the owner of the item to update it");
-  // }
-
-  // if (Objects.equals(ItemState.GIVEN, item.getState())) {
-  // throw new ForbiddenException("Can not update a given item");
-  // }
-  // Set<UUID> removedImageIds = itemRequest.getRemovedImageIds() == null
-  // ? Set.of()
-  // : itemRequest.getRemovedImageIds();
-
-  // List<MultipartFile> newImages = itemRequest.getImages() == null ? List.of() :
-  // itemRequest.getImages();
-
-  // List<UUID> existingImageIds = new ArrayList<>(item.getImageIds());
-
-  // Set<UUID> existingImageIdSet = new HashSet<>(existingImageIds);
-
-  // if (!existingImageIdSet.containsAll(removedImageIds)) {
-  // throw new ForbiddenException("Some images do not belong to this item");
-  // }
-
-  // int finalImageCount = existingImageIds.size() - removedImageIds.size() +
-  // newImages.size();
-
-  // if (finalImageCount > 5) {
-  // throw new ConflictException("Max image count is 5", "images");
-  // }
-
-  // item.setTitle(itemRequest.getTitle());
-  // item.setDescription(itemRequest.getDescription());
-  // item.setCondition(itemRequest.getCondition());
-  // item.setCity(itemRequest.getCity());
-  // item.setCategoryId(itemRequest.getCategoryId());
-  // item.setState(itemRequest.getState());
-
-  // List<UUID> remainingImageIds = existingImageIds.stream().filter(imageId ->
-  // !removedImageIds.contains(imageId))
-  // .collect(Collectors.toCollection(ArrayList::new));
-
-  // if (item.getThumbnailId() != null &&
-  // removedImageIds.contains(item.getThumbnailId())) {
-  // item.setThumbnailId(null);
-  // }
-
-  // List<ImageData> remainingImages = new
-  // ArrayList<>(imageItemApi.getAllImagesByIds(remainingImageIds));
-  // List<ImageData> uploadedImages = imageItemApi.uploadItemImages(item.getId(),
-  // newImages);
-
-  // remainingImages.addAll(uploadedImages);
-
-  // remainingImageIds.addAll(uploadedImages.stream().map(image ->
-  // image.id()).toList());
-  // item.setImageIds(remainingImageIds);
-
-  // ImageData thumbnail = updateThumbnail(item, itemRequest, remainingImages);
-  // Item updatedItem = itemRepository.save(item);
-
-  // if (!removedImageIds.isEmpty()) {
-  // events.publishEvent(new DeleteImagesEvent(removedImageIds));
-  // }
-
-  // return itemMapper.toDto(updatedItem, category, remainingImages, thumbnail);
-  // }
-
-  // private ImageData updateThumbnail(Item item, UpdateItemRequest request,
-  // List<ImageData> images) {
-  // if (images.isEmpty()) {
-  // item.setThumbnailId(null);
-  // return null;
-
-  // }
-  // Integer thumbnailIndex = request.getThumbnailIndex();
-
-  // if (thumbnailIndex != null
-  // && thumbnailIndex >= 0
-  // && thumbnailIndex < images.size()) {
-  // ImageData selectedThumbnail = images.get(thumbnailIndex);
-  // item.setThumbnailId(selectedThumbnail.id());
-  // return selectedThumbnail;
-  // }
-
-  // if (item.getThumbnailId() != null) {
-  // Optional<ImageData> existingThumbnail = images.stream()
-  // .filter(image -> Objects.equals(image.id(),
-  // item.getThumbnailId())).findFirst();
-  // if (existingThumbnail.isPresent()) {
-  // return existingThumbnail.get();
-  // }
-  // }
-
-  // ImageData image = images.get(0);
-  // item.setThumbnailId(image.id());
-  // return image;
-  // }
-
   @Transactional
   public ItemDto updateItem(UUID id, UpdateItemRequest itemRequest) {
     if (Objects.equals(itemRequest.getState(), ItemState.GIVEN)) {
@@ -233,6 +120,7 @@ public class ItemService {
     CategoryData category = categoryItemApi.getCategoryById(itemRequest.getCategoryId());
     Item item = itemRepository.findByIdAndModerationStatus(id, ModerationStatus.VISIBLE)
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
+
     CurrentUser user = currentUser.getRequiredAuthenticatedUser();
     if (!Objects.equals(item.getOwnerId(), user.id())) {
       throw new ForbiddenException("Must be the owner of the item to update it");
@@ -246,19 +134,36 @@ public class ItemService {
     }
 
     Set<UUID> removedImageIds = itemRequest.getRemovedImageIds() == null ? Set.of() : itemRequest.getRemovedImageIds();
-    List<MultipartFile> newImages = itemRequest.getImages() == null ? List.of() : itemRequest.getImages();
+
+    List<UUID> uploadIds = itemRequest.getImageUploadIds() == null ? List.of() : itemRequest.getImageUploadIds();
+
+    if (uploadIds.size() > 5
+        || new HashSet<>(uploadIds).size() != uploadIds.size()) {
+      throw new ConflictException("Invalid image upload list", "images");
+    }
+
+    if (itemRequest.getThumbnailExistingImageId() != null
+        && itemRequest.getThumbnailIndex() != null) {
+      throw new ConflictException(
+          "Only one thumbnail selection can be provided");
+    }
 
     List<UUID> existingImageIds = new ArrayList<>(item.getImageIds());
     Set<UUID> existingImageIdSet = new HashSet<>(existingImageIds);
+
     if (!existingImageIdSet
         .containsAll(removedImageIds)) {
       throw new ForbiddenException("Some images do not belong to this item");
     }
-    int finalImageCount = existingImageIds.size() - removedImageIds.size()
-        + newImages.size();
+
+    List<UUID> remainingImageIds = existingImageIds.stream().filter(imageId -> !removedImageIds.contains(imageId))
+        .collect(Collectors.toCollection(ArrayList::new));
+
+    int finalImageCount = remainingImageIds.size() + uploadIds.size();
     if (finalImageCount > 5) {
       throw new ConflictException("Max image count is 5", "images");
     }
+
     item.setTitle(itemRequest.getTitle());
     item.setDescription(itemRequest.getDescription());
     item.setCondition(itemRequest.getCondition());
@@ -266,29 +171,40 @@ public class ItemService {
     item.setCategoryId(itemRequest.getCategoryId());
     item.setState(itemRequest.getState());
 
-    List<UUID> remainingImageIds = existingImageIds.stream()
-        .filter(imageId -> !removedImageIds.contains(imageId)).collect(Collectors.toCollection(ArrayList::new));
-
     if (item.getThumbnailId() != null
         && removedImageIds.contains(item.getThumbnailId())) {
       item.setThumbnailId(null);
     }
     List<ImageData> existingImages = new ArrayList<>(imageItemApi.getAllImagesByIds(remainingImageIds));
-    List<ImageData> uploadedImages = imageItemApi.uploadItemImages(item.getId(),
-        newImages);
-    List<UUID> uploadedImageIds = uploadedImages.stream()
-        .map(ImageData::id).toList();
-    remainingImageIds.addAll(uploadedImageIds);
-    item.setImageIds(remainingImageIds);
-    List<ImageData> allImages = new ArrayList<>(existingImages);
-    allImages.addAll(uploadedImages);
+    List<ImageData> uploadedImages = imageItemApi.attachUploadedImages(item.getId(), uploadIds);
+
+    List<UUID> finalImageIds = new ArrayList<>(remainingImageIds);
+    finalImageIds.addAll(uploadedImages.stream().map(ImageData::id).toList());
+
+    item.setImageIds(finalImageIds);
+
     ImageData thumbnail = updateThumbnail(item, itemRequest, existingImages,
         uploadedImages);
+    updateThumbnail(item, itemRequest, existingImages, uploadedImages);
+
     Item updatedItem = itemRepository.save(item);
+
+    itemRepository.save(item);
     if (!removedImageIds.isEmpty()) {
       events.publishEvent(new DeleteImagesEvent(removedImageIds));
     }
-    return itemMapper.toDto(updatedItem, category, allImages, thumbnail);
+
+    return itemMapper.toDtoWithOwner(updatedItem, category,
+        existingImagesPlusUploaded(existingImages, uploadedImages),
+        thumbnail, new UserSummaryDto(user.id(), user.nickname()));
+  }
+
+  private List<ImageData> existingImagesPlusUploaded(
+      List<ImageData> existingImages,
+      List<ImageData> uploadedImages) {
+    List<ImageData> result = new ArrayList<>(existingImages);
+    result.addAll(uploadedImages);
+    return result;
   }
 
   private ImageData updateThumbnail(Item item, UpdateItemRequest request, List<ImageData> existingImages,

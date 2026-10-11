@@ -5,17 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import com.kamilpm.zero_waste.common.dto.ImageData;
 
 public interface ImageProvider {
 
-  public List<ImageData> uploadItemImages(UUID itemId, List<MultipartFile> files);
-
-  // public void deleteItemImages(UUID itemId, List<UUID> imageIds);
-
-  // public void deleteImagesByItems(Collection<UUID> itemIds);
+  public List<ImageData> attachUploadedImages(UUID item, List<UUID> uploadIds);
 
   void deleteImages(Collection<UUID> ids);
 

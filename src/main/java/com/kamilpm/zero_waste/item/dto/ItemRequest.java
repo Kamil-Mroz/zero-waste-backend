@@ -34,9 +34,10 @@ public class ItemRequest {
   private String city;
   @NotNull(message = "Category ID is required")
   private UUID categoryId;
-  @Size(max = 5, message = "You can upload a maximum of 5 images")
-  @Builder.Default
-  private List<MultipartFile> images = new ArrayList<>();
+  // @Size(max = 5, message = "You can upload a maximum of 5 images")
+  // @Builder.Default
+  // private List<MultipartFile> images = new ArrayList<>();
+  private List<UUID> imageUploadIds;
 
   private Integer thumbnailIndex;
 

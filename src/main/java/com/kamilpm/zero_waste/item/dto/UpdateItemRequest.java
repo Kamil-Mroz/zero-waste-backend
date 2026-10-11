@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import com.kamilpm.zero_waste.common.dto.ItemCondition;
 import com.kamilpm.zero_waste.common.dto.ItemState;
 
@@ -28,15 +26,18 @@ public class UpdateItemRequest {
   private String title;
   @NotBlank(message = "Description is required")
   private String description;
+  @NotNull
   private ItemCondition condition;
+  @NotNull
   private ItemState state;
   @NotBlank(message = "City is required")
   private String city;
   @NotNull(message = "Category ID is required")
   private UUID categoryId;
   @Size(max = 5, message = "You can upload a maximum of 5 images")
+
   @Builder.Default
-  private List<MultipartFile> images = new ArrayList<>();
+  private List<UUID> imageUploadIds = new ArrayList<>();
   @Builder.Default
   private Set<UUID> removedImageIds = new HashSet<>();
 

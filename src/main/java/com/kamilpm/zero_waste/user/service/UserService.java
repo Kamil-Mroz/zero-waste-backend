@@ -218,7 +218,6 @@ public class UserService {
   }
 
   private void deleteUsersByIds(List<UUID> ids) {
-
     itemApi.deleteItemsByOwnerIds(ids);
     userRepository.deleteAllById(ids);
 

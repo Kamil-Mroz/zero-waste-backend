@@ -24,15 +24,14 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/items", version = "1")
@@ -42,8 +41,8 @@ public class ItemController {
   private final ItemService itemService;
 
   @RateLimit(action = "create-item", limit = 5, window = 1, unit = ChronoUnit.HOURS)
-  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<ItemDto> createItem(@Valid @ModelAttribute ItemRequest itemRequest) {
+  @PostMapping
+  public ResponseEntity<ItemDto> createItem(@Valid @RequestBody ItemRequest itemRequest) {
 
     ItemDto item = itemService.createItem(itemRequest);
 
@@ -51,12 +50,12 @@ public class ItemController {
   }
 
   @RateLimit(action = "update-item", limit = 20, window = 1, unit = ChronoUnit.MINUTES)
-  @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PutMapping(path = "/{id}")
   public ResponseEntity<ItemDto> updateItem(@PathVariable("id") UUID id,
-      @Valid @ModelAttribute UpdateItemRequest itemRequest) {
-    ItemDto item = itemService.updateItem(id, itemRequest);
+      @Valid @RequestBody UpdateItemRequest itemRequest) {
 
-    return ResponseEntity.ok(item);
+    return ResponseEntity.ok(
+        itemService.updateItem(id, itemRequest));
   }
 
   @RateLimit(action = "publish-item", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
