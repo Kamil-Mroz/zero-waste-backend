@@ -274,6 +274,7 @@ public class ItemService {
 
     Set<UUID> itemsImageIds = itemPage.getContent().stream().map(item -> item.getThumbnailId())
         .collect(Collectors.toSet());
+
     Map<UUID, ImageData> imagesById = imageItemApi.getImagesByIds(itemsImageIds);
 
     return itemPage.map((item) -> itemMapper.toListDto(item, categoriesById.get(item.getCategoryId()),

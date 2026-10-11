@@ -9,9 +9,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import com.kamilpm.zero_waste.common.dto.ImageData;
 import com.kamilpm.zero_waste.common.dto.ItemCountBreakDown;
 import com.kamilpm.zero_waste.common.dto.ItemState;
 import com.kamilpm.zero_waste.common.dto.ProfileItemSummary;
@@ -37,7 +37,6 @@ public class ItemApi implements ItemProvider {
   private final ItemRepository itemRepository;
   private final ItemMapper itemMapper;
   private final UserProvider userApi;
-  private final ApplicationEventPublisher events;
   private final ItemService itemService;
   private final ImageProvider imageItemApi;
 
@@ -95,10 +94,16 @@ public class ItemApi implements ItemProvider {
     List<Item> latestItems = itemRepository.findTop3ByOwnerIdAndStateAndModerationStatusOrderByCreatedAtDesc(userId,
         ItemState.AVAILABLE, ModerationStatus.VISIBLE);
 
+    Set<UUID> itemsImageIds = latestItems.stream().map(item -> item.getThumbnailId())
+        .collect(Collectors.toSet());
+
+    Map<UUID, ImageData> imagesById = imageItemApi.getImagesByIds(itemsImageIds);
+
     ItemCountBreakDown itemCountBreakDown = buildItemCountBreakDown(userId);
     return new ProfileItemSummary(
         itemCountBreakDown,
-        latestItems.stream().map(itemMapper::toSimpleItemData).toList());
+        latestItems.stream().map(item -> itemMapper.toSimpleItemData(item, imagesById.get(item.getThumbnailId())))
+            .toList());
   }
 
   private ItemCountBreakDown buildItemCountBreakDown(UUID userId) {

@@ -58,7 +58,7 @@ public class ItemMapper {
       return null;
 
     return new SimpleItemData(item.getId(), item.getTitle(), item.getDescription(), item.getCity(), item.getCondition(),
-        item.getState(), item.getModerationStatus(), item.getOwnerId(), user);
+        item.getState(), item.getModerationStatus(), null, item.getOwnerId(), user);
   }
 
   public SimpleItemData toSimpleItemData(Item item) {
@@ -66,7 +66,15 @@ public class ItemMapper {
       return null;
 
     return new SimpleItemData(item.getId(), item.getTitle(), item.getDescription(), item.getCity(), item.getCondition(),
-        item.getState(), item.getModerationStatus(), item.getOwnerId(), null);
+        item.getState(), item.getModerationStatus(), null, item.getOwnerId(), null);
+  }
+
+  public SimpleItemData toSimpleItemData(Item item, ImageData thumbnail) {
+    if (item == null)
+      return null;
+
+    return new SimpleItemData(item.getId(), item.getTitle(), item.getDescription(), item.getCity(), item.getCondition(),
+        item.getState(), item.getModerationStatus(), thumbnail, item.getOwnerId(), null);
   }
 
 }

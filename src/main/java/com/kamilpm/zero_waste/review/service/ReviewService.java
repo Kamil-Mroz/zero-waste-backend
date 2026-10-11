@@ -64,7 +64,7 @@ public class ReviewService {
 
     UserSummaryDto itemOwner = userReviewApi.findUserSummaryById(item.ownerId());
     SimpleItemData itemWithOwner = new SimpleItemData(item.id(), item.title(), item.description(), item.city(),
-        item.condition(), item.state(), item.moderationStatus(), item.ownerId(), itemOwner);
+        item.condition(), item.state(), item.moderationStatus(), null, item.ownerId(), itemOwner);
 
     Review newReview = Review.builder()
         .comment(reviewRequest.getComment())

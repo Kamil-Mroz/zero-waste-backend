@@ -12,6 +12,7 @@ public record SimpleItemData(
     ItemCondition condition,
     ItemState state,
     ModerationStatus moderationStatus,
+    ImageData thumbnail,
     UUID ownerId,
     UserSummaryDto owner) {
 }

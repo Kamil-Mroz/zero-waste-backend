@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.kamilpm.zero_waste.common.dto.ImageData;
 import com.kamilpm.zero_waste.common.events.DeleteImagesEvent;
@@ -126,7 +125,6 @@ public class ImageItemApi implements ImageProvider {
 
     Instant now = Instant.now();
 
-    // Preserve the original frontend order.
     var orderedUploads = uploadIds.stream()
         .map(byId::get)
         .toList();
