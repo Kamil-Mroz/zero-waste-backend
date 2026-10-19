@@ -13,13 +13,17 @@ import com.kamilpm.zero_waste.common.interfaces.OfferProvider;
 import com.kamilpm.zero_waste.offer.mapper.OfferMapper;
 import com.kamilpm.zero_waste.offer.repository.OfferRepository;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class OfferApi implements OfferProvider {
   private final OfferRepository offerRepository;
   private final OfferMapper offerMapper;
+
+
+  public OfferApi(OfferRepository offerRepository, OfferMapper offerMapper) {
+    this.offerRepository = offerRepository;
+    this.offerMapper = offerMapper;
+  }
 
   public boolean isBuyerOfItem(UUID userId, UUID itemId) {
     return offerRepository.existsByBuyerIdAndItemId(userId, itemId);

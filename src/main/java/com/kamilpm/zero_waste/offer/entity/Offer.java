@@ -18,18 +18,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Table(name = "offers", uniqueConstraints = {
     @UniqueConstraint(columnNames = {
         "buyer_id",
@@ -64,5 +54,75 @@ public class Offer {
   @Column(name = "buyer_visibility", nullable = false)
   @Enumerated(EnumType.STRING)
   private UserVisibility buyerVisibility;
+
+  public Offer() {
+  }
+
+  public Offer(UUID id, UUID buyerId, UUID itemId, OfferStatus status, Instant createdAt, Instant updatedAt,
+      UserVisibility buyerVisibility) {
+    this.id = id;
+    this.buyerId = buyerId;
+    this.itemId = itemId;
+    this.status = status;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+    this.buyerVisibility = buyerVisibility;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public UUID getBuyerId() {
+    return buyerId;
+  }
+
+  public void setBuyerId(UUID buyerId) {
+    this.buyerId = buyerId;
+  }
+
+  public UUID getItemId() {
+    return itemId;
+  }
+
+  public void setItemId(UUID itemId) {
+    this.itemId = itemId;
+  }
+
+  public OfferStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(OfferStatus status) {
+    this.status = status;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(Instant createdAt) {
+    this.createdAt = createdAt;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public void setUpdatedAt(Instant updatedAt) {
+    this.updatedAt = updatedAt;
+  }
+
+  public UserVisibility getBuyerVisibility() {
+    return buyerVisibility;
+  }
+
+  public void setBuyerVisibility(UserVisibility buyerVisibility) {
+    this.buyerVisibility = buyerVisibility;
+  }
 
 }

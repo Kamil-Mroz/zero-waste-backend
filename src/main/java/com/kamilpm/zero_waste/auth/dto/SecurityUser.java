@@ -12,9 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.kamilpm.zero_waste.common.dto.UserAuthenticationData;
 import com.kamilpm.zero_waste.common.dto.UserRole;
 
-import lombok.Getter;
-
-@Getter
 public class SecurityUser implements UserDetails {
   private final UUID id;
   private final String email;
@@ -70,6 +67,34 @@ public class SecurityUser implements UserDetails {
   @Override
   public boolean isEnabled() {
     return true;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public String getNickname() {
+    return nickname;
+  }
+
+  public UserRole getRole() {
+    return role;
+  }
+
+  public boolean isBanActive() {
+    return banActive;
+  }
+
+  public Instant getBannedUntil() {
+    return bannedUntil;
+  }
+
+  public Instant getJoinedAt() {
+    return joinedAt;
   }
 
 }

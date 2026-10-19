@@ -5,22 +5,13 @@ import java.util.UUID;
 
 import com.kamilpm.zero_waste.common.dto.UserRole;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UserDto {
-  private UUID id;
-  private String nickname;
-  private String email;
-  private boolean activeBan;
-  private Instant bannedUntil;
-  private Instant joinedAt;
-  private UserRole role;
+public record UserDto(
+    UUID id,
+    String nickname,
+    String email,
+    boolean activeBan,
+    Instant bannedUntil,
+    Instant joinedAt,
+    UserRole role) {
 
 }

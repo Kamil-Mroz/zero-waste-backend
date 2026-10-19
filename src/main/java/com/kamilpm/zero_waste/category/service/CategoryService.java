@@ -21,14 +21,19 @@ import com.kamilpm.zero_waste.common.exception.EntityNotFoundException;
 import com.kamilpm.zero_waste.common.interfaces.ItemProvider;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class CategoryService {
   private final CategoryRepository categoryRepository;
   private final ItemProvider itemCategoryApi;
   private final CategoryMapper categoryMapper;
+
+  public CategoryService(CategoryRepository categoryRepository, ItemProvider itemCategoryApi,
+      CategoryMapper categoryMapper) {
+    this.categoryRepository = categoryRepository;
+    this.itemCategoryApi = itemCategoryApi;
+    this.categoryMapper = categoryMapper;
+  }
 
   public List<Category> getAllCategories() {
     return categoryRepository.findAll();
@@ -47,10 +52,6 @@ public class CategoryService {
     for (Category category : categories) {
       CategoryTreeDto dto = categoryMapper.toTreeDto(category);
 
-      if (dto.getChildren() == null) {
-        dto.setChildren(new ArrayList<>());
-      }
-
       map.put(category.getId(), dto);
     }
 
@@ -65,7 +66,7 @@ public class CategoryService {
         CategoryTreeDto parent = map.get(category.getParent().getId());
 
         if (parent != null) {
-          parent.getChildren().add(dto);
+          parent.children().add(dto);
         }
       }
     }
@@ -83,15 +84,17 @@ public class CategoryService {
   @CacheEvict(value = { "categoryTree", "categoryDescendants" }, allEntries = true)
   public Category createCategory(CategoryRequest categoryRequest) {
     Category parent = null;
-    if (categoryRepository.existsByName(categoryRequest.getName())) {
-      throw new ConflictException("Category already exists with name " + categoryRequest.getName(), "name");
+    if (categoryRepository.existsByName(categoryRequest.name())) {
+      throw new ConflictException("Category already exists with name " + categoryRequest.name(), "name");
     }
 
-    if (categoryRequest.getCategoryId() != null) {
-      parent = categoryRepository.findById(categoryRequest.getCategoryId())
+    if (categoryRequest.categoryId() != null) {
+      parent = categoryRepository.findById(categoryRequest.categoryId())
           .orElseThrow(() -> new EntityNotFoundException("Parent category not found"));
     }
-    Category category = Category.builder().name(categoryRequest.getName()).parent(parent).build();
+    Category category = new Category();
+    category.setName(categoryRequest.name());
+    category.setParent(parent);
 
     Category savedCategory = categoryRepository.save(category);
 
@@ -103,22 +106,22 @@ public class CategoryService {
   public Category updateCategory(UUID categoryId, CategoryRequest categoryRequest) {
     Category parent = null;
 
-    if (categoryRepository.existsByNameAndIdNot(categoryRequest.getName(), categoryId)) {
-      throw new ConflictException("Category already exists with name " + categoryRequest.getName(), "name");
+    if (categoryRepository.existsByNameAndIdNot(categoryRequest.name(), categoryId)) {
+      throw new ConflictException("Category already exists with name " + categoryRequest.name(), "name");
     }
 
     Category category = categoryRepository.findById(categoryId)
         .orElseThrow(() -> new EntityNotFoundException("Category not found by id" + categoryId));
 
-    if (categoryRequest.getCategoryId() != null) {
-      parent = categoryRepository.findById(categoryRequest.getCategoryId())
+    if (categoryRequest.categoryId() != null) {
+      parent = categoryRepository.findById(categoryRequest.categoryId())
           .orElseThrow(() -> new EntityNotFoundException(
-              "Parent category not found with id " + categoryRequest.getCategoryId()));
+              "Parent category not found with id " + categoryRequest.categoryId()));
       validateNoCycle(category, parent);
     }
 
     category.setParent(parent);
-    category.setName(categoryRequest.getName());
+    category.setName(categoryRequest.name());
 
     Category updatedCategory = categoryRepository.save(category);
 

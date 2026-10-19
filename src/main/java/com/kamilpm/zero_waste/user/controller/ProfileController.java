@@ -7,8 +7,6 @@ import com.kamilpm.zero_waste.user.dto.OwnProfileResponse;
 import com.kamilpm.zero_waste.user.dto.PublicUserProfileResponse;
 import com.kamilpm.zero_waste.user.service.ProfileService;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -17,19 +15,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/profiles", version = "1")
-@RequiredArgsConstructor
 public class ProfileController {
   private final ProfileService profileService;
 
+  public ProfileController(ProfileService profileService) {
+    this.profileService = profileService;
+  }
+
   @GetMapping("/{id}")
-  public ResponseEntity<PublicUserProfileResponse>
-  getProfile(@PathVariable("id") UUID id) {
-  return ResponseEntity.ok(profileService.getProfile(id));
+  public ResponseEntity<PublicUserProfileResponse> getProfile(@PathVariable("id") UUID id) {
+    return ResponseEntity.ok(profileService.getProfile(id));
   }
 
   @GetMapping
   public ResponseEntity<OwnProfileResponse> getOwnProfile() {
 
-  return ResponseEntity.ok(profileService.getOwnProfile());
+    return ResponseEntity.ok(profileService.getOwnProfile());
   }
 }

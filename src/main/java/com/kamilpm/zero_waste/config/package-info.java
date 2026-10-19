@@ -1,4 +1,7 @@
-@ApplicationModule
+@ApplicationModule(allowedDependencies = {
+    "properties",
+    "security"
+})
 package com.kamilpm.zero_waste.config;
 
 import org.springframework.modulith.ApplicationModule;

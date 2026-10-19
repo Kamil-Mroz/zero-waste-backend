@@ -1,7 +1,5 @@
 package com.kamilpm.zero_waste.config;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,10 +19,14 @@ import com.kamilpm.zero_waste.security.WebSocketAuthInterceptor;
 
 @Configuration
 @EnableWebSocketMessageBroker
-@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+
+  public WebSocketConfig(WebSocketAuthInterceptor webSocketAuthInterceptor) {
+    this.webSocketAuthInterceptor = webSocketAuthInterceptor;
+  }
+
   @Value("${app.cors.allowed-origins}")
   private String allowedOrigins;
 

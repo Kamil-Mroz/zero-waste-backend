@@ -11,7 +11,6 @@ import com.kamilpm.zero_waste.common.annotation.RateLimit;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 import java.time.temporal.ChronoUnit;
 
@@ -25,10 +24,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/auth", version = "1")
-@RequiredArgsConstructor
 public class AuthController {
 
   private final AuthService authService;
+
+  public AuthController(AuthService authService) {
+    this.authService = authService;
+  }
 
   @Value("${app.prod}")
   private boolean isProd;

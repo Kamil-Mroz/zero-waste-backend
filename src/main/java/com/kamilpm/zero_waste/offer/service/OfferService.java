@@ -43,10 +43,7 @@ import com.kamilpm.zero_waste.offer.entity.Offer;
 import com.kamilpm.zero_waste.offer.mapper.OfferMapper;
 import com.kamilpm.zero_waste.offer.repository.OfferRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class OfferService {
   private final OfferRepository offerRepository;
   private final OfferMapper offerMapper;
@@ -54,6 +51,16 @@ public class OfferService {
   private final CurrentUserProvider currentUser;
   private final UserProvider userOfferApi;
   private final ApplicationEventPublisher events;
+
+  public OfferService(OfferRepository offerRepository, OfferMapper offerMapper, ItemProvider itemOfferApi,
+      CurrentUserProvider currentUser, UserProvider userOfferApi, ApplicationEventPublisher events) {
+    this.offerRepository = offerRepository;
+    this.offerMapper = offerMapper;
+    this.itemOfferApi = itemOfferApi;
+    this.currentUser = currentUser;
+    this.userOfferApi = userOfferApi;
+    this.events = events;
+  }
 
   private Offer getOfferById(UUID id) {
     Offer offer = offerRepository.findDetailsById(id).orElseThrow(() -> new EntityNotFoundException("Offer not found"));
@@ -164,12 +171,11 @@ public class OfferService {
 
     }
 
-    Offer offer = Offer.builder()
-        .buyerId(user.id())
-        .itemId(item.id())
-        .buyerVisibility(UserVisibility.VISIBLE)
-        .status(OfferStatus.PENDING)
-        .build();
+    Offer offer = new Offer();
+    offer.setBuyerId(user.id());
+    offer.setItemId(item.id());
+    offer.setBuyerVisibility(UserVisibility.VISIBLE);
+    offer.setStatus(OfferStatus.PENDING);
     offerRepository.save(offer);
 
     String itemOwnerEmail = userOfferApi.getUserEmail(item.ownerId());

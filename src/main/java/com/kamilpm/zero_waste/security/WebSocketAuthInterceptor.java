@@ -19,14 +19,16 @@ import com.kamilpm.zero_waste.common.exception.ForbiddenException;
 import com.kamilpm.zero_waste.common.exception.TokenException;
 import com.kamilpm.zero_waste.common.exception.UnauthorizedException;
 
-import lombok.RequiredArgsConstructor;
-
 @Component
-@RequiredArgsConstructor
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
   private final JwtApi jwtApi;
   private final AuthApi authApi;
+
+  public WebSocketAuthInterceptor(JwtApi jwtApi, AuthApi authApi) {
+    this.jwtApi = jwtApi;
+    this.authApi = authApi;
+  }
 
   @Override
   public Message<?> preSend(Message<?> message, MessageChannel channel) {

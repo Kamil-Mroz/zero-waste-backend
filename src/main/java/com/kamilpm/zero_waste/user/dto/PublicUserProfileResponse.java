@@ -6,9 +6,6 @@ import java.util.UUID;
 import com.kamilpm.zero_waste.common.dto.ProfileItemSummary;
 import com.kamilpm.zero_waste.common.dto.ProfileReviewSummary;
 
-import lombok.Builder;
-
-@Builder
 public record PublicUserProfileResponse(
     UUID id,
     String nickname,

@@ -39,10 +39,7 @@ import com.kamilpm.zero_waste.review.entity.Review;
 import com.kamilpm.zero_waste.review.mapper.ReviewMapper;
 import com.kamilpm.zero_waste.review.repository.ReviewRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final ReviewMapper reviewMapper;
@@ -52,11 +49,23 @@ public class ReviewService {
   private final UserProvider userReviewApi;
   private final ApplicationEventPublisher events;
 
+  public ReviewService(ReviewRepository reviewRepository, ReviewMapper reviewMapper, CurrentUserProvider currentUser,
+      OfferProvider offerReviewApi, ItemProvider itemReviewApi, UserProvider userReviewApi,
+      ApplicationEventPublisher events) {
+    this.reviewRepository = reviewRepository;
+    this.reviewMapper = reviewMapper;
+    this.currentUser = currentUser;
+    this.offerReviewApi = offerReviewApi;
+    this.itemReviewApi = itemReviewApi;
+    this.userReviewApi = userReviewApi;
+    this.events = events;
+  }
+
   @Transactional
   public ReviewDto createReview(ReviewRequest reviewRequest) {
     CurrentUser user = currentUser.getRequiredAuthenticatedUser();
 
-    SimpleOfferData offer = offerReviewApi.getOfferById(reviewRequest.getOfferId());
+    SimpleOfferData offer = offerReviewApi.getOfferById(reviewRequest.offerId());
     SimpleItemData item = itemReviewApi.getItemById(offer.itemId());
 
     if (reviewRepository.existsByOfferId(offer.id()))
@@ -66,14 +75,13 @@ public class ReviewService {
     SimpleItemData itemWithOwner = new SimpleItemData(item.id(), item.title(), item.description(), item.city(),
         item.condition(), item.state(), item.moderationStatus(), null, item.ownerId(), itemOwner);
 
-    Review newReview = Review.builder()
-        .comment(reviewRequest.getComment())
-        .offerId(offer.id())
-        .rating(reviewRequest.getRating())
-        .revieweeId(item.ownerId())
-        .reviewerId(user.id())
-        .reviewerVisibility(UserVisibility.VISIBLE)
-        .build();
+    Review newReview = new Review();
+    newReview.setComment(reviewRequest.comment());
+    newReview.setOfferId(offer.id());
+    newReview.setRating(reviewRequest.rating());
+    newReview.setRevieweeId(item.ownerId());
+    newReview.setReviewerId(user.id());
+    newReview.setReviewerVisibility(UserVisibility.VISIBLE);
 
     Review savedReview = reviewRepository.save(newReview);
 

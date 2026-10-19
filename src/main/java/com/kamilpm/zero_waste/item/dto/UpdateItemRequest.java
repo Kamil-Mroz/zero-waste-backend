@@ -12,35 +12,21 @@ import com.kamilpm.zero_waste.common.dto.ItemState;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UpdateItemRequest {
-  @NotBlank(message = "Title is required")
-  private String title;
-  @NotBlank(message = "Description is required")
-  private String description;
-  @NotNull
-  private ItemCondition condition;
-  @NotNull
-  private ItemState state;
-  @NotBlank(message = "City is required")
-  private String city;
-  @NotNull(message = "Category ID is required")
-  private UUID categoryId;
-  @Size(max = 5, message = "You can upload a maximum of 5 images")
+public record UpdateItemRequest(
+    @NotBlank(message = "Title is required") String title,
+    @NotBlank(message = "Description is required") String description,
+    @NotNull ItemCondition condition,
+    @NotNull ItemState state,
+    @NotBlank(message = "City is required") String city,
+    @NotNull(message = "Category ID is required") UUID categoryId,
+    @Size(max = 5, message = "You can upload a maximum of 5 images") List<UUID> imageUploadIds,
+    Set<UUID> removedImageIds,
+    Integer thumbnailIndex,
+    UUID thumbnailExistingImageId) {
 
-  @Builder.Default
-  private List<UUID> imageUploadIds = new ArrayList<>();
-  @Builder.Default
-  private Set<UUID> removedImageIds = new HashSet<>();
-
-  private Integer thumbnailIndex;
-  private UUID thumbnailExistingImageId;
+  public UpdateItemRequest {
+    imageUploadIds = imageUploadIds != null ? imageUploadIds : new ArrayList<>();
+    removedImageIds = removedImageIds != null ? removedImageIds : new HashSet<>();
+  }
 }

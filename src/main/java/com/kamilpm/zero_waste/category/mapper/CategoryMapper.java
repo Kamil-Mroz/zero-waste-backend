@@ -17,13 +17,8 @@ public class CategoryMapper {
       return null;
     }
 
-    CategoryDto.CategoryDtoBuilder categoryDto = CategoryDto.builder();
+    return new CategoryDto(category.getId(), category.getName(), categoryParentId(category));
 
-    categoryDto.parentId(categoryParentId(category));
-    categoryDto.id(category.getId());
-    categoryDto.name(category.getName());
-
-    return categoryDto.build();
   }
 
   public CategoryData toDataDto(Category category) {
@@ -38,13 +33,7 @@ public class CategoryMapper {
     if (category == null) {
       return null;
     }
-
-    CategoryTreeDto.CategoryTreeDtoBuilder categoryTreeDto = CategoryTreeDto.builder();
-
-    categoryTreeDto.id(category.getId());
-    categoryTreeDto.name(category.getName());
-
-    return categoryTreeDto.build();
+    return new CategoryTreeDto(category.getId(), category.getName(), null);
   }
 
   private UUID categoryParentId(Category category) {

@@ -24,14 +24,17 @@ import com.kamilpm.zero_waste.review.interfaces.IRatingBreakdownWithStats;
 import com.kamilpm.zero_waste.review.mapper.ReviewMapper;
 import com.kamilpm.zero_waste.review.repository.ReviewRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class ReviewApi implements ReviewProvider {
   private final ReviewRepository reviewRepository;
   private final ReviewMapper reviewMapper;
   private final UserProvider userApi;
+
+  public ReviewApi(ReviewRepository reviewRepository, ReviewMapper reviewMapper, UserProvider userApi) {
+    this.reviewRepository = reviewRepository;
+    this.reviewMapper = reviewMapper;
+    this.userApi = userApi;
+  }
 
   public void reviewExists(UUID subjectId, UUID userId) {
     Review review = reviewRepository.findById(subjectId)
@@ -90,20 +93,18 @@ public class ReviewApi implements ReviewProvider {
     Set<UUID> userIds = latestReviews.stream().map(review -> review.getReviewerId()).collect(Collectors.toSet());
     Map<UUID, UserSummaryDto> usersById = userApi.getUserSummaryByIds(userIds);
 
-    return ProfileReviewSummary.builder()
-        .averageRating(count == 0 ? 0.0 : (double) totalRating / count)
-        .reviewCount(count)
-        .latestReviews(latestReviews.stream()
+    return new ProfileReviewSummary(
+        count == 0 ? 0.0 : (double) totalRating / count,
+        count,
+        new RatingBreakdown(
+            one,
+            two,
+            three,
+            four,
+            five),
+        latestReviews.stream()
             .map(review -> reviewMapper.toResponse(review, usersById.get(review.getReviewerId()).nickname()))
-            .toList())
-        .ratingBreakdown(RatingBreakdown.builder()
-            .oneStar(one)
-            .twoStar(two)
-            .threeStar(three)
-            .fourStar(four)
-            .fiveStar(five)
-            .build())
-        .build();
+            .toList());
   }
 
 }

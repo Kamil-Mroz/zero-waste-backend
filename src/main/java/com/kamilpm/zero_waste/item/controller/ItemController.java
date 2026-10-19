@@ -12,7 +12,6 @@ import com.kamilpm.zero_waste.item.dto.UpdateItemRequest;
 import com.kamilpm.zero_waste.item.service.ItemService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,10 +34,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/items", version = "1")
-@RequiredArgsConstructor
 public class ItemController {
 
   private final ItemService itemService;
+
+  public ItemController(ItemService itemService) {
+    this.itemService = itemService;
+  }
 
   @RateLimit(action = "create-item", limit = 5, window = 1, unit = ChronoUnit.HOURS)
   @PostMapping

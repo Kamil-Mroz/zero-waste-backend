@@ -14,20 +14,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 @Entity
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@ToString
 @Table(name = "notifications")
 public class Notification extends BaseEntity {
   @Id
@@ -56,5 +44,91 @@ public class Notification extends BaseEntity {
   @Column(name = "reference_type", nullable = false)
   @Enumerated(EnumType.STRING)
   private NotificationReferenceType referenceType;
+
+  public Notification() {
+  }
+
+  public Notification(UUID id, UUID recipientId, NotificationType type, String title, String message, boolean read,
+      UUID referenceId, NotificationReferenceType referenceType) {
+    this.id = id;
+    this.recipientId = recipientId;
+    this.type = type;
+    this.title = title;
+    this.message = message;
+    this.read = read;
+    this.referenceId = referenceId;
+    this.referenceType = referenceType;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public UUID getRecipientId() {
+    return recipientId;
+  }
+
+  public void setRecipientId(UUID recipientId) {
+    this.recipientId = recipientId;
+  }
+
+  public NotificationType getType() {
+    return type;
+  }
+
+  public void setType(NotificationType type) {
+    this.type = type;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public String getMessage() {
+    return message;
+  }
+
+  public void setMessage(String message) {
+    this.message = message;
+  }
+
+  public boolean isRead() {
+    return read;
+  }
+
+  public void setRead(boolean read) {
+    this.read = read;
+  }
+
+  public UUID getReferenceId() {
+    return referenceId;
+  }
+
+  public void setReferenceId(UUID referenceId) {
+    this.referenceId = referenceId;
+  }
+
+  public NotificationReferenceType getReferenceType() {
+    return referenceType;
+  }
+
+  public void setReferenceType(NotificationReferenceType referenceType) {
+    this.referenceType = referenceType;
+  }
+
+  @Override
+  public String toString() {
+    return "Notification [id=" + id + ", recipientId=" + recipientId + ", type=" + type + ", title=" + title
+        + ", message=" + message + ", read=" + read + ", referenceId=" + referenceId + ", referenceType="
+        + referenceType + "]";
+  }
 
 }

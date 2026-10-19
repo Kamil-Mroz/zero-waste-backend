@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,10 +35,7 @@ import com.kamilpm.zero_waste.common.exception.UnauthorizedException;
 import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
 import com.kamilpm.zero_waste.common.interfaces.UserProvider;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
   private final AuthCookieService authCookieService;
@@ -47,6 +45,25 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
   private final CurrentUserProvider currentUser;
+
+  public AuthService(
+
+      AuthCookieService authCookieService,
+      JwtService jwtService,
+      RefreshTokenService refreshTokenService,
+      UserProvider userApi,
+      PasswordEncoder passwordEncoder,
+      AuthenticationManager authenticationManager,
+      CurrentUserProvider currentUser) {
+    this.authCookieService = authCookieService;
+    this.jwtService = jwtService;
+    this.refreshTokenService = refreshTokenService;
+    this.userApi = userApi;
+    this.passwordEncoder = passwordEncoder;
+    this.authenticationManager = authenticationManager;
+    this.currentUser = currentUser;
+
+  }
 
   public AuthResponse login(LoginRequest loginRequest, HttpServletResponse response) {
 
@@ -87,10 +104,9 @@ public class AuthService {
 
     AuthUser authUser = toAuthUser(user);
 
-    return AuthResponse.builder()
-        .accessToken(newAccessToken)
-        .user(authUser)
-        .build();
+    return new AuthResponse(
+        newAccessToken,
+        authUser);
   }
 
   public void logout(HttpServletRequest request, HttpServletResponse response) {
@@ -129,10 +145,7 @@ public class AuthService {
 
     AuthUser authUser = toAuthUser(user);
 
-    return AuthResponse.builder()
-        .accessToken(accessToken)
-        .user(authUser)
-        .build();
+    return new AuthResponse(accessToken, authUser);
   }
 
   private AuthUser toAuthUser(CurrentUser user) {
@@ -145,13 +158,15 @@ public class AuthService {
 
     try {
       Authentication authentication = authenticationManager.authenticate(
-          new UsernamePasswordAuthenticationToken(loginRequest.getEmail().toLowerCase(), loginRequest.getPassword()));
+          new UsernamePasswordAuthenticationToken(loginRequest.email().toLowerCase(), loginRequest.password()));
 
       return authentication;
+
     } catch (BadCredentialsException e) {
       throw new BadCredentialsExceptionCustom("Invalid credentials");
+    } catch (InternalAuthenticationServiceException e) {
+      throw new BadCredentialsExceptionCustom(e.getMessage());
     }
-
   }
 
   public void handlePasswordCreation(CreatePasswordRequest passwords) {

@@ -11,15 +11,17 @@ import com.kamilpm.zero_waste.common.interfaces.ItemProvider;
 import com.kamilpm.zero_waste.common.interfaces.ReviewProvider;
 import com.kamilpm.zero_waste.user.dto.ProfileQueryData;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProfileQueryService {
 
   private final ItemProvider itemProfileApi;
   private final ReviewProvider reviewProfileApi;
+
+  public ProfileQueryService(ItemProvider itemProfileApi, ReviewProvider reviewProfileApi) {
+    this.itemProfileApi = itemProfileApi;
+    this.reviewProfileApi = reviewProfileApi;
+  }
 
   public ProfileQueryData getPublicProfileData(UUID userId) {
     ProfileItemSummary items = itemProfileApi.buildItemSummary(userId);

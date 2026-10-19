@@ -7,13 +7,19 @@ import org.springframework.stereotype.Component;
 
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
 
-import lombok.RequiredArgsConstructor;
 
 @Aspect
 @Component
-@RequiredArgsConstructor
 public class RateLimitAspect {
   private final RateLimitService rateLimitService;
+
+
+
+  public RateLimitAspect(RateLimitService rateLimitService) {
+    this.rateLimitService = rateLimitService;
+  }
+
+
 
   @Around("@annotation(rateLimit)")
   public Object checkRateLimit(ProceedingJoinPoint joinPoint, RateLimit rateLimit) throws Throwable {

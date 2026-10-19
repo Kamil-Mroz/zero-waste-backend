@@ -2,9 +2,6 @@ package com.kamilpm.zero_waste.common.exception;
 
 import org.springframework.http.HttpStatus;
 
-import lombok.Getter;
-
-@Getter
 public class ConflictException extends ApiException {
   private final String fieldError;
 
@@ -17,6 +14,10 @@ public class ConflictException extends ApiException {
     super(message, HttpStatus.CONFLICT);
     this.fieldError = null;
 
+  }
+
+  public String getFieldError() {
+    return fieldError;
   }
 
 }

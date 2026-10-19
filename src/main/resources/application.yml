@@ -115,3 +115,13 @@ springdoc:
 
 server:
   port: 8080
+
+logging:
+  level:
+    org:
+      springframework:
+        cache:
+          interceptor: TRACE
+        data:
+          redis:
+            cache: TRACE

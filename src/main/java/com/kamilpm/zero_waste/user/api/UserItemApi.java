@@ -13,14 +13,17 @@ import com.kamilpm.zero_waste.user.mapper.UserMapper;
 import com.kamilpm.zero_waste.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class UserItemApi {
 
   private final UserRepository userRepository;
   private final UserMapper userMapper;
+
+  public UserItemApi(UserRepository userRepository, UserMapper userMapper) {
+    this.userRepository = userRepository;
+    this.userMapper = userMapper;
+  }
 
   public boolean isUserDemo(UUID userId) {
     return userRepository.findById(userId).map(user -> user.getRole() == UserRole.DEMO).orElse(false);

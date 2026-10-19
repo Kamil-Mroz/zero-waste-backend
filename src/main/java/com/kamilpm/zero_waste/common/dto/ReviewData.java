@@ -5,9 +5,6 @@ import java.util.UUID;
 
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 
-import lombok.Builder;
-
-@Builder
 public record ReviewData(UUID id,
     int rating,
     String comment,

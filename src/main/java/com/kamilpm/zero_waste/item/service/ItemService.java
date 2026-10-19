@@ -48,10 +48,7 @@ import com.kamilpm.zero_waste.item.entity.Item;
 import com.kamilpm.zero_waste.item.mapper.ItemMapper;
 import com.kamilpm.zero_waste.item.repository.ItemRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class ItemService {
 
   private final ItemRepository itemRepository;
@@ -63,11 +60,24 @@ public class ItemService {
   private final OfferProvider offerProvider;
   private final ApplicationEventPublisher events;
 
+  public ItemService(ItemRepository itemRepository, ItemMapper itemMapper, UserProvider userApi,
+      CurrentUserProvider currentUser, CategoryProvider categoryItemApi, ImageProvider imageItemApi,
+      OfferProvider offerProvider, ApplicationEventPublisher events) {
+    this.itemRepository = itemRepository;
+    this.itemMapper = itemMapper;
+    this.userApi = userApi;
+    this.currentUser = currentUser;
+    this.categoryItemApi = categoryItemApi;
+    this.imageItemApi = imageItemApi;
+    this.offerProvider = offerProvider;
+    this.events = events;
+  }
+
   @Transactional
   public ItemDto createItem(ItemRequest itemRequest) {
     var user = currentUser.getRequiredAuthenticatedUser();
 
-    List<UUID> uploadIds = itemRequest.getImageUploadIds() == null ? List.of() : itemRequest.getImageUploadIds();
+    List<UUID> uploadIds = itemRequest.imageUploadIds() == null ? List.of() : itemRequest.imageUploadIds();
 
     if (uploadIds.size() > 5) {
       throw new ConflictException("Max image count is 5", "images");
@@ -77,18 +87,17 @@ public class ItemService {
       throw new ConflictException("Unable to create a given item");
     }
 
-    var category = categoryItemApi.getCategoryById(itemRequest.getCategoryId());
+    var category = categoryItemApi.getCategoryById(itemRequest.categoryId());
 
-    var item = Item.builder()
-        .title(itemRequest.getTitle())
-        .description(itemRequest.getDescription())
-        .condition(itemRequest.getCondition())
-        .state(itemRequest.getState())
-        .city(itemRequest.getCity())
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(itemRequest.getCategoryId())
-        .ownerId(user.id())
-        .build();
+    var item = new Item();
+    item.setTitle(itemRequest.title());
+    item.setDescription(itemRequest.description());
+    item.setCondition(itemRequest.condition());
+    item.setState(itemRequest.state());
+    item.setCity(itemRequest.city());
+    item.setOwnerVisibility(UserVisibility.VISIBLE);
+    item.setCategoryId(itemRequest.categoryId());
+    item.setOwnerId(user.id());
 
     var savedItem = itemRepository.save(item);
 
@@ -99,7 +108,7 @@ public class ItemService {
     ImageData thumbnail = null;
 
     if (!uploadedImages.isEmpty()) {
-      Integer thumbnailIndex = itemRequest.getThumbnailIndex();
+      Integer thumbnailIndex = itemRequest.thumbnailIndex();
 
       thumbnail = thumbnailIndex != null && thumbnailIndex >= 0 && thumbnailIndex < uploadedImages.size()
           ? uploadedImages.get(thumbnailIndex)
@@ -114,10 +123,10 @@ public class ItemService {
 
   @Transactional
   public ItemDto updateItem(UUID id, UpdateItemRequest itemRequest) {
-    if (Objects.equals(itemRequest.getState(), ItemState.GIVEN)) {
+    if (Objects.equals(itemRequest.state(), ItemState.GIVEN)) {
       throw new ConflictException("Unable to update to a given item");
     }
-    CategoryData category = categoryItemApi.getCategoryById(itemRequest.getCategoryId());
+    CategoryData category = categoryItemApi.getCategoryById(itemRequest.categoryId());
     Item item = itemRepository.findByIdAndModerationStatus(id, ModerationStatus.VISIBLE)
         .orElseThrow(() -> new EntityNotFoundException("Item not found"));
 
@@ -129,21 +138,21 @@ public class ItemService {
       throw new ForbiddenException("Can not update a given item");
     }
 
-    if (itemRequest.getThumbnailExistingImageId() != null && itemRequest.getThumbnailIndex() != null) {
+    if (itemRequest.thumbnailExistingImageId() != null && itemRequest.thumbnailIndex() != null) {
       throw new ConflictException("Only one thumbnail selection can be provided");
     }
 
-    Set<UUID> removedImageIds = itemRequest.getRemovedImageIds() == null ? Set.of() : itemRequest.getRemovedImageIds();
+    Set<UUID> removedImageIds = itemRequest.removedImageIds() == null ? Set.of() : itemRequest.removedImageIds();
 
-    List<UUID> uploadIds = itemRequest.getImageUploadIds() == null ? List.of() : itemRequest.getImageUploadIds();
+    List<UUID> uploadIds = itemRequest.imageUploadIds() == null ? List.of() : itemRequest.imageUploadIds();
 
     if (uploadIds.size() > 5
         || new HashSet<>(uploadIds).size() != uploadIds.size()) {
       throw new ConflictException("Invalid image upload list", "images");
     }
 
-    if (itemRequest.getThumbnailExistingImageId() != null
-        && itemRequest.getThumbnailIndex() != null) {
+    if (itemRequest.thumbnailExistingImageId() != null
+        && itemRequest.thumbnailIndex() != null) {
       throw new ConflictException(
           "Only one thumbnail selection can be provided");
     }
@@ -164,12 +173,12 @@ public class ItemService {
       throw new ConflictException("Max image count is 5", "images");
     }
 
-    item.setTitle(itemRequest.getTitle());
-    item.setDescription(itemRequest.getDescription());
-    item.setCondition(itemRequest.getCondition());
-    item.setCity(itemRequest.getCity());
-    item.setCategoryId(itemRequest.getCategoryId());
-    item.setState(itemRequest.getState());
+    item.setTitle(itemRequest.title());
+    item.setDescription(itemRequest.description());
+    item.setCondition(itemRequest.condition());
+    item.setCity(itemRequest.city());
+    item.setCategoryId(itemRequest.categoryId());
+    item.setState(itemRequest.state());
 
     if (item.getThumbnailId() != null
         && removedImageIds.contains(item.getThumbnailId())) {
@@ -213,8 +222,8 @@ public class ItemService {
       item.setThumbnailId(null);
       return null;
     }
-    if (request.getThumbnailExistingImageId() != null) {
-      UUID thumbnailExistingImageId = request.getThumbnailExistingImageId();
+    if (request.thumbnailExistingImageId() != null) {
+      UUID thumbnailExistingImageId = request.thumbnailExistingImageId();
       ImageData selectedThumbnail = existingImages.stream()
           .filter(image -> Objects.equals(image.id(), thumbnailExistingImageId)).findFirst()
           .orElseThrow(() -> new ForbiddenException("Selected thumbnail does not belong to this item"));
@@ -222,8 +231,8 @@ public class ItemService {
       return selectedThumbnail;
     }
 
-    if (request.getThumbnailIndex() != null) {
-      int thumbnailIndex = request.getThumbnailIndex();
+    if (request.thumbnailIndex() != null) {
+      int thumbnailIndex = request.thumbnailIndex();
       if (thumbnailIndex < 0 || thumbnailIndex >= uploadedImages.size()) {
         throw new ConflictException("Invalid thumbnail index", "thumbnailIndex");
       }

@@ -21,20 +21,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@ToString
-@Builder
 @Table(name = "items")
 public class Item extends ModeratableEntity {
   @Id
@@ -73,10 +61,122 @@ public class Item extends ModeratableEntity {
   @CollectionTable(name = "item_images", joinColumns = @JoinColumn(name = "item_id"))
   @OrderColumn(name = "image_order")
   @Column(name = "image_id")
-  @Builder.Default
   private List<UUID> imageIds = new ArrayList<>();
 
   @Column(name = "thumbnail_id")
   private UUID thumbnailId;
+
+  public Item() {
+  }
+
+  public Item(UUID id, String title, String description, String city, ItemCondition condition, ItemState state,
+      UserVisibility ownerVisibility, UUID categoryId, UUID ownerId, List<UUID> imageIds, UUID thumbnailId) {
+    this.id = id;
+    this.title = title;
+    this.description = description;
+    this.city = city;
+    this.condition = condition;
+    this.state = state;
+    this.ownerVisibility = ownerVisibility;
+    this.categoryId = categoryId;
+    this.ownerId = ownerId;
+    this.imageIds = imageIds;
+    this.thumbnailId = thumbnailId;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public String getCity() {
+    return city;
+  }
+
+  public void setCity(String city) {
+    this.city = city;
+  }
+
+  public ItemCondition getCondition() {
+    return condition;
+  }
+
+  public void setCondition(ItemCondition condition) {
+    this.condition = condition;
+  }
+
+  public ItemState getState() {
+    return state;
+  }
+
+  public void setState(ItemState state) {
+    this.state = state;
+  }
+
+  public UserVisibility getOwnerVisibility() {
+    return ownerVisibility;
+  }
+
+  public void setOwnerVisibility(UserVisibility ownerVisibility) {
+    this.ownerVisibility = ownerVisibility;
+  }
+
+  public UUID getCategoryId() {
+    return categoryId;
+  }
+
+  public void setCategoryId(UUID categoryId) {
+    this.categoryId = categoryId;
+  }
+
+  public UUID getOwnerId() {
+    return ownerId;
+  }
+
+  public void setOwnerId(UUID ownerId) {
+    this.ownerId = ownerId;
+  }
+
+  public List<UUID> getImageIds() {
+    return imageIds;
+  }
+
+  public void setImageIds(List<UUID> imageIds) {
+    this.imageIds = imageIds;
+  }
+
+  public UUID getThumbnailId() {
+    return thumbnailId;
+  }
+
+  public void setThumbnailId(UUID thumbnailId) {
+    this.thumbnailId = thumbnailId;
+  }
+
+  @Override
+  public String toString() {
+    return "Item [id=" + id + ", title=" + title + ", description=" + description + ", city=" + city + ", condition="
+        + condition + ", state=" + state + ", ownerVisibility=" + ownerVisibility + ", categoryId=" + categoryId
+        + ", ownerId=" + ownerId + ", imageIds=" + imageIds + ", thumbnailId=" + thumbnailId + "]";
+  }
 
 }

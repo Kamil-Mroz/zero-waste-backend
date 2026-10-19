@@ -14,13 +14,19 @@ import com.kamilpm.zero_waste.common.exception.ForbiddenException;
 import com.kamilpm.zero_waste.common.interfaces.BlogProvider;
 import com.kamilpm.zero_waste.common.interfaces.UserProvider;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class BlogApi implements BlogProvider {
   private final BlogRepository blogRepository;
   private final UserProvider userBlogApi;
+
+  public BlogApi(
+
+      BlogRepository blogRepository,
+      UserProvider userBlogApi) {
+
+    this.blogRepository = blogRepository;
+    this.userBlogApi = userBlogApi;
+  }
 
   public void blogExists(UUID subjectId, UUID userId) {
     Blog blog = blogRepository.findById(subjectId).orElseThrow(() -> new EntityNotFoundException("Blog not found"));

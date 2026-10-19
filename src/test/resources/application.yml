@@ -87,6 +87,16 @@ app:
         client-id: ${GOOGLE_CLIENT_ID}
         client-secret: ${GOOGLE_CLIENT_SECRET}
         redirect-uri: "${APP_BACKEND_URL:http://localhost:8080}/api/v1/oauth/callback/GOOGLE"
+
+  aws:
+    endpoint: '${AWS_ENDPOINT:http://localhost:4566}'
+    public-endpoint: '${AWS_PUBLIC_ENDPOINT:http://localhost:4566}'
+    access-key-id: '${AWS_ACCESS_KEY_ID:test}'
+    secret-access-key: '${AWS_SECRET_ACCESS_KEY:test}'
+    region: '${AWS_DEFAULT_REGION:us-east-1}'
+    bucket: ${AWS_S3_BUCKET:zerowaste-images}
+    path-style-access: ${AWS_S3_PATH_STYLE:true}
+
 springdoc:
   api-docs:
     path: /api/v1/docs/api-docs

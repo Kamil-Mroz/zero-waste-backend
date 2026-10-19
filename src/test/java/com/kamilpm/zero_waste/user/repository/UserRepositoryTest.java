@@ -27,14 +27,13 @@ public class UserRepositoryTest {
   @Test
   void testExistsByEmail() {
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     userRepository.save(user);
     assertThat(userRepository.existsByEmail(email)).isTrue();
 
@@ -43,14 +42,13 @@ public class UserRepositoryTest {
   @Test
   void testExistsByEmailAndIdNot() {
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
     assertThat(userRepository.existsByEmailAndIdNot(email, savedUser.getId())).isFalse();
 
@@ -59,14 +57,13 @@ public class UserRepositoryTest {
   @Test
   void testExistsByIdAndIdNot() {
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
     assertThat(userRepository.existsByIdAndIdNot(savedUser.getId(), savedUser.getId())).isFalse();
 
@@ -75,30 +72,30 @@ public class UserRepositoryTest {
   @Test
   void testFindAllByIdNot() {
 
-    User user1 = User.builder()
-        .nickname("test-123")
-        .email("test1@example.com")
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
-    User user2 = User.builder()
-        .nickname("test-123")
-        .email("test2@example.com")
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
-    User user3 = User.builder()
-        .nickname("test-123")
-        .email("test3@example.com")
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user1 = new User();
+    user1.setNickname("test-123");
+    user1.setEmail("test1@example.com");
+    user1.setPassword(null);
+    user1.setRole(UserRole.USER);
+    user1.setBanActive(false);
+    user1.setBannedUntil(null);
+
+    User user2 = new User();
+    user2.setNickname("test-123");
+    user2.setEmail("test2@example.com");
+    user2.setPassword(null);
+    user2.setRole(UserRole.USER);
+    user2.setBanActive(false);
+    user2.setBannedUntil(null);
+
+    User user3 = new User();
+    user3.setNickname("test-123");
+    user3.setEmail("test3@example.com");
+    user3.setPassword(null);
+    user3.setRole(UserRole.USER);
+    user3.setBanActive(false);
+    user3.setBannedUntil(null);
+
     User savedUser = userRepository.save(user1);
     userRepository.saveAll(List.of(user2, user3));
     Page<User> users = userRepository.findAllByIdNot(savedUser.getId(), null, null, PageRequest.of(0, 20));
@@ -109,14 +106,13 @@ public class UserRepositoryTest {
   void testRevokeBan() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(true)
-        .bannedUntil(Instant.now().plus(10, ChronoUnit.DAYS))
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(true);
+    user.setBannedUntil(Instant.now().plus(10, ChronoUnit.DAYS));
     User savedUser = userRepository.save(user);
     userRepository.revokeBan(List.of(savedUser.getId()));
     Optional<User> storedUser = userRepository.findByEmail(email);
@@ -128,14 +124,13 @@ public class UserRepositoryTest {
   @Test
   void testUpdatePassword() {
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password("test")
-        .role(UserRole.USER)
-        .banActive(true)
-        .bannedUntil(Instant.now().plus(10, ChronoUnit.DAYS))
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword("test");
+    user.setRole(UserRole.USER);
+    user.setBanActive(true);
+    user.setBannedUntil(Instant.now().plus(10, ChronoUnit.DAYS));
     User savedUser = userRepository.save(user);
 
     assertThat(savedUser.getPassword()).isEqualTo("test");

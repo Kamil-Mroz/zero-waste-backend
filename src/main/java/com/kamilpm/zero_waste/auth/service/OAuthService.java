@@ -35,23 +35,42 @@ import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
 import com.kamilpm.zero_waste.common.interfaces.UserProvider;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import tools.jackson.databind.json.JsonMapper;
 
 @Service
-@RequiredArgsConstructor
 public class OAuthService {
 
   private final OAuthAccountRepository oauthAccountRepository;
   private final StringRedisTemplate redisTemplate;
-  private static final Duration LINK_EXPIRATION = Duration.ofMinutes(5);
   private final JsonMapper objectMapper;
   private final OAuthProperties properties;
   private final GithubOAuthClient githubLinkClient;
   private final GoogleOAuthClient googleLinkClient;
   private final CurrentUserProvider currentUser;
   private final UserProvider userApi;
-  private final String OAUTH_KEY = "oauth:";
+  private static final Duration LINK_EXPIRATION = Duration.ofMinutes(5);
+  private static final String OAUTH_KEY = "oauth:";
+
+  public OAuthService(
+
+      OAuthAccountRepository oauthAccountRepository,
+      StringRedisTemplate redisTemplate,
+      JsonMapper objectMapper,
+      OAuthProperties properties,
+      GithubOAuthClient githubLinkClient,
+      GoogleOAuthClient googleLinkClient,
+      CurrentUserProvider currentUser,
+      UserProvider userApi) {
+    this.oauthAccountRepository = oauthAccountRepository;
+    this.redisTemplate = redisTemplate;
+    this.objectMapper = objectMapper;
+    this.properties = properties;
+    this.githubLinkClient = githubLinkClient;
+    this.googleLinkClient = googleLinkClient;
+    this.currentUser = currentUser;
+    this.userApi = userApi;
+
+  }
 
   public Connections getConnections() {
     CurrentUser user = currentUser.getRequiredAuthenticatedUser();
@@ -105,11 +124,11 @@ public class OAuthService {
 
     CurrentUser user = createOAuthUser(info.email(), info.nickname());
 
-    OAuthAccount oauthAccount = OAuthAccount.builder()
-        .userId(user.id())
-        .provider(info.provider())
-        .providerId(info.providerId())
-        .build();
+    OAuthAccount oauthAccount = new OAuthAccount();
+    oauthAccount.setUserId(user.id());
+    oauthAccount.setProvider(info.provider());
+    oauthAccount.setProviderId(info.providerId());
+
     oauthAccountRepository.save(oauthAccount);
     return user;
   }
@@ -326,11 +345,11 @@ public class OAuthService {
               " account linked");
     }
 
-    OAuthAccount account = OAuthAccount.builder()
-        .userId(user.id())
-        .provider(info.provider())
-        .providerId(info.providerId())
-        .build();
+    OAuthAccount account = new OAuthAccount();
+
+    account.setUserId(user.id());
+    account.setProvider(info.provider());
+    account.setProviderId(info.providerId());
 
     oauthAccountRepository.save(account);
   }

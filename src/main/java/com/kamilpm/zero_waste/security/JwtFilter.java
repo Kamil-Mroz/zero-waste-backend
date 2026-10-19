@@ -16,14 +16,17 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
   private final JwtApi jwtApi;
   private final AuthApi authApi;
+
+  public JwtFilter(JwtApi jwtApi, AuthApi authApi) {
+    this.jwtApi = jwtApi;
+    this.authApi = authApi;
+  }
 
   @Override
   protected void doFilterInternal(

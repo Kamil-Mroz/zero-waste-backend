@@ -11,10 +11,7 @@ import com.kamilpm.zero_waste.common.dto.CurrentUser;
 import com.kamilpm.zero_waste.common.exception.UnauthorizedException;
 import com.kamilpm.zero_waste.common.interfaces.CurrentUserProvider;
 
-import lombok.RequiredArgsConstructor;
-
 @Component
-@RequiredArgsConstructor
 public class CurrentUserApi implements CurrentUserProvider {
   public Optional<CurrentUser> getAuthenticatedUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

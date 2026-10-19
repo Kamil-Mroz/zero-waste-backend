@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -21,12 +23,12 @@ import com.kamilpm.zero_waste.common.exception.ConflictException;
 import com.kamilpm.zero_waste.common.exception.RateLimitException;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
 @RestControllerAdvice
-@Slf4j
+
 public class ErrorController {
+  private static final Logger log = LoggerFactory.getLogger(ErrorController.class);
 
   @ExceptionHandler(ApiException.class)
   public ProblemDetail handleApiException(
@@ -78,7 +80,7 @@ public class ErrorController {
 
       Map<String, ErrorContent> fieldErrors = new HashMap<>();
 
-      ErrorContent content = ErrorContent.builder().message(ex.getMessage()).build();
+      ErrorContent content = new ErrorContent(ex.getMessage());
       fieldErrors.put(ex.getFieldError(), content);
       problem.setProperty("errors", fieldErrors);
 
@@ -97,11 +99,11 @@ public class ErrorController {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-    log.error("Caught method argument not valid exception: Global Error Handler ");
+    log.error("Caught method argument not valid exception: Global Error Handler");
 
     Map<String, ErrorContent> fieldErrors = new HashMap<>();
     for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-      ErrorContent content = ErrorContent.builder().message(error.getDefaultMessage()).build();
+      ErrorContent content = new ErrorContent(error.getDefaultMessage());
       fieldErrors.put(error.getField(), content);
     }
 
@@ -112,7 +114,8 @@ public class ErrorController {
 
   @ExceptionHandler(Exception.class)
   public ProblemDetail handleException(Exception ex) {
-    log.error("Caught unexpected exception: Global Error Handler " + ex.getClass().getName());
+    log.error("Caught unexpected exception: Global Error Handler " +
+        ex.getClass().getName());
     log.error(ex.getMessage());
 
     return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");

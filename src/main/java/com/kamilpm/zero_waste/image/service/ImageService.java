@@ -22,14 +22,12 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class ImageService {
   private static final long MAX_IMAGE_SIZE = 5L * 1024 * 1024;
   private static final Map<String, String> ALLOWED_TYPES = Map.of(
@@ -42,6 +40,15 @@ public class ImageService {
   private final AWSProperties awsProperties;
   private final PendingImageUploadRepository pendingImageUploadRepository;
   private final CurrentUserProvider currentUser;
+
+  public ImageService(ImageRepository imageRepository, S3Presigner presigner, AWSProperties awsProperties,
+      PendingImageUploadRepository pendingImageUploadRepository, CurrentUserProvider currentUser) {
+    this.imageRepository = imageRepository;
+    this.presigner = presigner;
+    this.awsProperties = awsProperties;
+    this.pendingImageUploadRepository = pendingImageUploadRepository;
+    this.currentUser = currentUser;
+  }
 
   public Image getImageById(UUID id) {
     return imageRepository.findById(id)
@@ -84,16 +91,15 @@ public class ImageService {
               uploadId,
               ALLOWED_TYPES.get(contentType));
 
-          PendingImageUpload pending = PendingImageUpload.builder()
-              .id(uploadId)
-              .ownerId(ownerId)
-              .objectKey(objectKey)
-              .originalName(file.filename())
-              .mimeType(contentType)
-              .size(file.size())
-              .expiresAt(expiresAt)
-              .status(PendingImageUpload.Status.PENDING)
-              .build();
+          PendingImageUpload pending = new PendingImageUpload();
+          pending.setId(uploadId);
+          pending.setOwnerId(ownerId);
+          pending.setObjectKey(objectKey);
+          pending.setOriginalName(file.filename());
+          pending.setMimeType(contentType);
+          pending.setSize(file.size());
+          pending.setExpiresAt(expiresAt);
+          pending.setStatus(PendingImageUpload.Status.PENDING);
 
           pendingImageUploads.add(pending);
 

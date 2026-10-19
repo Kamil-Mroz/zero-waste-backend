@@ -7,13 +7,14 @@ import org.springframework.context.annotation.Configuration;
 
 import com.kamilpm.zero_waste.user.dto.SeedUserApi;
 
-import lombok.RequiredArgsConstructor;
-
 @Configuration
-@RequiredArgsConstructor
 public class UserSeeder implements ApplicationRunner {
 
   private final SeedUserApi seedUserApi;
+
+  public UserSeeder(SeedUserApi seedUserApi ) {
+    this.seedUserApi = seedUserApi;
+  }
 
   @Value("${app.prod}")
   private boolean isProd;

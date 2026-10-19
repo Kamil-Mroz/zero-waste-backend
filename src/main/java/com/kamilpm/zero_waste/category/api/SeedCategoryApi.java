@@ -7,13 +7,14 @@ import org.springframework.stereotype.Service;
 import com.kamilpm.zero_waste.category.entity.Category;
 import com.kamilpm.zero_waste.category.repository.CategoryRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class SeedCategoryApi {
 
   private final CategoryRepository categoryRepository;
+
+  public SeedCategoryApi(CategoryRepository categoryRepository) {
+    this.categoryRepository = categoryRepository;
+  }
 
   public void checkExistsDummyCategories() {
 
@@ -29,77 +30,62 @@ public class SeedCategoryApi {
 
   private void seedCategories() {
 
-    Category books = Category.builder()
-        .name("Books")
-        .build();
+    Category books = new Category();
+    books.setName("Books");
 
-    Category furniture = Category.builder()
-        .name("Furniture")
-        .build();
+    Category furniture = new Category();
+    furniture.setName("Furniture");
 
-    Category electronics = Category.builder()
-        .name("Electronics")
-        .build();
+    Category electronics = new Category();
+    electronics.setName("Electronics");
 
-    Category clothing = Category.builder()
-        .name("Clothing")
-        .build();
+    Category clothing = new Category();
+    clothing.setName("Clothing");
 
-    Category phones = Category.builder()
-        .name("Phones")
-        .parent(electronics)
-        .build();
+    Category phones = new Category();
+    phones.setName("Phones");
+    phones.setParent(electronics);
 
-    Category mensWear = Category.builder()
-        .name("Men's Wear")
-        .parent(clothing)
-        .build();
+    Category mensWear = new Category();
+    mensWear.setName("Men's Wear");
+    mensWear.setParent(clothing);
 
-    Category home = Category.builder()
-        .name("Home")
-        .build();
+    Category home = new Category();
+    home.setName("Home");
 
-    Category sports = Category.builder()
-        .name("Sports")
-        .build();
+    Category sports = new Category();
+    sports.setName("Sports");
 
-    Category kitchen = Category.builder()
-        .name("Kitchen")
-        .parent(home)
-        .build();
+    Category kitchen = new Category();
+    kitchen.setName("Kitchen");
+    kitchen.setParent(home);
 
-    Category decor = Category.builder()
-        .name("Decor")
-        .parent(home)
-        .build();
+    Category decor = new Category();
+    decor.setName("Decor");
+    decor.setParent(home);
 
-    Category bedding = Category.builder()
-        .name("Bedding")
-        .parent(home)
-        .build();
+    Category bedding = new Category();
+    bedding.setName("Bedding");
+    bedding.setParent(home);
 
-    Category fitness = Category.builder()
-        .name("Fitness")
-        .parent(sports)
-        .build();
-    Category gym = Category.builder()
-        .name("Gym")
-        .parent(fitness)
-        .build();
-    Category calisthenics = Category.builder()
-        .name("Calisthenics")
-        .parent(fitness)
-        .build();
+    Category fitness = new Category();
+    fitness.setName("Fitness");
+    fitness.setParent(sports);
+    Category gym = new Category();
+    gym.setName("Gym");
+    gym.setParent(fitness);
 
-    Category outdoor = Category.builder()
-        .name("Outdoor")
-        .parent(sports)
-        .build();
+    Category calisthenics = new Category();
+    calisthenics.setName("Calisthenics");
+    calisthenics.setParent(fitness);
 
-    Category teamSports = Category.builder()
-        .name("Team Sports")
-        .parent(sports)
-        .build();
+    Category outdoor = new Category();
+    outdoor.setName("Outdoor");
+    outdoor.setParent(sports);
+
+    Category teamSports = new Category();
+    teamSports.setName("Team Sports");
+    teamSports.setParent(sports);
 
     categoryRepository.saveAll(List.of(
         books,

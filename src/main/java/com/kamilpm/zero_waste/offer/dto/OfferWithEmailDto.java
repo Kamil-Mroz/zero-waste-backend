@@ -6,18 +6,9 @@ import com.kamilpm.zero_waste.common.dto.OfferStatus;
 import com.kamilpm.zero_waste.common.dto.SimpleItemData;
 import com.kamilpm.zero_waste.common.dto.UserSummaryWithEmailDto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class OfferWithEmailDto {
-  private UUID id;
-  private SimpleItemData item;
-  private UserSummaryWithEmailDto buyer;
-  private OfferStatus status;
+public record OfferWithEmailDto(
+    UUID id,
+    SimpleItemData item,
+    UserSummaryWithEmailDto buyer,
+    OfferStatus status) {
 }

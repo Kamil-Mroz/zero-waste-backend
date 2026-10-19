@@ -32,15 +32,20 @@ import com.kamilpm.zero_waste.user.mapper.UserMapper;
 import com.kamilpm.zero_waste.user.repository.UserBanRepository;
 import com.kamilpm.zero_waste.user.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class UserApi implements UserProvider {
   private final UserRepository userRepository;
   private final UserBanRepository userBanRepository;
   private final UserMapper userMapper;
   private final ApplicationEventPublisher events;
+
+  public UserApi(UserRepository userRepository, UserBanRepository userBanRepository, UserMapper userMapper,
+      ApplicationEventPublisher events) {
+    this.userRepository = userRepository;
+    this.userBanRepository = userBanRepository;
+    this.userMapper = userMapper;
+    this.events = events;
+  }
 
   @Value("${app.security.demo.email}")
   private String demoEmail;
@@ -75,7 +80,6 @@ public class UserApi implements UserProvider {
     events.publishEvent(new UnbanEvent(List.of(user.getId())));
   }
 
-
   @Override
   public void savePassword(UUID userId, String passwordHash) {
     userRepository.updatePassword(userId, passwordHash);
@@ -108,14 +112,13 @@ public class UserApi implements UserProvider {
 
   @Override
   public UserAuthenticationData createOAuthUser(String email, String nickname) {
-    User user = User.builder()
-        .nickname(nickname)
-        .email(email.toLowerCase())
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname(nickname);
+    user.setEmail(email.toLowerCase());
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     return userMapper.toUserAuthenticationData(userRepository.save(user));
   }
 
@@ -157,7 +160,6 @@ public class UserApi implements UserProvider {
         .toList();
   }
 
-
   public void userExists(UUID subjectId, UUID userId) {
     User reportedUser = userRepository.findById(subjectId)
         .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -185,13 +187,12 @@ public class UserApi implements UserProvider {
     userToBan.setBanActive(true);
     userToBan.setBannedUntil(null);
 
-    UserBan userBan = UserBan.builder()
-        .userId(userToBan.getId())
-        .reason(adminNote)
-        .createdAt(Instant.now())
-        .bannedBy(adminId)
-        .expiresAt(null)
-        .build();
+    UserBan userBan = new UserBan();
+    userBan.setUserId(userToBan.getId());
+    userBan.setReason(adminNote);
+    userBan.setCreatedAt(Instant.now());
+    userBan.setBannedBy(adminId);
+    userBan.setExpiresAt(null);
     userRepository.save(userToBan);
     userBanRepository.save(userBan);
 

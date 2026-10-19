@@ -30,10 +30,8 @@ import com.kamilpm.zero_waste.notification.mapper.NotificationMapper;
 import com.kamilpm.zero_waste.notification.repository.NotificationRepository;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class NotificationService {
 
   private final NotificationRepository notificationRepository;
@@ -41,18 +39,25 @@ public class NotificationService {
   private final CurrentUserProvider currentUser;
   private final SimpMessagingTemplate simpMessagingTemplate;
 
+  public NotificationService(NotificationRepository notificationRepository, NotificationMapper notificationMapper,
+      CurrentUserProvider currentUser, SimpMessagingTemplate simpMessagingTemplate) {
+    this.notificationRepository = notificationRepository;
+    this.notificationMapper = notificationMapper;
+    this.currentUser = currentUser;
+    this.simpMessagingTemplate = simpMessagingTemplate;
+  }
+
   private void sendNotification(UUID recipientId, String recipientEmail, NotificationType type, String title,
       String message, UUID referenceId,
       NotificationReferenceType referenceType) {
-    Notification notification = Notification.builder()
-        .recipientId(recipientId)
-        .type(type)
-        .title(title)
-        .message(message)
-        .read(false)
-        .referenceId(referenceId)
-        .referenceType(referenceType)
-        .build();
+    Notification notification = new Notification();
+    notification.setRecipientId(recipientId);
+    notification.setType(type);
+    notification.setTitle(title);
+    notification.setMessage(message);
+    notification.setRead(false);
+    notification.setReferenceId(referenceId);
+    notification.setReferenceType(referenceType);
 
     Notification savedNotification = notificationRepository.save(notification);
 

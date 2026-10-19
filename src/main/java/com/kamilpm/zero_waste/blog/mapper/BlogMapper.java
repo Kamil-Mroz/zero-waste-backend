@@ -7,9 +7,7 @@ import com.kamilpm.zero_waste.blog.entity.Blog;
 import com.kamilpm.zero_waste.common.dto.CurrentUser;
 import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Component
 public class BlogMapper {
 

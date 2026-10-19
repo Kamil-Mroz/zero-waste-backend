@@ -12,9 +12,7 @@ import com.kamilpm.zero_waste.item.dto.ItemDto;
 import com.kamilpm.zero_waste.item.dto.ItemListDto;
 import com.kamilpm.zero_waste.item.entity.Item;
 
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Component
 public class ItemMapper {
 

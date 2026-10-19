@@ -12,29 +12,31 @@ import com.kamilpm.zero_waste.user.dto.ProfileQueryData;
 import com.kamilpm.zero_waste.user.dto.PublicUserProfileResponse;
 import com.kamilpm.zero_waste.user.dto.UserDto;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class ProfileService {
 
   private final UserService userService;
   private final CurrentUserProvider currentUser;
   private final ProfileQueryService profileQueryService;
 
+  public ProfileService(UserService userService, CurrentUserProvider currentUser,
+      ProfileQueryService profileQueryService) {
+    this.userService = userService;
+    this.currentUser = currentUser;
+    this.profileQueryService = profileQueryService;
+  }
+
   @Transactional(readOnly = true)
   public PublicUserProfileResponse getProfile(UUID userId) {
 
     UserDto user = userService.getUser(userId);
-    ProfileQueryData data = profileQueryService.getPublicProfileData(user.getId());
-    return PublicUserProfileResponse.builder()
-        .id(user.getId())
-        .banned(user.isActiveBan())
-        .nickname(user.getNickname())
-        .joinedAt(user.getJoinedAt())
-        .items(data.items())
-        .reviews(data.reviews())
-        .build();
+    ProfileQueryData data = profileQueryService.getPublicProfileData(user.id());
+    return new PublicUserProfileResponse(user.id(),
+        user.nickname(),
+        user.joinedAt(),
+        user.activeBan(),
+        data.items(),
+        data.reviews());
   }
 
   @Transactional(readOnly = true)
@@ -43,10 +45,9 @@ public class ProfileService {
 
     ProfileQueryData data = profileQueryService.getPublicProfileData(user.id());
 
-    return OwnProfileResponse.builder()
-        .items(data.items())
-        .reviews(data.reviews())
-        .build();
+    return new OwnProfileResponse(
+        data.items(),
+        data.reviews());
   }
 
 }

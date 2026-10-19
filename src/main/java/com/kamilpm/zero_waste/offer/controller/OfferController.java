@@ -10,7 +10,6 @@ import com.kamilpm.zero_waste.offer.dto.OfferDto;
 import com.kamilpm.zero_waste.offer.dto.OfferWithEmailDto;
 import com.kamilpm.zero_waste.offer.service.OfferService;
 
-import lombok.RequiredArgsConstructor;
 
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -26,10 +25,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/offers", version = "1")
-@RequiredArgsConstructor
 public class OfferController {
 
   private final OfferService offerService;
+
+
+  public OfferController(OfferService offerService) {
+    this.offerService = offerService;
+  }
 
   @RateLimit(action = "make-offer", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping("/{id}")

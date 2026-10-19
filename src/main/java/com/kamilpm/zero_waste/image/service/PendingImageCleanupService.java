@@ -9,16 +9,21 @@ import com.kamilpm.zero_waste.image.entity.PendingImageUpload;
 import com.kamilpm.zero_waste.image.repository.PendingImageUploadRepository;
 import com.kamilpm.zero_waste.properties.AWSProperties;
 
-import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
 @Service
-@RequiredArgsConstructor
 public class PendingImageCleanupService {
   private final PendingImageUploadRepository repository;
   private final S3Client s3Client;
   private final AWSProperties awsProperties;
+
+  public PendingImageCleanupService(PendingImageUploadRepository repository, S3Client s3Client,
+      AWSProperties awsProperties) {
+    this.repository = repository;
+    this.s3Client = s3Client;
+    this.awsProperties = awsProperties;
+  }
 
   @Scheduled(fixedDelay = 300_000)
   public void cleanupExpiredUploads() {

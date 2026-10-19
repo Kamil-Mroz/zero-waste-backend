@@ -30,10 +30,8 @@ import com.kamilpm.zero_waste.common.exception.ApiException;
 import com.kamilpm.zero_waste.common.exception.OAuthAuthenticationException;
 
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequiredArgsConstructor
 
 @RequestMapping(path = "/api/v{version}/oauth", version = "1")
 public class OAuthController {
@@ -42,6 +40,18 @@ public class OAuthController {
   private final OAuthProperties properties;
   private final RefreshTokenService refreshTokenService;
   private final AuthCookieService authCookieService;
+
+  public OAuthController(
+
+      OAuthService oauthService,
+      OAuthProperties properties,
+      RefreshTokenService refreshTokenService,
+      AuthCookieService authCookieService) {
+    this.oauthService = oauthService;
+    this.properties = properties;
+    this.refreshTokenService = refreshTokenService;
+    this.authCookieService = authCookieService;
+  }
 
   @GetMapping("/callback/{provider}")
   public void callback(

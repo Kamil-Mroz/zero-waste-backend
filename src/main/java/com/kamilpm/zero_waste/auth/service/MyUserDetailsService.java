@@ -9,12 +9,13 @@ import com.kamilpm.zero_waste.auth.dto.SecurityUser;
 import com.kamilpm.zero_waste.common.dto.UserAuthenticationData;
 import com.kamilpm.zero_waste.common.interfaces.UserProvider;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class MyUserDetailsService implements UserDetailsService {
   private final UserProvider userApi;
+
+  public MyUserDetailsService(UserProvider userProvider) {
+    this.userApi = userProvider;
+  }
 
   @Override
   @Transactional(readOnly = true)

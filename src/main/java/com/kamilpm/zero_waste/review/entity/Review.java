@@ -13,20 +13,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@ToString
-@Builder
 @Table(name = "reviews")
 public class Review extends ModeratableEntity {
   @Id
@@ -52,5 +40,81 @@ public class Review extends ModeratableEntity {
   @Column(name = "reviewer_visibility", nullable = false)
   @Enumerated(EnumType.STRING)
   private UserVisibility reviewerVisibility;
+
+  public Review() {
+  }
+
+  public Review(UUID id, String comment, int rating, UUID offerId, UUID reviewerId, UUID revieweeId,
+      UserVisibility reviewerVisibility) {
+    this.id = id;
+    this.comment = comment;
+    this.rating = rating;
+    this.offerId = offerId;
+    this.reviewerId = reviewerId;
+    this.revieweeId = revieweeId;
+    this.reviewerVisibility = reviewerVisibility;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public String getComment() {
+    return comment;
+  }
+
+  public void setComment(String comment) {
+    this.comment = comment;
+  }
+
+  public int getRating() {
+    return rating;
+  }
+
+  public void setRating(int rating) {
+    this.rating = rating;
+  }
+
+  public UUID getOfferId() {
+    return offerId;
+  }
+
+  public void setOfferId(UUID offerId) {
+    this.offerId = offerId;
+  }
+
+  public UUID getReviewerId() {
+    return reviewerId;
+  }
+
+  public void setReviewerId(UUID reviewerId) {
+    this.reviewerId = reviewerId;
+  }
+
+  public UUID getRevieweeId() {
+    return revieweeId;
+  }
+
+  public void setRevieweeId(UUID revieweeId) {
+    this.revieweeId = revieweeId;
+  }
+
+  public UserVisibility getReviewerVisibility() {
+    return reviewerVisibility;
+  }
+
+  public void setReviewerVisibility(UserVisibility reviewerVisibility) {
+    this.reviewerVisibility = reviewerVisibility;
+  }
+
+  @Override
+  public String toString() {
+    return "Review [id=" + id + ", comment=" + comment + ", rating=" + rating + ", offerId=" + offerId + ", reviewerId="
+        + reviewerId + ", revieweeId=" + revieweeId + ", reviewerVisibility=" + reviewerVisibility + "]";
+  }
 
 }

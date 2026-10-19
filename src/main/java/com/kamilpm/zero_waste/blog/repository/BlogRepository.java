@@ -1,5 +1,6 @@
 package com.kamilpm.zero_waste.blog.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,4 +49,11 @@ public interface BlogRepository extends JpaRepository<Blog, UUID> {
   @Modifying(clearAutomatically = true)
   @Query("Update Blog b set b.authorVisibility = :visibility WHERE b.authorId = :ownerId")
   void updateAuthorVisibility(@Param("ownerId") UUID ownerId, @Param("visibility") UserVisibility visibility);
+
+  @Query("SELECT b.id FROM Blog b WHERE b.authorId IN :ids")
+
+  List<UUID> findByAuthorIdIn(Collection<UUID> ids);
+
+  @Query("SELECT b.id FROM Blog b WHERE b.authorId = :id")
+  List<UUID> findByAuthorId(UUID id);
 }

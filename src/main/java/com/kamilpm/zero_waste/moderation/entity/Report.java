@@ -14,20 +14,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@ToString
-@Builder
 @Table(name = "reports")
 public class Report extends BaseEntity {
 
@@ -54,7 +42,7 @@ public class Report extends BaseEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
-  @Builder.Default
+
   private ReportStatus status = ReportStatus.PENDING;
 
   @Column(name = "resolved_at")
@@ -65,5 +53,109 @@ public class Report extends BaseEntity {
 
   @Column(name = "admin_note", columnDefinition = "TEXT")
   private String adminNote;
+
+  public Report() {
+  }
+
+  public Report(UUID id, UUID reporterId, ReportSubjectType subjectType, UUID subjectId, ReportReason reason,
+      String comment, ReportStatus status, Instant resolvedAt, UUID resolvedBy, String adminNote) {
+    this.id = id;
+    this.reporterId = reporterId;
+    this.subjectType = subjectType;
+    this.subjectId = subjectId;
+    this.reason = reason;
+    this.comment = comment;
+    this.status = status;
+    this.resolvedAt = resolvedAt;
+    this.resolvedBy = resolvedBy;
+    this.adminNote = adminNote;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public UUID getReporterId() {
+    return reporterId;
+  }
+
+  public void setReporterId(UUID reporterId) {
+    this.reporterId = reporterId;
+  }
+
+  public ReportSubjectType getSubjectType() {
+    return subjectType;
+  }
+
+  public void setSubjectType(ReportSubjectType subjectType) {
+    this.subjectType = subjectType;
+  }
+
+  public UUID getSubjectId() {
+    return subjectId;
+  }
+
+  public void setSubjectId(UUID subjectId) {
+    this.subjectId = subjectId;
+  }
+
+  public ReportReason getReason() {
+    return reason;
+  }
+
+  public void setReason(ReportReason reason) {
+    this.reason = reason;
+  }
+
+  public String getComment() {
+    return comment;
+  }
+
+  public void setComment(String comment) {
+    this.comment = comment;
+  }
+
+  public ReportStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(ReportStatus status) {
+    this.status = status;
+  }
+
+  public Instant getResolvedAt() {
+    return resolvedAt;
+  }
+
+  public void setResolvedAt(Instant resolvedAt) {
+    this.resolvedAt = resolvedAt;
+  }
+
+  public UUID getResolvedBy() {
+    return resolvedBy;
+  }
+
+  public void setResolvedBy(UUID resolvedBy) {
+    this.resolvedBy = resolvedBy;
+  }
+
+  public String getAdminNote() {
+    return adminNote;
+  }
+
+  public void setAdminNote(String adminNote) {
+    this.adminNote = adminNote;
+  }
+
+  @Override
+  public String toString() {
+    return "Report [id=" + id + ", reporterId=" + reporterId + ", subjectType=" + subjectType + ", subjectId="
+        + subjectId + ", reason=" + reason + ", comment=" + comment + ", status=" + status + ", resolvedAt="
+        + resolvedAt + ", resolvedBy=" + resolvedBy + ", adminNote=" + adminNote + "]";
+  }
 
 }

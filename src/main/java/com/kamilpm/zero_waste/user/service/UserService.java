@@ -37,10 +37,7 @@ import com.kamilpm.zero_waste.user.mapper.UserMapper;
 import com.kamilpm.zero_waste.user.repository.UserBanRepository;
 import com.kamilpm.zero_waste.user.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
   private final UserRepository userRepository;
@@ -50,6 +47,18 @@ public class UserService {
   private final UserMapper userMapper;
   private final ApplicationEventPublisher events;
   private final ItemProvider itemApi;
+
+  public UserService(UserRepository userRepository, CurrentUserProvider currentUser, PasswordEncoder passwordEncoder,
+      UserBanRepository userBanRepository, UserMapper userMapper, ApplicationEventPublisher events,
+      ItemProvider itemApi) {
+    this.userRepository = userRepository;
+    this.currentUser = currentUser;
+    this.passwordEncoder = passwordEncoder;
+    this.userBanRepository = userBanRepository;
+    this.userMapper = userMapper;
+    this.events = events;
+    this.itemApi = itemApi;
+  }
 
   @Transactional(readOnly = true)
   public Page<UserDto> getUsersWithoutCurrentUser(String text, List<UserRole> roles, Pageable pageable) {
@@ -64,18 +73,17 @@ public class UserService {
   @Transactional
   public UserDto createUser(CreateUserRequest userRequest) {
 
-    if (userRepository.existsByEmail(userRequest.getEmail())) {
+    if (userRepository.existsByEmail(userRequest.email())) {
       throw new ConflictException("Email already in use", "email");
     }
 
-    final User user = User.builder()
-        .nickname(userRequest.getNickname())
-        .email(userRequest.getEmail().toLowerCase())
-        .password(passwordEncoder.encode(userRequest.getPassword()))
-        .role(userRequest.getRole())
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    final User user = new User();
+    user.setNickname(userRequest.nickname());
+    user.setEmail(userRequest.email().toLowerCase());
+    user.setPassword(passwordEncoder.encode(userRequest.password()));
+    user.setRole(userRequest.role());
+    user.setBanActive(false);
+    user.setBannedUntil(null);
 
     User savedUser = userRepository.save(user);
     return userMapper.toDto(savedUser);
@@ -104,7 +112,7 @@ public class UserService {
       throw new ForbiddenException("You can not update your account");
     }
 
-    if (userRepository.existsByEmailAndIdNot(userRequest.getEmail(), id)) {
+    if (userRepository.existsByEmailAndIdNot(userRequest.email(), id)) {
       throw new ConflictException("Email already in use", "email");
     }
 
@@ -112,11 +120,11 @@ public class UserService {
 
     UserRole oldRole = user.getRole();
 
-    user.setNickname(userRequest.getNickname());
-    user.setEmail(userRequest.getEmail());
-    user.setRole(userRequest.getRole());
-    if (userRequest.getEmail() != null && !userRequest.getPassword().isBlank()) {
-      user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+    user.setNickname(userRequest.nickname());
+    user.setEmail(userRequest.email());
+    user.setRole(userRequest.role());
+    if (userRequest.email() != null && !userRequest.password().isBlank()) {
+      user.setPassword(passwordEncoder.encode(userRequest.password()));
     }
     User updatedUser = userRepository.save(user);
 
@@ -145,7 +153,7 @@ public class UserService {
   public void banUsers(final BanRequest banRequest) {
     CurrentUser admin = currentUser.getRequiredAuthenticatedUser();
 
-    List<User> users = userRepository.findAllById(banRequest.getIds());
+    List<User> users = userRepository.findAllById(banRequest.ids());
 
     List<UserBan> bans = new ArrayList<>();
     List<UUID> bannedUserIds = new ArrayList<>();
@@ -161,18 +169,16 @@ public class UserService {
         continue;
       }
       user.setBanActive(true);
-      user.setBannedUntil(banRequest.getExpiresAt());
+      user.setBannedUntil(banRequest.expiresAt());
       bannedUserIds.add(user.getId());
       bannedUsersEmail.add(user.getEmail());
-
-      bans.add(
-          UserBan.builder()
-              .userId(user.getId())
-              .reason(banRequest.getReason())
-              .createdAt(now)
-              .bannedBy(admin.id())
-              .expiresAt(banRequest.getExpiresAt())
-              .build());
+      var ban = new UserBan();
+      ban.setUserId(user.getId());
+      ban.setReason(banRequest.reason());
+      ban.setCreatedAt(now);
+      ban.setBannedBy(admin.id());
+      ban.setExpiresAt(banRequest.expiresAt());
+      bans.add(ban);
     }
 
     userBanRepository.saveAll(bans);
@@ -189,7 +195,7 @@ public class UserService {
 
     CurrentUser admin = currentUser.getRequiredAuthenticatedUser();
 
-    List<UserBan> userBans = userBanRepository.findBanWithUser(unbanRequest.getIds());
+    List<UserBan> userBans = userBanRepository.findBanWithUser(unbanRequest.ids());
     Instant now = Instant.now();
     List<UUID> unBannedUserIds = new ArrayList<>();
 
@@ -199,13 +205,14 @@ public class UserService {
       userBan.setRevokedAt(now);
       unBannedUserIds.add(userBan.getUserId());
       userBan.setRevokedBy(admin.id());
-      userBan.setRevokedReason(unbanRequest.getRevokedReason());
+      userBan.setRevokedReason(unbanRequest.revokedReason());
     }
 
-    userRepository.revokeBan(unbanRequest.getIds());
-    userBanRepository.saveAll(userBans);
+    userRepository.revokeBan(unbanRequest.ids());
 
     events.publishEvent(new UnbanEvent(unBannedUserIds));
+
+    userBanRepository.saveAll(userBans);
 
   }
 

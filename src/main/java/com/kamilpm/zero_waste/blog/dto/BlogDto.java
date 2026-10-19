@@ -6,22 +6,13 @@ import java.util.UUID;
 import com.kamilpm.zero_waste.common.dto.UserSummaryDto;
 import com.kamilpm.zero_waste.common.entity.ModerationStatus;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class BlogDto {
-  private UUID id;
-  private String title;
-  private String description;
-  private String content;
-  private UserSummaryDto author;
-  private ModerationStatus moderationStatus;
-  private Instant createdAt;
-  private Instant updatedAt;
+public record BlogDto(
+    UUID id,
+    String title,
+    String description,
+    String content,
+    UserSummaryDto author,
+    ModerationStatus moderationStatus,
+    Instant createdAt,
+    Instant updatedAt) {
 }

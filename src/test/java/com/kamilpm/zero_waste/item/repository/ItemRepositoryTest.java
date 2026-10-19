@@ -51,43 +51,39 @@ public class ItemRepositoryTest {
   void testCountTotalItemsByOwnerIdAndState() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
     Category savedCategory = categoryRepository.save(category);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.AVAILABLE);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.VISIBLE);
+    item1.setCategoryId(savedCategory.getId());
+    item1.setOwnerId(savedUser.getId());
 
-    Item item2 = Item.builder()
-        .title("Title2")
-        .description("Description2")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.GIVEN)
-        .city("City2")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item2 = new Item();
+    item2.setTitle("Title2");
+    item2.setDescription("Description2");
+    item2.setCondition(ItemCondition.NEW);
+    item2.setState(ItemState.GIVEN);
+    item2.setCity("City2");
+    item2.setOwnerVisibility(UserVisibility.VISIBLE);
+    item2.setCategoryId(savedCategory.getId());
+    item2.setOwnerId(savedUser.getId());
 
     itemRepository.saveAll(List.of(item1, item2));
 
@@ -110,43 +106,39 @@ public class ItemRepositoryTest {
   void testDeleteAllByOwnerIds() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
     Category savedCategory = categoryRepository.save(category);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.AVAILABLE);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.VISIBLE);
+    item1.setCategoryId(savedCategory.getId());
+    item1.setOwnerId(savedUser.getId());
 
-    Item item2 = Item.builder()
-        .title("Title2")
-        .description("Description2")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.GIVEN)
-        .city("City2")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item2 = new Item();
+    item2.setTitle("Title2");
+    item2.setDescription("Description2");
+    item2.setCondition(ItemCondition.NEW);
+    item2.setState(ItemState.GIVEN);
+    item2.setCity("City2");
+    item2.setOwnerVisibility(UserVisibility.VISIBLE);
+    item2.setCategoryId(savedCategory.getId());
+    item2.setOwnerId(savedUser.getId());
 
     itemRepository.saveAll(List.of(item1, item2));
 
@@ -162,32 +154,29 @@ public class ItemRepositoryTest {
   void testExistsByCategoryId() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
     Category savedCategory = categoryRepository.save(category);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.AVAILABLE);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.VISIBLE);
+    item1.setCategoryId(savedCategory.getId());
+    item1.setOwnerId(savedUser.getId());
     itemRepository.save(item1);
 
     boolean exists = itemRepository.existsByCategoryId(savedCategory.getId());
@@ -200,85 +189,77 @@ public class ItemRepositoryTest {
   void testFindImageIdsByOwnerIds() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
 
-    User user2 = User.builder()
-        .nickname("test-123")
-        .email("2" + email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user2 = new User();
+    user2.setNickname("test-123");
+    user2.setEmail("2" + email);
+    user2.setPassword(null);
+    user2.setRole(UserRole.USER);
+    user2.setBanActive(false);
+    user2.setBannedUntil(null);
 
     User savedUser2 = userRepository.save(user2);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
     Category savedCategory = categoryRepository.save(category);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.AVAILABLE);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.VISIBLE);
+    item1.setCategoryId(savedCategory.getId());
+    item1.setOwnerId(savedUser.getId());
 
-    Item item2 = Item.builder()
-        .title("Title2")
-        .description("Description2")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.GIVEN)
-        .city("City2")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser2.getId())
-        .build();
+    Item item2 = new Item();
+    item2.setTitle("Title2");
+    item2.setDescription("Description2");
+    item2.setCondition(ItemCondition.NEW);
+    item2.setState(ItemState.GIVEN);
+    item2.setCity("City2");
+    item2.setOwnerVisibility(UserVisibility.VISIBLE);
+    item2.setCategoryId(savedCategory.getId());
+    item2.setOwnerId(savedUser2.getId());
 
     List<Item> items = itemRepository.saveAllAndFlush(List.of(item1, item2));
 
     Instant now = Instant.now();
 
-    Image image1 = Image.builder()
-        .itemId(items.get(0).getId())
-        .originalName("OriginalName")
-        .storedName("path")
-        .mimeType("image/png")
-        .size(441L)
-        .createdAt(now)
-        .build();
+    Image image1 = new Image();
+    image1.setItemId(items.get(0).getId());
+    image1.setOriginalName("OriginalName");
+    image1.setStoredName("path");
+    image1.setMimeType("image/png");
+    image1.setSize(441L);
+    image1.setCreatedAt(now);
 
-    Image image2 = Image.builder()
-        .itemId(items.get(0).getId())
-        .originalName("OriginalName")
-        .storedName("path")
-        .mimeType("image/png")
-        .size(441L)
-        .createdAt(now)
-        .build();
+    Image image2 = new Image();
+    image2.setItemId(items.get(0).getId());
+    image2.setOriginalName("OriginalName");
+    image2.setStoredName("path");
+    image2.setMimeType("image/png");
+    image2.setSize(441L);
+    image2.setCreatedAt(now);
 
-    Image image3 = Image.builder()
-        .itemId(items.get(1).getId())
-        .originalName("OriginalName")
-        .storedName("path")
-        .mimeType("image/png")
-        .size(441L)
-        .createdAt(now)
-        .build();
+    Image image3 = new Image();
+    image3.setItemId(items.get(1).getId());
+    image3.setOriginalName("OriginalName");
+    image3.setStoredName("path");
+    image3.setMimeType("image/png");
+    image3.setSize(441L);
+    image3.setCreatedAt(now);
 
     List<Image> images = imageRepository.saveAllAndFlush(List.of(image1, image2, image3));
 
@@ -307,49 +288,44 @@ public class ItemRepositoryTest {
   void testFindOwnItems() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
 
-    Category category1 = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category1 = new Category();
+    category1.setName("Sport");
+    category1.setParent(null);
     Category savedCategory1 = categoryRepository.save(category1);
 
-    Category category2 = Category.builder()
-        .name("Home")
-        .parent(null)
-        .build();
+    Category category2 = new Category();
+    category2.setName("Home");
+    category2.setParent(null);
     Category savedCategory2 = categoryRepository.save(category2);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory1.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.AVAILABLE);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.VISIBLE);
+    item1.setCategoryId(savedCategory1.getId());
+    item1.setOwnerId(savedUser.getId());
 
-    Item item2 = Item.builder()
-        .title("Title2")
-        .description("Description2")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City2")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory2.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item2 = new Item();
+    item2.setTitle("Title2");
+    item2.setDescription("Description2");
+    item2.setCondition(ItemCondition.NEW);
+    item2.setState(ItemState.AVAILABLE);
+    item2.setCity("City2");
+    item2.setOwnerVisibility(UserVisibility.VISIBLE);
+    item2.setCategoryId(savedCategory2.getId());
+    item2.setOwnerId(savedUser.getId());
 
     itemRepository.saveAll(List.of(item1, item2));
 
@@ -367,49 +343,44 @@ public class ItemRepositoryTest {
   void testSearchItems() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
 
-    Category category1 = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category1 = new Category();
+    category1.setName("Sport");
+    category1.setParent(null);
     Category savedCategory1 = categoryRepository.save(category1);
 
-    Category category2 = Category.builder()
-        .name("Home")
-        .parent(null)
-        .build();
+    Category category2 = new Category();
+    category2.setName("Home");
+    category2.setParent(null);
     Category savedCategory2 = categoryRepository.save(category2);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory1.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.AVAILABLE);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.VISIBLE);
+    item1.setCategoryId(savedCategory1.getId());
+    item1.setOwnerId(savedUser.getId());
 
-    Item item2 = Item.builder()
-        .title("Title2")
-        .description("Description2")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City2")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory2.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item2 = new Item();
+    item2.setTitle("Title2");
+    item2.setDescription("Description2");
+    item2.setCondition(ItemCondition.NEW);
+    item2.setState(ItemState.AVAILABLE);
+    item2.setCity("City2");
+    item2.setOwnerVisibility(UserVisibility.VISIBLE);
+    item2.setCategoryId(savedCategory2.getId());
+    item2.setOwnerId(savedUser.getId());
 
     itemRepository.saveAll(List.of(item1, item2));
 
@@ -426,32 +397,29 @@ public class ItemRepositoryTest {
   void testUpdateItemState() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
     Category savedCategory = categoryRepository.save(category);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.AVAILABLE);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.VISIBLE);
+    item1.setCategoryId(savedCategory.getId());
+    item1.setOwnerId(savedUser.getId());
     Item savedItem = itemRepository.save(item1);
 
     itemRepository.updateItemState(savedItem.getId(), ItemState.PENDING);
@@ -467,32 +435,29 @@ public class ItemRepositoryTest {
   void testUpdateOwnerVisibility() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
     Category savedCategory = categoryRepository.save(category);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.AVAILABLE);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.VISIBLE);
+    item1.setCategoryId(savedCategory.getId());
+    item1.setOwnerId(savedUser.getId());
     Item savedItem = itemRepository.save(item1);
 
     itemRepository.updateOwnerVisibility(List.of(savedItem.getOwnerId()), UserVisibility.BANNED, ItemState.GIVEN);

@@ -22,7 +22,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   boolean existsByEmail(String email);
 
-  @Modifying(clearAutomatically = true)
+  // @Modifying(clearAutomatically = true)
+  @Modifying
   @Query("update User u set u.banActive = false, u.bannedUntil = null where u.id IN :ids")
   void revokeBan(@Param("ids") List<UUID> ids);
 

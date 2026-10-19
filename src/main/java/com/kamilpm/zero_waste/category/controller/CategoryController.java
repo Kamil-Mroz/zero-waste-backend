@@ -12,7 +12,6 @@ import com.kamilpm.zero_waste.category.service.CategoryService;
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -29,11 +28,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/categories", version = "1")
-@RequiredArgsConstructor
 public class CategoryController {
 
   private final CategoryService categoryService;
   private final CategoryMapper categoryMapper;
+
+  public CategoryController(CategoryService categoryService, CategoryMapper categoryMapper) {
+    this.categoryService = categoryService;
+    this.categoryMapper = categoryMapper;
+  }
 
   @GetMapping
   public ResponseEntity<List<CategoryDto>> getAllCategories() {

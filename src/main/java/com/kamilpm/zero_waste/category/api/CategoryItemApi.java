@@ -22,13 +22,15 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class CategoryItemApi implements CategoryProvider {
   private final CategoryRepository categoryRepository;
   private final CategoryMapper categoryMapper;
+
+  public CategoryItemApi(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+    this.categoryRepository = categoryRepository;
+    this.categoryMapper = categoryMapper;
+  }
 
   public void existsByCategoryId(UUID id) {
     if (!categoryRepository.existsById(id))

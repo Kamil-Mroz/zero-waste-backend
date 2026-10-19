@@ -15,7 +15,6 @@ import com.kamilpm.zero_waste.user.dto.UserDto;
 import com.kamilpm.zero_waste.user.service.UserService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -34,10 +33,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/users", version = "1")
-@RequiredArgsConstructor
 public class UserController {
 
   private final UserService userService;
+
+  public UserController(UserService userService) {
+    this.userService = userService;
+  }
 
   @GetMapping
   public ResponseEntity<PageResponse<UserDto>> getUsers(

@@ -37,10 +37,8 @@ import com.kamilpm.zero_waste.moderation.mapper.ReportMapper;
 import com.kamilpm.zero_waste.moderation.repository.ReportRepository;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class ReportService {
   private final ReportRepository reportRepository;
   private final ReportMapper reportMapper;
@@ -50,6 +48,19 @@ public class ReportService {
   private final UserProvider userReportApi;
   private final BlogProvider blogReportApi;
   private final ApplicationEventPublisher events;
+
+  public ReportService(ReportRepository reportRepository, ReportMapper reportMapper, CurrentUserProvider currentUser,
+      ReviewProvider reviewReportApi, ItemProvider itemReportApi, UserProvider userReportApi,
+      BlogProvider blogReportApi, ApplicationEventPublisher events) {
+    this.reportRepository = reportRepository;
+    this.reportMapper = reportMapper;
+    this.currentUser = currentUser;
+    this.reviewReportApi = reviewReportApi;
+    this.itemReportApi = itemReportApi;
+    this.userReportApi = userReportApi;
+    this.blogReportApi = blogReportApi;
+    this.events = events;
+  }
 
   @Transactional
   public void createReport(ReportRequest reportRequest) {
@@ -63,13 +74,12 @@ public class ReportService {
               reportRequest.subjectType().toString().toLowerCase());
     }
 
-    Report report = Report.builder()
-        .reporterId(user.id())
-        .subjectType(reportRequest.subjectType())
-        .subjectId(reportRequest.subjectId())
-        .reason(reportRequest.reason())
-        .comment(reportRequest.comment())
-        .build();
+    Report report = new Report();
+    report.setReporterId(user.id());
+    report.setSubjectType(reportRequest.subjectType());
+    report.setSubjectId(reportRequest.subjectId());
+    report.setReason(reportRequest.reason());
+    report.setComment(reportRequest.comment());
 
     Report savedReport = reportRepository.save(report);
     events.publishEvent(new SendReportNotificationEvent(

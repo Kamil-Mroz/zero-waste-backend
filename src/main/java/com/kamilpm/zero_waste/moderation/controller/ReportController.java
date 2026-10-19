@@ -11,7 +11,6 @@ import com.kamilpm.zero_waste.moderation.dto.ResolveReportRequest;
 import com.kamilpm.zero_waste.moderation.service.ReportService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -25,10 +24,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/reports", version = "1")
-@RequiredArgsConstructor
 public class ReportController {
 
   private final ReportService reportService;
+
+  public ReportController(ReportService reportService) {
+    this.reportService = reportService;
+  }
 
   @RateLimit(action = "create-report", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping

@@ -44,42 +44,38 @@ public class OfferRepositoryTest {
   void testUpdateBuyerVisibility() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
 
     Category savedCategory = categoryRepository.save(category);
 
-    Item item = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item = new Item();
+    item.setTitle("Title");
+    item.setDescription("Description");
+    item.setCondition(ItemCondition.NEW);
+    item.setState(ItemState.AVAILABLE);
+    item.setCity("City");
+    item.setOwnerVisibility(UserVisibility.VISIBLE);
+    item.setCategoryId(savedCategory.getId());
+    item.setOwnerId(savedUser.getId());
 
     Item savedItem = itemRepository.save(item);
 
-    Offer offer = Offer.builder()
-        .buyerId(savedUser.getId())
-        .itemId(savedItem.getId())
-        .buyerVisibility(UserVisibility.VISIBLE)
-        .status(OfferStatus.PENDING)
-        .build();
+    Offer offer = new Offer();
+    offer.setBuyerId(savedUser.getId());
+    offer.setItemId(savedItem.getId());
+    offer.setBuyerVisibility(UserVisibility.VISIBLE);
+    offer.setStatus(OfferStatus.PENDING);
     Offer savedOffer = offerRepository.save(offer);
 
     offerRepository.updateBuyerVisibility(savedUser.getId(), UserVisibility.BANNED, OfferStatus.PENDING);
@@ -95,42 +91,38 @@ public class OfferRepositoryTest {
   void testUpdateBuyerVisibility2() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
     User savedUser = userRepository.save(user);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
 
     Category savedCategory = categoryRepository.save(category);
 
-    Item item = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.AVAILABLE)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser.getId())
-        .build();
+    Item item = new Item();
+    item.setTitle("Title");
+    item.setDescription("Description");
+    item.setCondition(ItemCondition.NEW);
+    item.setState(ItemState.AVAILABLE);
+    item.setCity("City");
+    item.setOwnerVisibility(UserVisibility.VISIBLE);
+    item.setCategoryId(savedCategory.getId());
+    item.setOwnerId(savedUser.getId());
 
     Item savedItem = itemRepository.save(item);
 
-    Offer offer = Offer.builder()
-        .buyerId(savedUser.getId())
-        .itemId(savedItem.getId())
-        .buyerVisibility(UserVisibility.VISIBLE)
-        .status(OfferStatus.PENDING)
-        .build();
+    Offer offer = new Offer();
+    offer.setBuyerId(savedUser.getId());
+    offer.setItemId(savedItem.getId());
+    offer.setBuyerVisibility(UserVisibility.VISIBLE);
+    offer.setStatus(OfferStatus.PENDING);
     Offer savedOffer = offerRepository.save(offer);
 
     offerRepository.updateBuyerVisibility(List.of(savedUser.getId()), UserVisibility.BANNED, OfferStatus.PENDING);

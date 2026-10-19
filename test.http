@@ -3,8 +3,7 @@
 @host = {{hostname}}:{{port}}
 @contentType = application/json
 @api = api/v1
-@accessToken =eyJhbGciOiJIUzM4NCJ9.eyJpZCI6ImU1NDVmNzFhLTFkNWQtNDM2Yi05NWM4LTBjMzVjNzMwNjYyMCIsInJvbGVzIjpbeyJhdXRob3JpdHkiOiJST0xFX1VTRVIifV0sInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzc1NDgwMTczLCJleHAiOjE3NzU0ODEwNzN9.oJYK-PgkB-y7IB06veL5LRwlzNDujPNgMFVS_UPMdwb481m3iWH92CHPV1qLzNiC
-
+@accessToken =eyJhbGciOiJIUzM4NCJ9.eyJpZCI6IjE0MjE4ZDhjLTgzNzMtNDMzZS05NzM4LTI0ZTEzNGEwNDFkNyIsInN1YiI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzkyNDQ1MDcxLCJleHAiOjE3OTI0NDU5NzF9.eZ3tJt3pZgSo5nBRtJJSlv6j_gEIbKeed_u7Hbrgw2Pser5ZXyJc2XmuYj6jKsB7
 ### AUTH
 POST http://{{host}}/{{api}}/auth/register
 Content-Type: application/json
@@ -39,3 +38,61 @@ Authorization: Bearer {{accessToken}}
 
 ### items
 GET http://{{host}}/{{api}}/items/skldjsdl
+
+###
+GET http://{{host}}/{{api}}/blogs
+
+###
+GET http://{{host}}/{{api}}/blogs/fb99b2af-67d0-4fe5-a723-cb323ce3a94d
+
+###
+POST http://{{host}}/{{api}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "john.doe@example.com",
+    "password": "SecurePassword123!"
+}
+
+###
+POST http://{{host}}/{{api}}/users/ban
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "ids": ["639638ae-994e-4e4a-b928-fc76d3c47e1d"],
+    "reason": "Why not",
+    "expiresAt": null
+}
+
+
+###
+POST http://{{host}}/{{api}}/users/unban
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "ids": ["639638ae-994e-4e4a-b928-fc76d3c47e1d"],
+    "revokedReason": "Why not"
+}
+
+
+###
+POST http://{{host}}/{{api}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "user12@example.com",
+    "password": "SecurePassword123!"
+}
+
+###
+DELETE http://{{host}}/{{api}}/blogs/fb99b2af-67d0-4fe5-a723-cb323ce3a94d
+Content-Type: application/json
+Authorization: Bearer {{{{accessToken}}}}
+
+{
+    "ids": ["639638ae-994e-4e4a-b928-fc76d3c47e1d"],
+    "reason": "Why not",
+    "expiresAt": null
+}

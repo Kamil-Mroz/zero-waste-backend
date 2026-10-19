@@ -13,20 +13,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@ToString
-@Builder
 @Table(name = "blogs")
 public class Blog extends ModeratableEntity {
   @Id
@@ -49,4 +37,72 @@ public class Blog extends ModeratableEntity {
   @Column(name = "author_visibility", nullable = false)
   @Enumerated(EnumType.STRING)
   private UserVisibility authorVisibility;
+
+  public Blog() {
+  }
+
+  public Blog(UUID id, String title, String description, String content, UUID authorId,
+      UserVisibility authorVisibility) {
+    this.id = id;
+    this.title = title;
+    this.description = description;
+    this.content = content;
+    this.authorId = authorId;
+    this.authorVisibility = authorVisibility;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public String getContent() {
+    return content;
+  }
+
+  public void setContent(String content) {
+    this.content = content;
+  }
+
+  public UUID getAuthorId() {
+    return authorId;
+  }
+
+  public void setAuthorId(UUID authorId) {
+    this.authorId = authorId;
+  }
+
+  public UserVisibility getAuthorVisibility() {
+    return authorVisibility;
+  }
+
+  public void setAuthorVisibility(UserVisibility authorVisibility) {
+    this.authorVisibility = authorVisibility;
+  }
+
+  @Override
+  public String toString() {
+    return "Blog [id=" + id + ", title=" + title + ", description=" + description + ", content=" + content
+        + ", authorId=" + authorId + ", authorVisibility=" + authorVisibility + "]";
+  }
+
 }

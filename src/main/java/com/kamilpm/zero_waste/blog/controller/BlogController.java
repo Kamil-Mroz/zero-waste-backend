@@ -9,7 +9,6 @@ import com.kamilpm.zero_waste.blog.service.BlogService;
 import com.kamilpm.zero_waste.common.annotation.RateLimit;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -26,10 +25,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/blogs", version = "1")
-@RequiredArgsConstructor
 public class BlogController {
 
   private final BlogService blogService;
+
+  public BlogController(BlogService blogService) {
+    this.blogService = blogService;
+  }
 
   @RateLimit(action = "create-blog", limit = 10, window = 10, unit = ChronoUnit.MINUTES)
   @PostMapping

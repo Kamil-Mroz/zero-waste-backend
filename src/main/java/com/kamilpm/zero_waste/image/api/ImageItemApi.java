@@ -1,9 +1,5 @@
 package com.kamilpm.zero_waste.image.api;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -24,7 +20,6 @@ import com.kamilpm.zero_waste.common.interfaces.ImageProvider;
 import com.kamilpm.zero_waste.image.entity.Image;
 import com.kamilpm.zero_waste.image.entity.PendingImageUpload;
 import com.kamilpm.zero_waste.image.mapper.ImageMapper;
-import com.kamilpm.zero_waste.image.properties.ImageStorageProperties;
 import com.kamilpm.zero_waste.image.repository.ImageRepository;
 import com.kamilpm.zero_waste.image.repository.PendingImageUploadRepository;
 import com.kamilpm.zero_waste.properties.AWSProperties;
@@ -35,30 +30,29 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class ImageItemApi implements ImageProvider {
 
-  private final ImageStorageProperties properties;
   private final ImageRepository imageRepository;
   private final ImageMapper imageMapper;
-  private Path rootPath;
   private final S3Client s3Client;
   private final AWSProperties awsProperties;
   private final PendingImageUploadRepository pendingImageUploadRepository;
   private final CurrentUserProvider currentUser;
   private final S3Presigner presigner;
 
-  @PostConstruct
-  void init() throws IOException {
-    this.rootPath = Paths.get(properties.getBasePath());
-    Files.createDirectories(rootPath);
+  public ImageItemApi(ImageRepository imageRepository, ImageMapper imageMapper, S3Client s3Client,
+      AWSProperties awsProperties, PendingImageUploadRepository pendingImageUploadRepository,
+      CurrentUserProvider currentUser, S3Presigner presigner) {
+    this.imageRepository = imageRepository;
+    this.imageMapper = imageMapper;
+    this.s3Client = s3Client;
+    this.awsProperties = awsProperties;
+    this.pendingImageUploadRepository = pendingImageUploadRepository;
+    this.currentUser = currentUser;
+    this.presigner = presigner;
   }
 
   @Override
@@ -158,14 +152,14 @@ public class ImageItemApi implements ImageProvider {
           upload.setStatus(
               PendingImageUpload.Status.ATTACHED);
 
-          return Image.builder()
-              .itemId(itemId)
-              .originalName(upload.getOriginalName())
-              .storedName(upload.getObjectKey())
-              .mimeType(upload.getMimeType())
-              .size(upload.getSize())
-              .createdAt(createdAt)
-              .build();
+          var image = new Image();
+          image.setItemId(itemId);
+          image.setOriginalName(upload.getOriginalName());
+          image.setStoredName(upload.getObjectKey());
+          image.setMimeType(upload.getMimeType());
+          image.setSize(upload.getSize());
+          image.setCreatedAt(createdAt);
+          return image;
         })
         .toList();
 

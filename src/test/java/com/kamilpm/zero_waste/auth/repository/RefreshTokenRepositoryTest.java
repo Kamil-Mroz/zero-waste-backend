@@ -33,23 +33,21 @@ public class RefreshTokenRepositoryTest {
   void testDeleteAllByUserIds() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
 
     User saveUser = userRepository.save(user);
 
-    RefreshToken token = RefreshToken.builder()
-        .userId(saveUser.getId())
-        .token(UUID.randomUUID().toString())
-        .expiryDate(Instant.now().plus(7, ChronoUnit.DAYS))
-        .revoked(false)
-        .build();
+    RefreshToken token = new RefreshToken();
+    token.setUserId(saveUser.getId());
+    token.setToken(UUID.randomUUID().toString());
+    token.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
+    token.setRevoked(false);
 
     RefreshToken savedToken = refreshTokenRepository.save(token);
 
@@ -64,23 +62,21 @@ public class RefreshTokenRepositoryTest {
   void testRevokeAllByUserIds() {
 
     String email = "test@example.com";
-    User user = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user = new User();
+    user.setNickname("test-123");
+    user.setEmail(email);
+    user.setPassword(null);
+    user.setRole(UserRole.USER);
+    user.setBanActive(false);
+    user.setBannedUntil(null);
 
     User saveUser = userRepository.save(user);
 
-    RefreshToken token = RefreshToken.builder()
-        .userId(saveUser.getId())
-        .token(UUID.randomUUID().toString())
-        .expiryDate(Instant.now().plus(7, ChronoUnit.DAYS))
-        .revoked(false)
-        .build();
+    RefreshToken token = new RefreshToken();
+    token.setUserId(saveUser.getId());
+    token.setToken(UUID.randomUUID().toString());
+    token.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
+    token.setRevoked(false);
 
     RefreshToken savedToken = refreshTokenRepository.save(token);
 

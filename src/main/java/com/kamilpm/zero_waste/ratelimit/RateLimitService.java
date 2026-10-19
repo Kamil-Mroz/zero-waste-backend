@@ -14,14 +14,21 @@ import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.ConsumptionProbe;
 import io.github.bucket4j.distributed.proxy.ProxyManager;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class RateLimitService {
   private final CurrentUserProvider currentUser;
 
   private final ProxyManager<byte[]> proxyManager;
+
+ 
+
+  public RateLimitService(CurrentUserProvider currentUser, ProxyManager<byte[]> proxyManager) {
+    this.currentUser = currentUser;
+    this.proxyManager = proxyManager;
+  }
+
+
 
   public void check(String action, long limit, long window, ChronoUnit unit) {
     UUID userId = currentUser.getRequiredAuthenticatedUser().id();

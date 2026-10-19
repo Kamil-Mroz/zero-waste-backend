@@ -3,6 +3,8 @@
     "common :: interfaces",
     "common :: dtos",
     "common :: events",
+    "common :: events",
+    "properties",
 })
 package com.kamilpm.zero_waste.image;
 

@@ -7,12 +7,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
-import lombok.Getter;
-import lombok.Setter;
 
 @MappedSuperclass
-@Getter
-@Setter
 public abstract class ModeratableEntity extends BaseEntity {
 
   @Enumerated(EnumType.STRING)
@@ -23,5 +19,29 @@ public abstract class ModeratableEntity extends BaseEntity {
 
   @Column(name = "moderated_by")
   private UUID moderatedBy;
+
+  public ModerationStatus getModerationStatus() {
+    return moderationStatus;
+  }
+
+  public void setModerationStatus(ModerationStatus moderationStatus) {
+    this.moderationStatus = moderationStatus;
+  }
+
+  public Instant getModeratedAt() {
+    return moderatedAt;
+  }
+
+  public void setModeratedAt(Instant moderatedAt) {
+    this.moderatedAt = moderatedAt;
+  }
+
+  public UUID getModeratedBy() {
+    return moderatedBy;
+  }
+
+  public void setModeratedBy(UUID moderatedBy) {
+    this.moderatedBy = moderatedBy;
+  }
 
 }

@@ -29,16 +29,23 @@ import com.kamilpm.zero_waste.item.repository.ItemRepository;
 import com.kamilpm.zero_waste.item.service.ItemService;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class ItemApi implements ItemProvider {
   private final ItemRepository itemRepository;
   private final ItemMapper itemMapper;
   private final UserProvider userApi;
   private final ItemService itemService;
   private final ImageProvider imageItemApi;
+
+  public ItemApi(ItemRepository itemRepository, ItemMapper itemMapper, UserProvider userApi, ItemService itemService,
+      ImageProvider imageItemApi) {
+    this.itemRepository = itemRepository;
+    this.itemMapper = itemMapper;
+    this.userApi = userApi;
+    this.itemService = itemService;
+    this.imageItemApi = imageItemApi;
+  }
 
   public SimpleItemData getItemById(UUID itemId) {
 

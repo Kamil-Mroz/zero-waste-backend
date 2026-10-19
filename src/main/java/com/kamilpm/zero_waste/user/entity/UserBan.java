@@ -11,20 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@ToString
-@Builder
 @Table(name = "user_bans")
 public class UserBan {
 
@@ -56,4 +44,100 @@ public class UserBan {
 
   @Column(name = "revoked_reason")
   private String revokedReason;
+
+  public UserBan() {
+  }
+
+  public UserBan(UUID id, UUID userId, String reason, UUID bannedBy, Instant createdAt, Instant expiresAt,
+      Instant revokedAt, UUID revokedBy, String revokedReason) {
+    this.id = id;
+    this.userId = userId;
+    this.reason = reason;
+    this.bannedBy = bannedBy;
+    this.createdAt = createdAt;
+    this.expiresAt = expiresAt;
+    this.revokedAt = revokedAt;
+    this.revokedBy = revokedBy;
+    this.revokedReason = revokedReason;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public UUID getUserId() {
+    return userId;
+  }
+
+  public void setUserId(UUID userId) {
+    this.userId = userId;
+  }
+
+  public String getReason() {
+    return reason;
+  }
+
+  public void setReason(String reason) {
+    this.reason = reason;
+  }
+
+  public UUID getBannedBy() {
+    return bannedBy;
+  }
+
+  public void setBannedBy(UUID bannedBy) {
+    this.bannedBy = bannedBy;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(Instant createdAt) {
+    this.createdAt = createdAt;
+  }
+
+  public Instant getExpiresAt() {
+    return expiresAt;
+  }
+
+  public void setExpiresAt(Instant expiresAt) {
+    this.expiresAt = expiresAt;
+  }
+
+  public Instant getRevokedAt() {
+    return revokedAt;
+  }
+
+  public void setRevokedAt(Instant revokedAt) {
+    this.revokedAt = revokedAt;
+  }
+
+  public UUID getRevokedBy() {
+    return revokedBy;
+  }
+
+  public void setRevokedBy(UUID revokedBy) {
+    this.revokedBy = revokedBy;
+  }
+
+  public String getRevokedReason() {
+    return revokedReason;
+  }
+
+  public void setRevokedReason(String revokedReason) {
+    this.revokedReason = revokedReason;
+  }
+
+  @Override
+  public String toString() {
+    return "UserBan [id=" + id + ", userId=" + userId + ", reason=" + reason + ", bannedBy=" + bannedBy + ", createdAt="
+        + createdAt + ", expiresAt=" + expiresAt + ", revokedAt=" + revokedAt + ", revokedBy=" + revokedBy
+        + ", revokedReason=" + revokedReason + "]";
+  }
+
 }

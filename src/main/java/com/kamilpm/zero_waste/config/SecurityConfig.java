@@ -28,11 +28,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.kamilpm.zero_waste.security.JwtFilter;
 
-import lombok.RequiredArgsConstructor;
-
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 @EnableMethodSecurity
 public class SecurityConfig {
 
@@ -41,6 +38,16 @@ public class SecurityConfig {
   private final AuthenticationEntryPoint authEntryPoint;
   private final AccessDeniedHandler accessDeniedHandler;
   private final AuthorizationManager<RequestAuthorizationContext> demoReadonlyAuthorizationManager;
+
+  public SecurityConfig(JwtFilter jwtFilter, UserDetailsService userDetailsService,
+      AuthenticationEntryPoint authEntryPoint, AccessDeniedHandler accessDeniedHandler,
+      AuthorizationManager<RequestAuthorizationContext> demoReadonlyAuthorizationManager ) {
+    this.jwtFilter = jwtFilter;
+    this.userDetailsService = userDetailsService;
+    this.authEntryPoint = authEntryPoint;
+    this.accessDeniedHandler = accessDeniedHandler;
+    this.demoReadonlyAuthorizationManager = demoReadonlyAuthorizationManager;
+  }
 
   @Value("${app.cors.allowed-origins}")
   private String allowedOrigins;

@@ -49,95 +49,86 @@ public class ReviewRepositoryTest {
   @Test
   void testGetRatingBreakdownWithStats() {
     String email = "test@example.com";
-    User user1 = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user1 = new User();
+    user1.setNickname("test-123");
+    user1.setEmail(email);
+    user1.setPassword(null);
+    user1.setRole(UserRole.USER);
+    user1.setBanActive(false);
+    user1.setBannedUntil(null);
     User savedUser1 = userRepository.save(user1);
 
-    User user2 = User.builder()
-        .nickname("test2-123")
-        .email("2" + email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user2 = new User();
+    user2.setNickname("test2-123");
+    user2.setEmail("2" + email);
+    user2.setPassword(null);
+    user2.setRole(UserRole.USER);
+    user2.setBanActive(false);
+    user2.setBannedUntil(null);
     User savedUser2 = userRepository.save(user2);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
 
     Category savedCategory = categoryRepository.save(category);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.GIVEN)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser1.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.GIVEN);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.VISIBLE);
+    item1.setCategoryId(savedCategory.getId());
+    item1.setOwnerId(savedUser1.getId());
 
     Item savedItem1 = itemRepository.save(item1);
 
-    Item item2 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.GIVEN)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser1.getId())
-        .build();
+    Item item2 = new Item();
+    item2.setTitle("Title");
+    item2.setDescription("Description");
+    item2.setCondition(ItemCondition.NEW);
+    item2.setState(ItemState.GIVEN);
+    item2.setCity("City");
+    item2.setOwnerVisibility(UserVisibility.VISIBLE);
+    item2.setCategoryId(savedCategory.getId());
+    item2.setOwnerId(savedUser1.getId());
 
     Item savedItem2 = itemRepository.save(item2);
 
-    Offer offer1 = Offer.builder()
-        .buyerId(savedUser2.getId())
-        .itemId(savedItem1.getId())
-        .buyerVisibility(UserVisibility.VISIBLE)
-        .status(OfferStatus.ACCEPTED)
-        .build();
+    Offer offer1 = new Offer();
+    offer1.setBuyerId(savedUser2.getId());
+    offer1.setItemId(savedItem1.getId());
+    offer1.setBuyerVisibility(UserVisibility.VISIBLE);
+    offer1.setStatus(OfferStatus.ACCEPTED);
 
     Offer savedOffer1 = offerRepository.save(offer1);
 
-    Offer offer2 = Offer.builder()
-        .buyerId(savedUser2.getId())
-        .itemId(savedItem2.getId())
-        .buyerVisibility(UserVisibility.VISIBLE)
-        .status(OfferStatus.ACCEPTED)
-        .build();
+    Offer offer2 = new Offer();
+    offer2.setBuyerId(savedUser2.getId());
+    offer2.setItemId(savedItem2.getId());
+    offer2.setBuyerVisibility(UserVisibility.VISIBLE);
+    offer2.setStatus(OfferStatus.ACCEPTED);
     Offer savedOffer2 = offerRepository.save(offer2);
 
-    Review review1 = Review.builder()
-        .comment("Comment 1")
-        .offerId(savedOffer1.getId())
-        .rating(5)
-        .revieweeId(savedItem1.getOwnerId())
-        .reviewerId(savedUser2.getId())
-        .reviewerVisibility(UserVisibility.VISIBLE)
-        .build();
+    Review review1 = new Review();
+    review1.setComment("Comment 1");
+    review1.setOfferId(savedOffer1.getId());
+    review1.setRating(5);
+    review1.setRevieweeId(savedItem1.getOwnerId());
+    review1.setReviewerId(savedUser2.getId());
+    review1.setReviewerVisibility(UserVisibility.VISIBLE);
 
     reviewRepository.save(review1);
 
-    Review review2 = Review.builder()
-        .comment("Comment 1")
-        .offerId(savedOffer2.getId())
-        .rating(2)
-        .revieweeId(savedItem2.getOwnerId())
-        .reviewerId(savedUser2.getId())
-        .reviewerVisibility(UserVisibility.VISIBLE)
-        .build();
+    Review review2 = new Review();
+    review2.setComment("Comment 1");
+    review2.setOfferId(savedOffer2.getId());
+    review2.setRating(2);
+    review2.setRevieweeId(savedItem2.getOwnerId());
+    review2.setReviewerId(savedUser2.getId());
+    review2.setReviewerVisibility(UserVisibility.VISIBLE);
 
     reviewRepository.save(review2);
     long one = 0, two = 0, three = 0, four = 0, five = 0, count = 0, totalRating = 0;
@@ -169,63 +160,57 @@ public class ReviewRepositoryTest {
   void testIsReviewerOrReviewee() {
 
     String email = "test@example.com";
-    User user1 = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user1 = new User();
+    user1.setNickname("test-123");
+    user1.setEmail(email);
+    user1.setPassword(null);
+    user1.setRole(UserRole.USER);
+    user1.setBanActive(false);
+    user1.setBannedUntil(null);
     User savedUser1 = userRepository.save(user1);
 
-    User user2 = User.builder()
-        .nickname("test2-123")
-        .email("2" + email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user2 = new User();
+    user2.setNickname("test2-123");
+    user2.setEmail("2" + email);
+    user2.setPassword(null);
+    user2.setRole(UserRole.USER);
+    user2.setBanActive(false);
+    user2.setBannedUntil(null);
     User savedUser2 = userRepository.save(user2);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
 
     Category savedCategory = categoryRepository.save(category);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.GIVEN)
-        .city("City")
-        .ownerVisibility(UserVisibility.VISIBLE)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser1.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.GIVEN);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.VISIBLE);
+    item1.setCategoryId(savedCategory.getId());
+    item1.setOwnerId(savedUser1.getId());
 
     Item savedItem1 = itemRepository.save(item1);
 
-    Offer offer1 = Offer.builder()
-        .buyerId(savedUser2.getId())
-        .itemId(savedItem1.getId())
-        .buyerVisibility(UserVisibility.VISIBLE)
-        .status(OfferStatus.ACCEPTED)
-        .build();
+    Offer offer1 = new Offer();
+    offer1.setBuyerId(savedUser2.getId());
+    offer1.setItemId(savedItem1.getId());
+    offer1.setBuyerVisibility(UserVisibility.VISIBLE);
+    offer1.setStatus(OfferStatus.ACCEPTED);
 
     Offer savedOffer1 = offerRepository.save(offer1);
 
-    Review review1 = Review.builder()
-        .comment("Comment 1")
-        .offerId(savedOffer1.getId())
-        .rating(5)
-        .revieweeId(savedItem1.getOwnerId())
-        .reviewerId(savedUser2.getId())
-        .reviewerVisibility(UserVisibility.VISIBLE)
-        .build();
+    Review review1 = new Review();
+    review1.setComment("Comment 1");
+    review1.setOfferId(savedOffer1.getId());
+    review1.setRating(5);
+    review1.setRevieweeId(savedItem1.getOwnerId());
+    review1.setReviewerId(savedUser2.getId());
+    review1.setReviewerVisibility(UserVisibility.VISIBLE);
 
     Review savedReview = reviewRepository.save(review1);
 
@@ -238,63 +223,57 @@ public class ReviewRepositoryTest {
   @Test
   void testUpdateReviewerVisibility() {
     String email = "test@example.com";
-    User user1 = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user1 = new User();
+    user1.setNickname("test-123");
+    user1.setEmail(email);
+    user1.setPassword(null);
+    user1.setRole(UserRole.USER);
+    user1.setBanActive(false);
+    user1.setBannedUntil(null);
     User savedUser1 = userRepository.save(user1);
 
-    User user2 = User.builder()
-        .nickname("test2-123")
-        .email("2" + email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(true)
-        .bannedUntil(null)
-        .build();
+    User user2 = new User();
+    user2.setNickname("test2-123");
+    user2.setEmail("2" + email);
+    user2.setPassword(null);
+    user2.setRole(UserRole.USER);
+    user2.setBanActive(true);
+    user2.setBannedUntil(null);
     User savedUser2 = userRepository.save(user2);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
 
     Category savedCategory = categoryRepository.save(category);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.GIVEN)
-        .city("City")
-        .ownerVisibility(UserVisibility.BANNED)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser1.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.GIVEN);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.BANNED);
+    item1.setCategoryId(savedCategory.getId());
+    item1.setOwnerId(savedUser1.getId());
 
     Item savedItem1 = itemRepository.save(item1);
 
-    Offer offer1 = Offer.builder()
-        .buyerId(savedUser2.getId())
-        .itemId(savedItem1.getId())
-        .buyerVisibility(UserVisibility.BANNED)
-        .status(OfferStatus.ACCEPTED)
-        .build();
+    Offer offer1 = new Offer();
+    offer1.setBuyerId(savedUser2.getId());
+    offer1.setItemId(savedItem1.getId());
+    offer1.setBuyerVisibility(UserVisibility.BANNED);
+    offer1.setStatus(OfferStatus.ACCEPTED);
 
     Offer savedOffer1 = offerRepository.save(offer1);
 
-    Review review1 = Review.builder()
-        .comment("Comment 1")
-        .offerId(savedOffer1.getId())
-        .rating(5)
-        .revieweeId(savedItem1.getOwnerId())
-        .reviewerId(savedUser2.getId())
-        .reviewerVisibility(UserVisibility.VISIBLE)
-        .build();
+    Review review1 = new Review();
+    review1.setComment("Comment 1");
+    review1.setOfferId(savedOffer1.getId());
+    review1.setRating(5);
+    review1.setRevieweeId(savedItem1.getOwnerId());
+    review1.setReviewerId(savedUser2.getId());
+    review1.setReviewerVisibility(UserVisibility.VISIBLE);
 
     Review savedReview = reviewRepository.save(review1);
 
@@ -311,63 +290,57 @@ public class ReviewRepositoryTest {
   void testUpdateReviewerVisibility2() {
 
     String email = "test@example.com";
-    User user1 = User.builder()
-        .nickname("test-123")
-        .email(email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(false)
-        .bannedUntil(null)
-        .build();
+    User user1 = new User();
+    user1.setNickname("test-123");
+    user1.setEmail(email);
+    user1.setPassword(null);
+    user1.setRole(UserRole.USER);
+    user1.setBanActive(false);
+    user1.setBannedUntil(null);
     User savedUser1 = userRepository.save(user1);
 
-    User user2 = User.builder()
-        .nickname("test2-123")
-        .email("2" + email)
-        .password(null)
-        .role(UserRole.USER)
-        .banActive(true)
-        .bannedUntil(null)
-        .build();
+    User user2 = new User();
+    user2.setNickname("test2-123");
+    user2.setEmail("2" + email);
+    user2.setPassword(null);
+    user2.setRole(UserRole.USER);
+    user2.setBanActive(true);
+    user2.setBannedUntil(null);
     User savedUser2 = userRepository.save(user2);
 
-    Category category = Category.builder()
-        .name("Sport")
-        .parent(null)
-        .build();
+    Category category = new Category();
+    category.setName("Sport");
+    category.setParent(null);
 
     Category savedCategory = categoryRepository.save(category);
 
-    Item item1 = Item.builder()
-        .title("Title")
-        .description("Description")
-        .condition(ItemCondition.NEW)
-        .state(ItemState.GIVEN)
-        .city("City")
-        .ownerVisibility(UserVisibility.BANNED)
-        .categoryId(savedCategory.getId())
-        .ownerId(savedUser1.getId())
-        .build();
+    Item item1 = new Item();
+    item1.setTitle("Title");
+    item1.setDescription("Description");
+    item1.setCondition(ItemCondition.NEW);
+    item1.setState(ItemState.GIVEN);
+    item1.setCity("City");
+    item1.setOwnerVisibility(UserVisibility.BANNED);
+    item1.setCategoryId(savedCategory.getId());
+    item1.setOwnerId(savedUser1.getId());
 
     Item savedItem1 = itemRepository.save(item1);
 
-    Offer offer1 = Offer.builder()
-        .buyerId(savedUser2.getId())
-        .itemId(savedItem1.getId())
-        .buyerVisibility(UserVisibility.BANNED)
-        .status(OfferStatus.ACCEPTED)
-        .build();
+    Offer offer1 = new Offer();
+    offer1.setBuyerId(savedUser2.getId());
+    offer1.setItemId(savedItem1.getId());
+    offer1.setBuyerVisibility(UserVisibility.BANNED);
+    offer1.setStatus(OfferStatus.ACCEPTED);
 
     Offer savedOffer1 = offerRepository.save(offer1);
 
-    Review review1 = Review.builder()
-        .comment("Comment 1")
-        .offerId(savedOffer1.getId())
-        .rating(5)
-        .revieweeId(savedItem1.getOwnerId())
-        .reviewerId(savedUser2.getId())
-        .reviewerVisibility(UserVisibility.VISIBLE)
-        .build();
+    Review review1 = new Review();
+    review1.setComment("Comment 1");
+    review1.setOfferId(savedOffer1.getId());
+    review1.setRating(5);
+    review1.setRevieweeId(savedItem1.getOwnerId());
+    review1.setReviewerId(savedUser2.getId());
+    review1.setReviewerVisibility(UserVisibility.VISIBLE);
 
     Review savedReview = reviewRepository.save(review1);
 

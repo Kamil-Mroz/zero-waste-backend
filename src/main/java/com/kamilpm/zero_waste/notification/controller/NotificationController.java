@@ -11,7 +11,6 @@ import com.kamilpm.zero_waste.common.dto.NotificationType;
 import com.kamilpm.zero_waste.notification.dto.NotificationDto;
 import com.kamilpm.zero_waste.notification.service.NotificationService;
 
-import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,9 +25,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping(path = "/api/v{version}/notifications", version = "1")
-@RequiredArgsConstructor
 public class NotificationController {
   private final NotificationService notificationService;
+
+
+
+  public NotificationController(NotificationService notificationService) {
+    this.notificationService = notificationService;
+  }
 
   @GetMapping("/unread-count")
   public ResponseEntity<?> getUnreadCount() {

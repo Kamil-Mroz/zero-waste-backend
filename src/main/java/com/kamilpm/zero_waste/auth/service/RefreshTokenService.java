@@ -16,12 +16,14 @@ import com.kamilpm.zero_waste.common.events.RevokeRefreshTokenEvent;
 import com.kamilpm.zero_waste.common.exception.TokenException;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class RefreshTokenService {
   private final RefreshTokenRepository refreshTokenRepository;
+
+  public RefreshTokenService(RefreshTokenRepository refreshTokenRepository) {
+    this.refreshTokenRepository = refreshTokenRepository;
+  }
 
   @Value("${refresh-token.expiration}")
   private long refreshTokenExpiration;
